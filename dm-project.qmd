@@ -4,8 +4,34 @@ author: "Daphné Perry and Justine Catta"
 format: html
 ---
 
-Setup
+### Our data
+1. 
+environmental tax revenues: energy, transport, pollution, resources
+source : OECD
+time period : 1994-2023
 
+
+
+
+
+### Setup
+```{r}
+library(vroom)
+library(ggplot2)
+library(knitr)
+library(dplyr)
+library(here)
+```
+
+```{r}
+here::i_am("project.Rproj")
+```
+
+
+### Data loading
+```{r}
+Envt_Tax_Revenues <- vroom(here("data", "OECD_envt_tax.csv"))
+```
 
 
 
