@@ -61,6 +61,11 @@ GDP_and_AV <- vroom(here("data", "OECD_GDP_and_AV.csv"))
 GHG_Emissions <- vroom(here("data", "Eurostat_ghg.csv"))
 Warm_Households <- vroom(here("data","Eurostat_warm.csv"))
 ```
+### Removing unwanted variables
+```{r}
+Warm_Households <- Warm_Households |>
+  select(geo, TIME_PERIOD, hhtyp, incgrp, OBS_VALUE)
+```
 
 
 
