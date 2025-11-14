@@ -34,6 +34,7 @@ library(ggplot2)
 library(knitr)
 library(dplyr)
 library(here)
+library(countrycode)
 ```
 
 ```{r}
@@ -47,7 +48,17 @@ Envt_Tax_Revenues <- vroom(here("data", "OECD_envt_tax.csv"))
 GDP_and_AV <- vroom(here("data", "OECD_GDP_and_AV.csv"))
 GHG_Emissions <- vroom(here("data", "Eurostat_ghg.csv"))
 Warm_Households <- vroom(here("data","Eurostat_warm.csv"))
+Soc_Indexes <- vroom(here("data", "HDR_indexes.csv"))
 ```
+
+
+```
+
+
+
+
+
+
 
 
 
