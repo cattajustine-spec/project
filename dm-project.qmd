@@ -6,17 +6,17 @@ format: html
 
 ### Our data
 1. 
-Environmental tax revenues: energy, transport, pollution, resources
+Environmental tax revenues (in million of USD): energy, transport, pollution, resources
 source : OECD
 time period : 1994-2023
 
 2. 
-GDP and Added Value per capita annual growth per sector 
+GDP and Added Value per capita annual growth per sector (in million of USD)
 source : OECD
 time period : 1990-2024
 
 3.
-Greenhouse gas emissions by source sector
+Greenhouse gas emissions by source sector (in million of ton)
 source : Eurostat
 time period : 1990-2024
 
@@ -65,6 +65,12 @@ Warm_Households <- vroom(here("data","Eurostat_warm.csv"))
 ```{r}
 Warm_Households <- Warm_Households |>
   select(geo, TIME_PERIOD, hhtyp, incgrp, OBS_VALUE)
+Envt_Tax_Revenues <- Envt_Tax_Revenues |>
+  select(REF_AREA, `Fréquence d'observation...8`, TIME_PERIOD, OBS_VALUE, CATEGORY, `Catégorie de recettes provenant des taxes liées à l'environnement`)
+GDP_and_AV <- GDP_and_AV |>
+  select(REF_AREA, `Zone de référence`, ACTIVITY, `Activité économique`, TIME_PERIOD, OBS_VALUE)
+GHG_Emissions <- GHG_Emissions |>
+  select(airpol, src_crf, geo, TIME_PERIOD, OBS_VALUE)
 ```
 
 
