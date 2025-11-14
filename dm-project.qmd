@@ -25,6 +25,19 @@ Inability to keep home adequately warm
 source : Eurostat
 time period : 1990-2024
 
+#### Justification for the Sector Mapping Between ISIC and CRF Classifications
+
+The reconciliation of sectors across the ISIC-based dataset and the CRF (Common Reporting Format) classification relies on aligning economic activities with their dominant emission sources. Although the two systems are not structurally identical—ISIC being an economic activity classification and CRF being an emissions reporting framework—several robust correspondences can be established.
+
+First, Agriculture, forestry and fishing (ISIC A) is mapped to CRF 3 (Agriculture). Both refer to primary-sector biological production and include emissions directly linked to agricultural practices such as enteric fermentation, manure management, and agricultural soils.
+
+Second, Manufacturing (ISIC C) is associated with CRF 1.A.2 (Manufacturing industries and construction) and CRF 2 (Industrial processes and product use). Manufacturing activity generates emissions both from fuel combustion in industrial facilities (covered by 1.A.2) and from process-related sources such as cement, chemicals, or metals production (covered by CRF 2), making this linkage consistent with the structure of industrial emissions.
+
+Third, Electricity, gas, steam and air conditioning supply (ISIC D)—even though aggregated within “Industry (except construction)” in the first dataset—logically corresponds to CRF 1.A.1 (Public electricity and heat production). This CRF category captures emissions from power generation and heat production, which are the core activities of ISIC D.
+
+Finally, Transportation and storage (ISIC H)—included in a broader aggregated category in the dataset—is aligned with CRF 1.A.3 (Transport). This CRF category encompasses fuel combustion from road, rail, aviation, and navigation transport, which directly reflects the operational scope of ISIC H.
+
+Overall, the mapping follows a principle of dominant emission source equivalence, ensuring that each ISIC activity is linked to the CRF category representing the primary origin of its greenhouse gas emissions. This approach allows the two datasets—despite structural differences—to be compared and integrated in a coherent and meaningful way for our analysis.
 
 
 ### Setup
