@@ -4,6 +4,11 @@ author: "Daphné Perry and Justine Catta"
 format: html
 ---
 
+# Introduction
+
+
+# Presenting our data
+
 ### Our data
 1. 
 Environmental tax revenues (in million of USD): energy, transport, pollution, resources
@@ -23,7 +28,7 @@ time period : 1990-2024
 4.
 Inability to keep home adequately warm
 source : Eurostat
-time period : 1990-2024
+time period : 2003-2024
 
 #### Justification for the Sector Mapping Between ISIC and CRF Classifications
 
@@ -61,18 +66,100 @@ GDP_and_AV <- vroom(here("data", "OECD_GDP_and_AV.csv"))
 GHG_Emissions <- vroom(here("data", "Eurostat_ghg.csv"))
 Warm_Households <- vroom(here("data","Eurostat_warm.csv"))
 ```
-### Removing unwanted variables
+### Modifying the datasets
+
+#### Removing unwanted variables
 ```{r}
 Warm_Households <- Warm_Households |>
   select(geo, TIME_PERIOD, hhtyp, incgrp, OBS_VALUE)
 Envt_Tax_Revenues <- Envt_Tax_Revenues |>
-  select(REF_AREA, `Fréquence d'observation...8`, TIME_PERIOD, OBS_VALUE, CATEGORY, `Catégorie de recettes provenant des taxes liées à l'environnement`)
-GDP_and_AV <- GDP_and_AV |>
-  select(REF_AREA, `Zone de référence`, ACTIVITY, `Activité économique`, TIME_PERIOD, OBS_VALUE)
+  select(REF_AREA, `Fréquence d'observation...8`, 
+         TIME_PERIOD, OBS_VALUE, CATEGORY, 
+         `Catégorie de recettes provenant des taxes liées à l'environnement`)
+GDP <- GDP_and_AV |>
+  select(REF_AREA, `Zone de référence`, 
+         Transaction, TIME_PERIOD, OBS_VALUE)|>
+  filter(Transaction == "Produit intérieur brut")
+Added_value <- GDP_and_AV |>
+  select(REF_AREA, `Zone de référence`, `Activité économique`, 
+         Transaction, TIME_PERIOD, OBS_VALUE)|>
+  filter(Transaction == "Valeur ajoutée, brute")
 GHG_Emissions <- GHG_Emissions |>
   select(airpol, src_crf, geo, TIME_PERIOD, OBS_VALUE)
 ```
 
+#### Deleting some entities
+```{r}
+Added_value <- Added_value |>
+  filter(`Activité économique` %in% c(
+    "Agriculture, sylviculture et pêche",
+    "Activités de fabrication",
+    "Industrie (sauf construction)",
+    "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration"
+  ))
+# virer les gaz & les secteurs osefs de GHG ? 
 
+```
+
+```{r}
+Warm_Households <- Warm_Households |>
+  filter(hhtyp %in% c("A1F", "A1M", "TOTAL"))
+```
+
+
+#### Adding some entities
+
+##### Add European average (accross countries)
+```{r}
+EU27_GDP <- GDP |>
+  filter(Transaction == "Produit intérieur brut") |>
+  group_by(TIME_PERIOD, Transaction) |>
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
+  mutate(`Zone de référence` = "Moyenne européenne") |>
+  relocate(`Zone de référence`)
+GDP <- bind_rows(GDP, EU27_GDP)
+  # add eu average ds ts datasets
+  # add country average ds GDP & GHG
+
+```
+
+```{r}
+EU27_Tax <- Envt_Tax_Revenues |>
+   group_by(TIME_PERIOD, CATEGORY,
+            `Catégorie de recettes provenant des taxes liées à l'environnement`) |>
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
+  mutate(`Fréquence d'observation...8` = "Moyenne européenne") |>
+  relocate(`Fréquence d'observation...8`)
+Envt_Tax_Revenues <- bind_rows(Envt_Tax_Revenues, EU27_Tax)
+```
+
+```{r}
+EU27_Warming <- Warm_Households |>
+   group_by(TIME_PERIOD, hhtyp, incgrp) |>
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
+  mutate(geo = "Moyenne européenne") |>
+  relocate(geo)
+Warm_Households <- bind_rows(Warm_Households, EU27_Warming)
+```
+
+##### Add country average (accross sectors)
+EU27_VA <- GDP_and_AV |>
+  filter(transaction == "Valeur ajoutée") |>
+  group_by(TIME_PERIOD, transaction, secteur) |>
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
+  mutate(`Zone de référence` = "Moyenne européenne",
+         Pays = "EU27") |>
+  relocate(Pays)
+GDP_and_AV <- bind_rows(GDP_and_AV,EU27_VA)
+
+#### Renaming some variables
+```{r}
+
+```
+
+
+# Descriptive analyzes
+
+# 
 
 
