@@ -16,7 +16,7 @@ source : OECD
 time period : 1994-2023
 
 2. 
-GDP and Added Value per capita annual growth per sector (in million of USD)
+GDP and Value Added per capita annual growth per sector (in million of USD)
 source : OECD
 time period : 1990-2024
 
@@ -29,6 +29,11 @@ time period : 1990-2024
 Inability to keep home adequately warm
 source : Eurostat
 time period : 2003-2024
+
+5.
+HDR index
+source : HDR
+time period : 1990-2023
 
 #### Justification for the Sector Mapping Between ISIC and CRF Classifications
 
@@ -62,6 +67,7 @@ here::i_am("project.Rproj")
 
 ### Data loading
 ```{r}
+#| message: false
 Envt_Tax_Revenues <- vroom(here("data", "OECD_envt_tax.csv"))
 GDP_and_AV <- vroom(here("data", "OECD_GDP_and_AV.csv"))
 GHG_Emissions <- vroom(here("data", "Eurostat_ghg.csv"))
@@ -75,46 +81,62 @@ List of countries :
 Austria, Belgium, Bulgaria, Croatia, Cyprus, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden
 
 ```{r}
-selected_countries <- c("Austria","Belgium","Bulgaria","Croatia","Cyprus","Czechia","Denmark","Estonia","Finland","France","Germany","Greece","Hungary","Ireland","Italy","Latvia","Lithuania","Luxembourg","Malta","Netherlands","Poland","Portugal","Romania","Slovakia","Slovenia","Spain","Sweden")
-country_codes <- c("AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE")
-country_mapping <- data.frame(country_name = selected_countries, country_code = country_codes)
-print(country_mapping)
+eu_countries <- unique(GHG_Emissions$geo)
 
+eu_country_key <- data.frame(name_en = eu_countries) |>
+  mutate(
+    iso3 = countrycode(name_en, origin = "country.name", destination = "iso3c"),
+    iso2 = countrycode(name_en, origin = "country.name", destination = "iso2c"),
+    name_fr = countrycode(name_en, origin = "country.name", destination = "country.name.fr")
+  ) |>
 
 ```
+
+
+
+
+
+
 ### Modifying the datasets
 
 #### Removing unwanted variables
 ```{r}
 Warm_Households <- Warm_Households |>
-  select(geo, TIME_PERIOD, hhtyp, incgrp, OBS_VALUE)
+  select(geo, TIME_PERIOD, hhtyp, incgrp, OBS_VALUE) |>
+  filter(geo %in% eu_country_key$iso2)
+
 Envt_Tax_Revenues <- Envt_Tax_Revenues |>
   select(REF_AREA, `Fréquence d'observation...8`, 
          TIME_PERIOD, OBS_VALUE, CATEGORY, 
-         `Catégorie de recettes provenant des taxes liées à l'environnement`)
+         `Catégorie de recettes provenant des taxes liées à l'environnement`)|>
+  filter(REF_AREA %in% eu_country_key$iso3)
+
 GDP <- GDP_and_AV |>
   select(REF_AREA, `Zone de référence`, 
          Transaction, TIME_PERIOD, OBS_VALUE)|>
-  filter(Transaction == "Produit intérieur brut")
+  filter(Transaction == "GDP",
+         REF_AREA %in% eu_country_key$iso3)
 Added_value <- GDP_and_AV |>
   select(REF_AREA, `Zone de référence`, `Activité économique`, 
          Transaction, TIME_PERIOD, OBS_VALUE)|>
-  filter(Transaction == "Valeur ajoutée, brute")
+  filter(Transaction == "Gross Value Added",
+         REF_AREA %in% eu_country_key$iso3)
+
 GHG_Emissions <- GHG_Emissions |>
-  select(airpol, src_crf, geo, TIME_PERIOD, OBS_VALUE)
+  select(airpol, src_crf, geo, TIME_PERIOD, OBS_VALUE)|>
+  filter(geo %in% eu_country_key$iso3)
 ```
 
 #### Deleting some entities
 ```{r}
 Added_value <- Added_value |>
   filter(`Activité économique` %in% c(
-    "Agriculture, sylviculture et pêche",
-    "Activités de fabrication",
-    "Industrie (sauf construction)",
-    "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration"
+    "Agriculture, forestry and fishing",
+    "Manufacturing activities",
+    "Industry (excluding construction)",
+    "Wholesale and retail trade; repair of motor vehicles and motorcycles; transportation and storage; accommodation and food service activities" 
+    #"Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration"
   ))
-# virer les gaz & les secteurs osefs de GHG ? 
-
 ```
 
 ```{r}
@@ -128,10 +150,10 @@ Warm_Households <- Warm_Households |>
 ##### Add European average (accross countries)
 ```{r}
 EU27_GDP <- GDP |>
-  filter(Transaction == "Produit intérieur brut") |>
+  filter(Transaction == "GDP") |>
   group_by(TIME_PERIOD, Transaction) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(`Zone de référence` = "Moyenne européenne") |>
+  mutate(`Zone de référence` = "EU Average") |>
   relocate(`Zone de référence`)
 GDP <- bind_rows(GDP, EU27_GDP)
   # add eu average ds ts datasets
@@ -144,7 +166,7 @@ EU27_Tax <- Envt_Tax_Revenues |>
    group_by(TIME_PERIOD, CATEGORY,
             `Catégorie de recettes provenant des taxes liées à l'environnement`) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(`Fréquence d'observation...8` = "Moyenne européenne") |>
+  mutate(`Fréquence d'observation...8` = "EU Average") |>
   relocate(`Fréquence d'observation...8`)
 Envt_Tax_Revenues <- bind_rows(Envt_Tax_Revenues, EU27_Tax)
 ```
@@ -153,20 +175,24 @@ Envt_Tax_Revenues <- bind_rows(Envt_Tax_Revenues, EU27_Tax)
 EU27_Warming <- Warm_Households |>
    group_by(TIME_PERIOD, hhtyp, incgrp) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(geo = "Moyenne européenne") |>
+  mutate(geo = "EU Average") |>
   relocate(geo)
 Warm_Households <- bind_rows(Warm_Households, EU27_Warming)
 ```
 
 ##### Add country average (accross sectors)
+```{r}
 EU27_VA <- GDP_and_AV |>
-  filter(transaction == "Valeur ajoutée") |>
-  group_by(TIME_PERIOD, transaction, secteur) |>
+  filter(TRANSACTION == "Gross value added",
+         REF_AREA %in% eu_country_key$iso3) |>
+  group_by(TIME_PERIOD, TRANSACTION, SECTOR) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(`Zone de référence` = "Moyenne européenne",
+  mutate(`Zone de référence` = "EU Average",
          Pays = "EU27") |>
   relocate(Pays)
-GDP_and_AV <- bind_rows(GDP_and_AV,EU27_VA)
+
+```
+
 
 #### Renaming some variables
 ```{r}
