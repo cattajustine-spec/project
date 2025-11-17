@@ -214,12 +214,12 @@ EU27_AV <- Added_value |>
 Added_value <- bind_rows(Added_value, EU27_AV)
 
 EU27_GHG <- GHG_Emissions |>
-  group_by(TIME_PERIOD, `Activité économique`) |>
+  group_by(TIME_PERIOD, src_crf) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
   mutate(`Zone de référence` = "EU average", 
          REF_AREA = "EU27") |>
   relocate(`Zone de référence`)
-Added_value <- bind_rows(Added_value, EU27_AV)
+Added_value <- bind_rows(Added_value, EU27_GHG)
 ```
 
 #### Modifiying the characteristics of the variables
