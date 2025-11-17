@@ -58,6 +58,7 @@ library(knitr)
 library(dplyr)
 library(here)
 library(countrycode)
+library(plotly)
 ```
 
 ```{r}
@@ -149,7 +150,8 @@ EU27_GDP <- GDP |>
   filter(TRANSACTION == "B1GQ") |>
   group_by(TIME_PERIOD, TRANSACTION) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(`Zone de référence` = "EU Average") |>
+  mutate(`Zone de référence` = "EU Average",
+         REF_AREA = "EU27") |>
   relocate(`Zone de référence`)
 GDP <- bind_rows(GDP, EU27_GDP)
 ```
@@ -210,7 +212,7 @@ ggplot(EU27_Tax, aes(x = TIME_PERIOD, y = OBS_VALUE, color = CATEGORY, group = C
 
 ```{r}
 # 2. GDP per country
-ggplot(GDP, aes(x = TIME_PERIOD, y = OBS_VALUE, color = REF_AREA, group = REF_AREA)) +
+p <- ggplot(GDP, aes(x = TIME_PERIOD, y = OBS_VALUE, color = REF_AREA, group = REF_AREA)) +
   geom_line(size = 1) +
   labs(
     title = "GDP per Country (EU27)",
@@ -219,6 +221,8 @@ ggplot(GDP, aes(x = TIME_PERIOD, y = OBS_VALUE, color = REF_AREA, group = REF_AR
     color = "Country"
   ) +
   theme_minimal()
+
+ggplotly(p)
 ```
 
 
