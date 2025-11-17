@@ -105,7 +105,7 @@ Warm_Households <- Warm_Households |>
 
 Envt_Tax_Revenues <- Envt_Tax_Revenues |>
   select(REF_AREA, `Fréquence d'observation...8`, 
-         TIME_PERIOD, OBS_VALUE, 
+         TIME_PERIOD, OBS_VALUE, CATEGORY,
          `Catégorie de recettes provenant des taxes liées à l'environnement`) |>
   filter(REF_AREA %in% eu_country_key$iso3)
 
@@ -169,7 +169,7 @@ EU27_GDP <- GDP |>
 GDP <- bind_rows(GDP, EU27_GDP)
 
 EU27_Tax <- Envt_Tax_Revenues |>
-  group_by(TIME_PERIOD, 
+  group_by(TIME_PERIOD,
            `Catégorie de recettes provenant des taxes liées à l'environnement`) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
   mutate(`Fréquence d'observation...8` = "EU Average", 
@@ -228,21 +228,12 @@ GHG_Emissions$src_crf <- factor(GHG_Emissions$src_crf)
 Added_value$`Activité économique` <- factor(Added_value$`Activité économique`)
 ```
 
-#### Renaming some variables
-```{r}
-names(Added_value)[names(Added_value) == "OBS_VALUE"] <- "Added_Value"
-names(GDP)[names(GDP) == "OBS_VALUE"] <- "GDP"
-names(Envt_Tax_Revenues)[names(Envt_Tax_Revenues) == "OBS_VALUE"] <- "Envt_Tax_Revenues"
-names(GHG_Emissions)[names(GHG_Emissions) == "OBS_VALUE"] <- "GHG_Emissions"
-names(Warm_Households)[names(Warm_Households) == "OBS_VALUE"] <- "Warm_Households"
-```
-
 
 # Descriptive analyzes
-```{r}
 
-# 1. Environmental tax revenues
-ggplot(EU27_Tax, aes(x = TIME_PERIOD, y = OBS_VALUE, color = CATEGORY, group = CATEGORY)) +
+### 1. Environmental tax revenues
+```{r}
+ggplot(EU27_Tax, aes(x = TIME_PERIOD, y = OBS_VALUE, color = `Catégorie de recettes provenant des taxes liées à l'environnement`, group = `Catégorie de recettes provenant des taxes liées à l'environnement`)) +
   geom_line(size = 1) +
   labs(
     title = "EU27 Environmental Tax Revenues by Category",
@@ -253,9 +244,9 @@ ggplot(EU27_Tax, aes(x = TIME_PERIOD, y = OBS_VALUE, color = CATEGORY, group = C
   theme_minimal()
 ```
 
-
+### 2. GDP per country
 ```{r}
-# 2. GDP per country
+
 p <- ggplot(GDP, aes(x = TIME_PERIOD, y = OBS_VALUE, color = REF_AREA, group = REF_AREA)) +
   geom_line(size = 1) +
   labs(
@@ -269,6 +260,39 @@ p <- ggplot(GDP, aes(x = TIME_PERIOD, y = OBS_VALUE, color = REF_AREA, group = R
 ggplotly(p)
 ```
 
+
+### 3. Added Value
+```{r}
+p_va <- ggplot(EU27_VA, aes(x = TIME_PERIOD, y = OBS_VALUE, color = ACTIVITY, group = ACTIVITY)) +
+  geom_line(size = 1) +
+  labs(
+    title = "EU27 Average Added Value per Sector",
+    x = "Year",
+    y = "Value Added (million USD)",
+    color = "Sector"
+  ) +
+  theme_minimal()
+
+ggplotly(p_va)
+```
+
+### 4. Households
+
+```{r}
+
+ggplot(EU27_Warming, 
+       aes(x = TIME_PERIOD, y = OBS_VALUE,
+           color = interaction(hhtyp, incgrp),
+           group = interaction(hhtyp, incgrp))) +
+  geom_line(size = 1) +
+  labs(
+    title = "EU27 – inability to Keep the House Warm (by Sex × Income Group)",
+    x = "Year",
+    y = "Percentage of population",
+    color = "Sex × Income"
+  ) +
+  theme_minimal()
+```
 
 
 
