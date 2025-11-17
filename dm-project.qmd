@@ -378,11 +378,11 @@ GHG_Emissions <- GHG_Emissions |>
 # keeping sectors
 emitting_sectors <- c(
   "Agriculture",
-  "Fuel combustion in manufacturing industries and construction",
-  "Industrial processes and product use",
-  "Fuel combustion in transport",
-  "Fuel combustion in energy industries"
+  "Manufacturing",
+  "Transport",
+  "Public electricity and heat production"
 )
+
 
 # filter GHG_Emissions
 GHG_Emissions_filtered <- GHG_Emissions |>
@@ -394,12 +394,8 @@ tax_ghg <- Envt_Tax_Revenues |>
     GHG_Emissions_filtered,
     by = c("REF_AREA" = "iso3", "TIME_PERIOD" = "TIME_PERIOD")
   ) |>
-  rename(
-    tax_value = OBS_VALUE.x,
-    ghg_value = OBS_VALUE.y
-  ) |>
-  filter(!is.na(ghg_value)) |>
-  select(REF_AREA, TIME_PERIOD, CATEGORY, tax_value, src_crf, ghg_value)
+  filter(!is.na(GHG_Emissions_value)) |>
+  select(REF_AREA, TIME_PERIOD, CATEGORY, Envt_Tax_Revenues_value, src_crf, GHG_Emissions_value)
 
 
 ```
@@ -409,26 +405,50 @@ tax_ghg$src_crf <- as.factor(tax_ghg$src_crf)
 
 # GDP as control
 tax_ghg_control <- tax_ghg %>%
-  left_join(GDP %>% select(REF_AREA, TIME_PERIOD, OBS_VALUE) %>% rename(gdp = OBS_VALUE),
-            by = c("REF_AREA", "TIME_PERIOD"))
+  left_join(GDP %>% select(REF_AREA, TIME_PERIOD, GDP_value),
+    by = c("REF_AREA", "TIME_PERIOD")
+  )
+
 ```
+
+
 
 
 ```{r}
-model <- lm(ghg_value ~ tax_value + gdp + src_crf + TIME_PERIOD, data = tax_ghg_control)
+model <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value + GDP_value + src_crf + TIME_PERIOD,
+            data = tax_ghg_control)
+
 summary(model)
 ```
-We estimated a linear regression to examine the relationship between environmental taxes and greenhouse gas emissions, while controlling for GDP, GHG sector, and year. The model includes 19,625 observations after excluding 625 rows with missing data. The regression explains approximately 57% of the variation in emissions, as indicated by the R-squared value of 0.571.
+We estimated a linear regression to examine the relationship between environmental taxes and greenhouse gas emissions, while controlling for GDP, emission sector, and year.
+The model includes 16,700 observations after excluding 500 rows with missing data.
+It explains approximately 62% of the variation in emissions (R-squared = 0.624), which is higher than in the previous version.
 
-The coefficient on environmental taxes is -0.019, which is not statistically significant (p = 0.377). This suggests that, after accounting for GDP, sector, and year, there is no clear effect of environmental taxes on emissions in this dataset.
+The coefficient on environmental tax revenues is –0.024, which is not statistically significant (p = 0.363).
+This indicates that, after accounting for GDP, sectoral structure, and time, there is no detectable correlation between environmental tax revenues and GHG emissions in this dataset.
 
-GDP has a positive and highly significant effect on emissions, with a coefficient of 0.0385 (p < 0.001), indicating that countries with higher GDP tend to have higher emissions.
+GDP has a positive and highly significant effect on emissions, with a coefficient of 0.048 (p < 0.001).
+This means that countries with higher GDP tend to have higher emissions, consistent with scale effects: larger economies produce more output and therefore more emissions.
 
-The GHG sector also strongly affects emissions. Compared to the baseline sector, the estimated differences are as follows: fuel combustion in energy industries adds about 29,820 units, fuel combustion in manufacturing industries and construction adds about 3,944 units, fuel combustion in transport adds about 15,340 units, and industrial processes and product use reduces emissions by 615 units (the latter is not statistically significant).
+Sectoral effects are strong and highly significant. Relative to the baseline category (Agriculture), estimated additional emissions are:
 
-Finally, the coefficient on the year variable is -827, which is highly significant, indicating a general downward trend in emissions over time.
+ - Manufacturing: +18,040 units
+ - Public electricity and heat production: +29,820 units
+ - Transport: +15,340 units
 
-Overall, the results suggest that sectoral composition and GDP are the main drivers of emissions, while environmental taxes, in this specification, do not show a statistically detectable effect. The negative time trend suggests that emissions have generally declined over the period considered, independent of tax levels.
+These large differences reflect the inherent emission intensities of these sectors.
+
+The coefficient on the year variable is –1,034, highly significant (p < 0.001), indicating a strong downward trend in emissions over time, likely due to EU climate policies, efficiency improvements, and structural economic changes.
+
+Overall, the results suggest that GDP and sectoral composition are the dominant drivers of emissions, while environmental taxes, in the form measured here, show no statistically significant association with emission levels. The negative time trend indicates that emissions have declined over the studied period independently of environmental tax revenues.
+
+
+# Check for NAs
+apply(tax_ineq_control, 2, function(x) sum(is.na(x)))
+
+
+```
+
 
 
 
