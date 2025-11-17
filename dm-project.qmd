@@ -104,7 +104,7 @@ Warm_Households <- Warm_Households |>
          hhtyp %in% c("A1F", "A1M", "TOTAL"))
 
 Envt_Tax_Revenues <- Envt_Tax_Revenues |>
-  select(REF_AREA, `Fréquence d'observation...8`, 
+  select(REF_AREA, 
          TIME_PERIOD, OBS_VALUE, CATEGORY,
          `Catégorie de recettes provenant des taxes liées à l'environnement`) |>
   filter(REF_AREA %in% eu_country_key$iso3)
@@ -112,7 +112,7 @@ Envt_Tax_Revenues <- Envt_Tax_Revenues |>
 GDP <- GDP_and_AV |>
   filter(Transaction == "Produit intérieur brut", 
          REF_AREA %in% eu_country_key$iso3) |>
-  select(REF_AREA, `Zone de référence`, TIME_PERIOD, OBS_VALUE)
+  select(REF_AREA, TIME_PERIOD, OBS_VALUE)
 
 Added_value <- GDP_and_AV |>
   filter(Transaction == "Valeur ajoutée, brute", 
@@ -123,7 +123,7 @@ Added_value <- GDP_and_AV |>
            "Industrie (sauf construction)",
            "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration"
            )) |>
-  select(REF_AREA, `Zone de référence`, `Activité économique`, 
+  select(REF_AREA, `Activité économique`, 
          TIME_PERIOD, OBS_VALUE)
 
 GHG_Emissions <- GHG_Emissions |>
@@ -146,12 +146,12 @@ Soc_Indexes <- Soc_Indexes |>
 GII <- Soc_Indexes|>
   filter(iso3 %in% eu_country_key$iso3,
          Indicator == "gii") |>
-  select(iso3, country, TIME_PERIOD, OBS_VALUE)
+  select(iso3, TIME_PERIOD, OBS_VALUE)
   
 coef_ineq <- Soc_Indexes|>
   filter(iso3 %in% eu_country_key$iso3,
          Indicator == "coef_ineq")|>
-  select(iso3, country, TIME_PERIOD, OBS_VALUE)
+  select(iso3, TIME_PERIOD, OBS_VALUE)
   
 ```
 
