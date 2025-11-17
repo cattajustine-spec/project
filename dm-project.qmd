@@ -216,16 +216,78 @@ Added_value <- bind_rows(Added_value, EU27_AV)
 EU27_GHG <- GHG_Emissions |>
   group_by(TIME_PERIOD, src_crf) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(`Zone de référence` = "EU average", 
-         REF_AREA = "EU27") |>
-  relocate(`Zone de référence`)
-Added_value <- bind_rows(Added_value, EU27_GHG)
+  mutate(geo = "EU average") |>
+  relocate(geo)
+GHG_Emissions <- bind_rows(GHG_Emissions, EU27_GHG)
 ```
 
 #### Modifiying the characteristics of the variables
 ```{r}
 GHG_Emissions$src_crf <- factor(GHG_Emissions$src_crf)
 Added_value$`Activité économique` <- factor(Added_value$`Activité économique`)
+```
+
+```{r}
+names(Warm_Households)[names(Warm_Households) == "OBS_VALUE"] <- "Warm_Households_value"
+names(Envt_Tax_Revenues)[names(Envt_Tax_Revenues) == "OBS_VALUE"] <- "Envt_Tax_Revenues_value"
+names(GDP)[names(GDP) == "OBS_VALUE"] <- "GDP_value"
+names(Added_value)[names(Added_value) == "OBS_VALUE"] <- "AV_value"
+names(GHG_Emissions)[names(GHG_Emissions) == "OBS_VALUE"] <- "GHG_Emissions_value"
+names(GII)[names(GII) == "OBS_VALUE"] <- "GII_value"
+names(coef_ineq)[names(coef_ineq) == "OBS_VALUE"] <- "coef_ineq_value"
+#rename the OBS_VALUES
+#rename the sectors
+#sum the 2 sectors of manufacturing in GHG emissions
+```
+
+```{r}
+Added_value <- Added_value |>
+  mutate(`Activité économique` = recode(`Activité économique`,
+                                        "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration" = "Transport", 
+                                        "Agriculture, sylviculture et pêche"= "Agriculture", 
+                                        "Industrie (sauf construction)" = "Public electricity and heat production", 
+                                        "Activités de fabrication" = "Manufacturing"
+                                        ))
+
+EU27_AV <- EU27_AV |>
+  mutate(`Activité économique` = recode(`Activité économique`,
+                                        "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration" = "Transport", 
+                                        "Agriculture, sylviculture et pêche"= "Agriculture", 
+                                        "Industrie (sauf construction)" = "Public electricity and heat production", 
+                                        "Activités de fabrication" = "Manufacturing"
+                                        ))
+
+GHG_Emissions <- GHG_Emissions|>
+  mutate(
+    src_crf = case_when(
+      src_crf %in% c("Fuel combustion in manufacturing industries and construction", 
+                     "Industrial processes and product use") ~ "Manufacturing",
+      TRUE ~ src_crf
+    )
+  ) |>
+  group_by(geo, TIME_PERIOD, src_crf) |>
+  summarise(GHG_Emissions_value = sum(GHG_Emissions_value), .groups = "drop")
+
+GHG_Emissions <- GHG_Emissions |>
+  mutate(src_crf = recode(src_crf, 
+                          "Fuel combustion in energy industries"="Public electricity and heat production", 
+                          "Fuel combustion in transport"="Transport"))
+
+EU27_GHG <- EU27_GHG|>
+  mutate(
+    src_crf = case_when(
+      src_crf %in% c("Fuel combustion in manufacturing industries and construction", 
+                     "Industrial processes and product use") ~ "Manufacturing",
+      TRUE ~ src_crf
+    )
+  ) |>
+  group_by(geo, TIME_PERIOD, src_crf) |>
+  summarise(EU27_GHG = sum(OBS_VALUE), .groups = "drop")
+
+EU27_GHG <- EU27_GHG |>
+  mutate(src_crf = recode(src_crf, 
+                          "Fuel combustion in energy industries"="Public electricity and heat production", 
+                          "Fuel combustion in transport"="Transport"))
 ```
 
 
@@ -243,11 +305,11 @@ ggplot(EU27_Tax, aes(x = TIME_PERIOD, y = OBS_VALUE, color = `Catégorie de rece
   ) +
   theme_minimal()
 ```
+COMMENT 
 
 ### 2. GDP per country
 ```{r}
-
-p <- ggplot(GDP, aes(x = TIME_PERIOD, y = OBS_VALUE, color = REF_AREA, group = REF_AREA)) +
+p <- ggplot(GDP, aes(x = TIME_PERIOD, y = GDP_value, color = REF_AREA, group = REF_AREA)) +
   geom_line(size = 1) +
   labs(
     title = "GDP per Country (EU27)",
@@ -259,6 +321,8 @@ p <- ggplot(GDP, aes(x = TIME_PERIOD, y = OBS_VALUE, color = REF_AREA, group = R
 
 ggplotly(p)
 ```
+COMMENT 
+
 
 
 ### 3. Added Value
@@ -275,6 +339,8 @@ p_va <- ggplot(EU27_AV, aes(x = TIME_PERIOD, y = OBS_VALUE, color = `Activité �
 
 ggplotly(p_va)
 ```
+COMMENT 
+
 
 ### 4. Households
 
@@ -294,6 +360,7 @@ ggplot(EU27_Warming,
   theme_minimal()
 ```
 
+COMMENT 
 
 
 
@@ -336,6 +403,7 @@ tax_ghg <- Envt_Tax_Revenues |>
 
 
 ```
+
 ```{r}
 tax_ghg$src_crf <- as.factor(tax_ghg$src_crf)
 
