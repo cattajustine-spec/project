@@ -263,7 +263,7 @@ ggplotly(p)
 
 ### 3. Added Value
 ```{r}
-p_va <- ggplot(EU27_VA, aes(x = TIME_PERIOD, y = OBS_VALUE, color = ACTIVITY, group = ACTIVITY)) +
+p_va <- ggplot(EU27_AV, aes(x = TIME_PERIOD, y = OBS_VALUE, color = `Activité économique`, group = `Activité économique`)) +
   geom_line(size = 1) +
   labs(
     title = "EU27 Average Added Value per Sector",
@@ -300,6 +300,11 @@ ggplot(EU27_Warming,
 
 
 # Correlations & regressions
+
+
+
+
+
 
 # Forecasting
 
