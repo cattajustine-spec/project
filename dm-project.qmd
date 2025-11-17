@@ -77,13 +77,12 @@ Envt_Tax_Revenues <- Envt_Tax_Revenues |>
          TIME_PERIOD, OBS_VALUE, CATEGORY, 
          `Catégorie de recettes provenant des taxes liées à l'environnement`)
 GDP <- GDP_and_AV |>
-  select(REF_AREA, `Zone de référence`, 
-         Transaction, TIME_PERIOD, OBS_VALUE)|>
-  filter(Transaction == "Produit intérieur brut")
+  filter(Transaction == "Produit intérieur brut") |>
+  select(REF_AREA, `Zone de référence`, TIME_PERIOD, OBS_VALUE)
 Added_value <- GDP_and_AV |>
+  filter(Transaction == "Valeur ajoutée, brute") |>
   select(REF_AREA, `Zone de référence`, `Activité économique`, 
-         Transaction, TIME_PERIOD, OBS_VALUE)|>
-  filter(Transaction == "Valeur ajoutée, brute")
+         TIME_PERIOD, OBS_VALUE)
 GHG_Emissions <- GHG_Emissions |>
   select(airpol, src_crf, geo, TIME_PERIOD, OBS_VALUE)
 ```
@@ -112,20 +111,16 @@ Warm_Households <- Warm_Households |>
 ##### Add European average (accross countries)
 ```{r}
 EU27_GDP <- GDP |>
-  filter(Transaction == "Produit intérieur brut") |>
-  group_by(TIME_PERIOD, Transaction) |>
+  group_by(TIME_PERIOD) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
   mutate(`Zone de référence` = "Moyenne européenne") |>
   relocate(`Zone de référence`)
 GDP <- bind_rows(GDP, EU27_GDP)
-  # add eu average ds ts datasets
-  # add country average ds GDP & GHG
-
 ```
 
 ```{r}
 EU27_Tax <- Envt_Tax_Revenues |>
-   group_by(TIME_PERIOD, CATEGORY,
+  group_by(TIME_PERIOD, CATEGORY,
             `Catégorie de recettes provenant des taxes liées à l'environnement`) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
   mutate(`Fréquence d'observation...8` = "Moyenne européenne") |>
@@ -135,31 +130,39 @@ Envt_Tax_Revenues <- bind_rows(Envt_Tax_Revenues, EU27_Tax)
 
 ```{r}
 EU27_Warming <- Warm_Households |>
-   group_by(TIME_PERIOD, hhtyp, incgrp) |>
+  group_by(TIME_PERIOD, hhtyp, incgrp) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
   mutate(geo = "Moyenne européenne") |>
   relocate(geo)
 Warm_Households <- bind_rows(Warm_Households, EU27_Warming)
 ```
+add HDR eu average
 
 ##### Add country average (accross sectors)
-EU27_VA <- GDP_and_AV |>
-  filter(transaction == "Valeur ajoutée") |>
-  group_by(TIME_PERIOD, transaction, secteur) |>
+```{r}
+EU27_AV <- Added_value |>
+  group_by(TIME_PERIOD, `Activité économique`) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(`Zone de référence` = "Moyenne européenne",
-         Pays = "EU27") |>
-  relocate(Pays)
-GDP_and_AV <- bind_rows(GDP_and_AV,EU27_VA)
+  mutate(`Zone de référence` = "Moyenne européenne") |>
+  relocate(`Zone de référence`)
+Added_value <- bind_rows(Added_value, EU27_AV)
+```
+
 
 #### Renaming some variables
 ```{r}
-
+names(Added_value)[names(Added_value) == "OBS_VALUE"] <- "Added_Value"
+names(GDP)[names(GDP) == "OBS_VALUE"] <- "GDP"
+names(Envt_Tax_Revenues)[names(Envt_Tax_Revenues) == "OBS_VALUE"] <- "Envt_Tax_Revenues"
+names(GHG_Emissions)[names(GHG_Emissions) == "OBS_VALUE"] <- "GHG_Emissions"
+names(Warm_Households)[names(Warm_Households) == "OBS_VALUE"] <- "Warm_Households"
 ```
 
 
 # Descriptive analyzes
 
-# 
+# Correlations & regressions
+
+# Forecasting
 
 
