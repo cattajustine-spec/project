@@ -16,7 +16,7 @@ source : OECD
 time period : 1994-2023
 
 2. 
-GDP and Added Value per capita annual growth per sector (in million of USD)
+GDP and Value Added per capita annual growth per sector (in million of USD)
 source : OECD
 time period : 1990-2024
 
@@ -29,6 +29,11 @@ time period : 1990-2024
 Inability to keep home adequately warm
 source : Eurostat
 time period : 2003-2024
+
+5.
+HDR index
+source : HDR
+time period : 1990-2023
 
 #### Justification for the Sector Mapping Between ISIC and CRF Classifications
 
@@ -52,6 +57,9 @@ library(ggplot2)
 library(knitr)
 library(dplyr)
 library(here)
+library(countrycode)
+library(plotly)
+library(tidyr)
 ```
 
 ```{r}
@@ -61,93 +69,164 @@ here::i_am("project.Rproj")
 
 ### Data loading
 ```{r}
+#| message: false
 Envt_Tax_Revenues <- vroom(here("data", "OECD_envt_tax.csv"))
 GDP_and_AV <- vroom(here("data", "OECD_GDP_and_AV.csv"))
 GHG_Emissions <- vroom(here("data", "Eurostat_ghg.csv"))
 Warm_Households <- vroom(here("data","Eurostat_warm.csv"))
+Soc_Indexes <- vroom(here("data", "HDR_indexes.csv"))
 ```
+
+### Country keys
+
+List of countries :
+Austria, Belgium, Bulgaria, Croatia, Cyprus, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden
+
+```{r}
+eu_countries <- unique(GHG_Emissions$geo)
+
+eu_country_key <- data.frame(name_en = eu_countries) |>
+  mutate(
+    iso3 = countrycode(name_en, origin = "country.name", destination = "iso3c"),
+    iso2 = countrycode(name_en, origin = "country.name", destination = "iso2c"),
+    name_fr = countrycode(name_en, origin = "country.name", destination = "country.name.fr")
+  ) 
+```
+
+
 ### Modifying the datasets
 
 #### Removing unwanted variables
 ```{r}
 Warm_Households <- Warm_Households |>
-  select(geo, TIME_PERIOD, hhtyp, incgrp, OBS_VALUE)
+  select(geo, TIME_PERIOD, hhtyp, incgrp, OBS_VALUE) |>
+  filter(geo %in% eu_country_key$iso2, 
+         hhtyp %in% c("A1F", "A1M", "TOTAL"))
+
 Envt_Tax_Revenues <- Envt_Tax_Revenues |>
   select(REF_AREA, `Fréquence d'observation...8`, 
-         TIME_PERIOD, OBS_VALUE, CATEGORY, 
-         `Catégorie de recettes provenant des taxes liées à l'environnement`)
+         TIME_PERIOD, OBS_VALUE, 
+         `Catégorie de recettes provenant des taxes liées à l'environnement`) |>
+  filter(REF_AREA %in% eu_country_key$iso3)
+
 GDP <- GDP_and_AV |>
-  filter(Transaction == "Produit intérieur brut") |>
+  filter(Transaction == "Produit intérieur brut", 
+         REF_AREA %in% eu_country_key$iso3) |>
   select(REF_AREA, `Zone de référence`, TIME_PERIOD, OBS_VALUE)
+
 Added_value <- GDP_and_AV |>
-  filter(Transaction == "Valeur ajoutée, brute") |>
+  filter(Transaction == "Valeur ajoutée, brute", 
+         REF_AREA %in% eu_country_key$iso3, 
+         `Activité économique` %in% c(
+           "Agriculture, sylviculture et pêche",
+           "Activités de fabrication",
+           "Industrie (sauf construction)",
+           "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration"
+           )) |>
   select(REF_AREA, `Zone de référence`, `Activité économique`, 
          TIME_PERIOD, OBS_VALUE)
+
 GHG_Emissions <- GHG_Emissions |>
-  select(airpol, src_crf, geo, TIME_PERIOD, OBS_VALUE)
+  select(airpol, src_crf, geo, TIME_PERIOD, OBS_VALUE) |>
+  filter(geo %in% eu_country_key$name_en, 
+         src_crf != "Total (excluding memo items)")
+
+Soc_Indexes <- Soc_Indexes |>
+  pivot_longer(
+    cols = -c(iso3, country, hdicode, region),
+    names_to = c("Indicator", "TIME_PERIOD"),
+    names_pattern = "^(.*)_(\\d{4})$",
+    values_to = "OBS_VALUE"
+  ) |>
+  mutate(
+    OBS_VALUE = as.numeric(OBS_VALUE),
+    TIME_PERIOD = as.integer(TIME_PERIOD)
+  )
+
+GII <- Soc_Indexes|>
+  filter(iso3 %in% eu_country_key$iso3,
+         Indicator == "gii") |>
+  select(iso3, country, TIME_PERIOD, OBS_VALUE)
+  
+coef_ineq <- Soc_Indexes|>
+  filter(iso3 %in% eu_country_key$iso3,
+         Indicator == "coef_ineq")|>
+  select(iso3, country, TIME_PERIOD, OBS_VALUE)
+  
 ```
-
-#### Deleting some entities
-```{r}
-Added_value <- Added_value |>
-  filter(`Activité économique` %in% c(
-    "Agriculture, sylviculture et pêche",
-    "Activités de fabrication",
-    "Industrie (sauf construction)",
-    "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration"
-  ))
-# virer les gaz & les secteurs osefs de GHG ? 
-
-```
-
-```{r}
-Warm_Households <- Warm_Households |>
-  filter(hhtyp %in% c("A1F", "A1M", "TOTAL"))
-```
-
 
 #### Adding some entities
 
 ##### Add European average (accross countries)
 ```{r}
+#| message: false
 EU27_GDP <- GDP |>
   group_by(TIME_PERIOD) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(`Zone de référence` = "Moyenne européenne") |>
+  mutate(`Zone de référence` = "EU Average",
+         REF_AREA = "EU27") |>
   relocate(`Zone de référence`)
 GDP <- bind_rows(GDP, EU27_GDP)
-```
 
-```{r}
 EU27_Tax <- Envt_Tax_Revenues |>
-  group_by(TIME_PERIOD, CATEGORY,
-            `Catégorie de recettes provenant des taxes liées à l'environnement`) |>
+  group_by(TIME_PERIOD, 
+           `Catégorie de recettes provenant des taxes liées à l'environnement`) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(`Fréquence d'observation...8` = "Moyenne européenne") |>
+  mutate(`Fréquence d'observation...8` = "EU Average", 
+         REF_AREA = "EU27") |>
   relocate(`Fréquence d'observation...8`)
 Envt_Tax_Revenues <- bind_rows(Envt_Tax_Revenues, EU27_Tax)
-```
 
-```{r}
 EU27_Warming <- Warm_Households |>
   group_by(TIME_PERIOD, hhtyp, incgrp) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(geo = "Moyenne européenne") |>
+  mutate(geo = "EU27") |>
   relocate(geo)
 Warm_Households <- bind_rows(Warm_Households, EU27_Warming)
+
+EU27_GII <- GII |>
+  group_by(TIME_PERIOD) |>
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
+  mutate(country = "EU Average",
+         iso3 = "EU27") |>
+  relocate(country)
+GII <- bind_rows(GII, EU27_GII)
+
+EU27_Coefineq <- coef_ineq |>
+  group_by(TIME_PERIOD) |>
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
+  mutate(country = "EU Average",
+         iso3 = "EU27") |>
+  relocate(country)
+coef_ineq <- bind_rows(coef_ineq, EU27_Coefineq)
 ```
-add HDR eu average
+
 
 ##### Add country average (accross sectors)
 ```{r}
+#| message: false
 EU27_AV <- Added_value |>
   group_by(TIME_PERIOD, `Activité économique`) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(`Zone de référence` = "Moyenne européenne") |>
+  mutate(`Zone de référence` = "EU average", 
+         REF_AREA = "EU27") |>
+  relocate(`Zone de référence`)
+Added_value <- bind_rows(Added_value, EU27_AV)
+
+EU27_GHG <- GHG_Emissions |>
+  group_by(TIME_PERIOD, `Activité économique`) |>
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
+  mutate(`Zone de référence` = "EU average", 
+         REF_AREA = "EU27") |>
   relocate(`Zone de référence`)
 Added_value <- bind_rows(Added_value, EU27_AV)
 ```
 
+#### Modifiying the characteristics of the variables
+```{r}
+GHG_Emissions$src_crf <- factor(GHG_Emissions$src_crf)
+Added_value$`Activité économique` <- factor(Added_value$`Activité économique`)
+```
 
 #### Renaming some variables
 ```{r}
@@ -160,9 +239,45 @@ names(Warm_Households)[names(Warm_Households) == "OBS_VALUE"] <- "Warm_Household
 
 
 # Descriptive analyzes
+```{r}
+
+# 1. Environmental tax revenues
+ggplot(EU27_Tax, aes(x = TIME_PERIOD, y = OBS_VALUE, color = CATEGORY, group = CATEGORY)) +
+  geom_line(size = 1) +
+  labs(
+    title = "EU27 Environmental Tax Revenues by Category",
+    x = "Year",
+    y = "Revenue (million USD)",
+    color = "Category"
+  ) +
+  theme_minimal()
+```
+
+
+```{r}
+# 2. GDP per country
+p <- ggplot(GDP, aes(x = TIME_PERIOD, y = OBS_VALUE, color = REF_AREA, group = REF_AREA)) +
+  geom_line(size = 1) +
+  labs(
+    title = "GDP per Country (EU27)",
+    x = "Year",
+    y = "GDP (million USD)",
+    color = "Country"
+  ) +
+  theme_minimal()
+
+ggplotly(p)
+```
+
+
+
+
+
+
 
 # Correlations & regressions
 
 # Forecasting
+
 
 
