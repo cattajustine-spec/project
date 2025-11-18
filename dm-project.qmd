@@ -9,7 +9,6 @@ format: html
 
 ## Description of our research question
 
-
 Our research question is the following: “To what extent do environmental taxes reduce Greenhouse Gas Emissions (GHG) in EU countries, and what are their long-term socioeconomic impacts across economic sectors?”. As the European Union commits to achieving net-zero emissions by 2050 under the European Green Deal, we aim to better understand the effectiveness and consequences of environmental taxation, both on emissions and socially.
 
 To answer this question, we will use sector-level panel data for all EU member states. Our data set includes GHG emissions, sectoral GDP (measured as Added Value), environmental tax revenues, and several indicators of social well-being. These include the Gender Inequality Index (GII), a coefficient of human inequalities, and a measure of energy poverty that is the inability to adequately heat one’s home. Together, these variables allow us to evaluate the distributive consequences of taxes.
@@ -26,20 +25,6 @@ By combining environmental effectiveness, economic feasibility, and social impac
 ## link to the github project;
 
 Our project is available on github [here](https://github.com/cattajustine-spec/project).
-
-#### Justification for the Sector Mapping Between ISIC and CRF Classifications
-
-The reconciliation of sectors across the ISIC-based dataset and the CRF (Common Reporting Format) classification relies on aligning economic activities with their dominant emission sources. Although the two systems are not structurally identical—ISIC being an economic activity classification and CRF being an emissions reporting framework—several robust correspondences can be established.
-
-First, Agriculture, forestry and fishing (ISIC A) is mapped to CRF 3 (Agriculture). Both refer to primary-sector biological production and include emissions directly linked to agricultural practices such as enteric fermentation, manure management, and agricultural soils.
-
-Second, Manufacturing (ISIC C) is associated with CRF 1.A.2 (Manufacturing industries and construction) and CRF 2 (Industrial processes and product use). Manufacturing activity generates emissions both from fuel combustion in industrial facilities (covered by 1.A.2) and from process-related sources such as cement, chemicals, or metals production (covered by CRF 2), making this linkage consistent with the structure of industrial emissions.
-
-Third, Electricity, gas, steam and air conditioning supply (ISIC D)—even though aggregated within “Industry (except construction)” in the first dataset—logically corresponds to CRF 1.A.1 (Public electricity and heat production). This CRF category captures emissions from power generation and heat production, which are the core activities of ISIC D.
-
-Finally, Transportation and storage (ISIC H)—included in a broader aggregated category in the dataset—is aligned with CRF 1.A.3 (Transport). This CRF category encompasses fuel combustion from road, rail, aviation, and navigation transport, which directly reflects the operational scope of ISIC H.
-
-Overall, the mapping follows a principle of dominant emission source equivalence, ensuring that each ISIC activity is linked to the CRF category representing the primary origin of its greenhouse gas emissions. This approach allows the two datasets—despite structural differences—to be compared and integrated in a coherent and meaningful way for our analysis.
 
 ### Setup
 
@@ -187,11 +172,8 @@ Warm_Households <- Warm_Households |>
 ```
 
 
-
-# Because the data sets we chose are quite huge, we first need to remove all the variables we will not use, then add missing variables that we think are important for our analysis, and finally modify the variables we kept.
-
-
 #### Removing unwanted variables
+Because the data sets we chose are quite huge, we first need to remove all the variables we will not use, then add missing variables that we think are important for our analysis, and finally modify the variables we kept.
 
 ##### 1. Environmental tax revenues (in million of USD)
 
@@ -328,7 +310,7 @@ They are described per year as different variables (meaning we have a gii_2020, 
 ```{r}
 Soc_Indexes <- Soc_Indexes |>
   pivot_longer(
-    cols = -c(iso3, country, hdicode, region),
+    cols = matches("_[0-9]{4}$"),   
     names_to = c("Indicator", "TIME_PERIOD"),
     names_pattern = "^(.*)_(\\d{4})$",
     values_to = "OBS_VALUE"
@@ -337,6 +319,7 @@ Soc_Indexes <- Soc_Indexes |>
     OBS_VALUE = as.numeric(OBS_VALUE),
     TIME_PERIOD = as.integer(TIME_PERIOD)
   )
+
 ```
 
 ###### Gender Inequalities Index {#genderinequalitiesindex}
@@ -402,17 +385,13 @@ Warm_Households <- bind_rows(Warm_Households, EU27_Warming)
 EU27_GII <- GII |>  #computing the average European gender inequalities index. 
   group_by(TIME_PERIOD) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(country = "EU Average",
-         iso3 = "EU27") |>
-  relocate(country)
+  mutate(iso3 = "EU27")
 GII <- bind_rows(GII, EU27_GII)
 
 EU27_Coefineq <- coef_ineq |> #computing the average European coefficient of human inequalities. 
   group_by(TIME_PERIOD) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(country = "EU Average",
-         iso3 = "EU27") |>
-  relocate(country)
+  mutate(iso3 = "EU27") 
 coef_ineq <- bind_rows(coef_ineq, EU27_Coefineq)
 ```
 
