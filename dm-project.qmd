@@ -585,6 +585,55 @@ ggplot(EU27_Warming,
 
 COMMENT
 
+# Merging all data sets on country-year pairs
+We do this big join to have in only one data set all these informations :
+ - TaxRevenue (environmental tax revenues)
+ - GII_value (gender inequality)
+ - coef_ineq_value (income inequality index)
+ - WarmValue (share unable to heat home)
+ - hhtyp, incgrp (household type, income group)
+ - src_crf (GHG emission sector)
+ - GHG_Emissions_value
+ - GDP_value
+ - sector, AV_value (added value by economic sector)
+
+```{r}
+Envt_Tax_Revenues <- Envt_Tax_Revenues |>
+  rename(iso3 = REF_AREA, tax_categorie = `Catégorie de recettes provenant des taxes liées à l'environnement`) 
+
+GDP <- GDP |> rename(iso3 = REF_AREA) 
+
+Added_value <- Added_value |>
+  rename(iso3 = REF_AREA,
+    AV_sector = `Activité économique`) 
+
+GHG_Emissions <- GHG_Emissions |> rename(name_en = geo)
+
+Warm_Households <- Warm_Households |> rename(iso2 = geo)
+```
+
+
+```{r}
+GHG_Emissions <- GHG_Emissions |>
+  left_join(eu_country_key |> select(name_en, iso3), by = "name_en")
+
+Warm_Households <- Warm_Households |>
+  left_join(eu_country_key |> select(iso2, iso3), by = "iso2")
+
+```
+
+```{r}
+all_merged <- Envt_Tax_Revenues |>
+  left_join(GDP, by = c("iso3", "TIME_PERIOD")) |>
+  left_join(Added_value, by = c("iso3", "TIME_PERIOD")) |>
+  left_join(GHG_Emissions, by = c("iso3", "TIME_PERIOD")) |>
+  left_join(Warm_Households, by = c("iso3", "TIME_PERIOD")) |>
+  left_join(GII, by = c("iso3", "TIME_PERIOD")) |>
+  left_join(coef_ineq, by = c("iso3", "TIME_PERIOD"))
+
+```
+
+
 # Correlations & regressions
 
 ## Between taxes and GHG
@@ -710,50 +759,6 @@ summary(model_ineq_tax)
 model_gii_tax <- lm(GII_value ~ TaxRevenue + hhtyp + incgrp, data = tax_ineq_control)
 summary(model_gii_tax)
 
-```
-
-## big merge
-
-```{r}
-big_merge <- tax_ineq_control
-
-emitting_sectors <- c("Agriculture", "Manufacturing", "Transport", "Public electricity and heat production")
-GHG_Emissions_merge <- GHG_Emissions %>%
-  filter(src_crf %in% emitting_sectors) %>%
-  select(iso3, TIME_PERIOD, src_crf, GHG_Emissions_value)
-
-# Merge GHG emissions by sector
-big_merge <- big_merge %>%
-  left_join(GHG_Emissions_merge, by = c("iso3", "TIME_PERIOD"))
-
-# Add GDP per country
-GDP_merge <- GDP %>%
-  select(REF_AREA, TIME_PERIOD, GDP_value) %>%
-  rename(iso3 = REF_AREA)
-
-big_merge <- big_merge %>%
-  left_join(GDP_merge, by = c("iso3", "TIME_PERIOD"))
-
-# Add Added Value by sector
-Added_value_merge <- Added_value %>%
-  select(REF_AREA, `Activité économique`, TIME_PERIOD, AV_value) %>%
-  rename(iso3 = REF_AREA, sector = `Activité économique`)
-
-big_merge <- big_merge %>%
-  left_join(Added_value_merge, by = c("iso3", "TIME_PERIOD"))
-
-# Clean factors / numeric columns
-big_merge <- big_merge %>%
-  mutate(
-    hhtyp = as.factor(hhtyp),
-    incgrp = as.factor(incgrp),
-    TaxRevenue = as.numeric(TaxRevenue),
-    GII_value = as.numeric(GII_value),
-    coef_ineq_value = as.numeric(coef_ineq_value),
-    WarmValue = as.numeric(WarmValue),
-    GDP_value = as.numeric(GDP_value),
-    AV_value = as.numeric(AV_value),
-    GHG_Emissions_value = as.numeric(GHG_Emissions_value))
 ```
 
 
