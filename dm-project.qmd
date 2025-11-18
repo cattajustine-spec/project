@@ -22,7 +22,7 @@ SOMMAIRE \# Introduction
 
 ### Setup
 
-```{r}
+```{r, echo=FALSE}
 library(vroom)
 library(ggplot2)
 library(knitr)
@@ -31,15 +31,16 @@ library(here)
 library(countrycode)
 library(plotly)
 library(tidyr)
+library(knitr)
 ```
 
-```{r}
+```{r, echo=FALSE}
 here::i_am("project.Rproj")
 ```
 
 ### Data loading
 
-```{r}
+```{r, echo=FALSE}
 #| message: false
 Envt_Tax_Revenues <- vroom(here("data", "OECD_envt_tax.csv"))
 GDP_and_AV <- vroom(here("data", "OECD_GDP_and_AV.csv"))
@@ -52,7 +53,7 @@ Soc_Indexes <- vroom(here("data", "HDR_indexes.csv"))
 
 List of countries : Austria, Belgium, Bulgaria, Croatia, Cyprus, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden
 
-```{r}
+```{r, echo=FALSE}
 eu_countries <- unique(GHG_Emissions$geo)
 
 eu_country_key <- data.frame(name_en = eu_countries) |>
@@ -83,7 +84,7 @@ In this data set, we are only interested in the following variables:
     -   "Assiette relatives aux taxes sur les resources", i.e., resource-related taxes.
     -   “Toute assiette de taxes”, i.e., all environmental tax bases combined.
 
-```{r}
+```{r, echo=FALSE}
 Envt_Tax_Revenues <- Envt_Tax_Revenues |>
   select(REF_AREA, TIME_PERIOD, OBS_VALUE, 
          `Catégorie de recettes provenant des taxes liées à l'environnement`) |>
@@ -104,7 +105,7 @@ In this data set, we are only interested in the following variables:
 -   **TIME_PERIOD**: Indicates the reference year of observation (from 1990 to 2024).
 -   **OBS_VALUE**: Contains the numerical value of the GDP.
 
-```{r}
+```{r, echo=FALSE}
 GDP <- GDP_and_AV |>
   filter(Transaction == "Produit intérieur brut", 
          REF_AREA %in% eu_country_key$iso3) |>
@@ -124,7 +125,7 @@ In this data set, we are only interested in the following variables:
     -   "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration", i.e., transport.\
 -   **OBS_VALUE**: Contains the numerical value of the gross added value.
 
-```{r}
+```{r, echo=FALSE}
 Added_value <- GDP_and_AV |>
   filter(Transaction == "Valeur ajoutée, brute", 
          REF_AREA %in% eu_country_key$iso3, 
@@ -151,7 +152,7 @@ In this data set, we are only interested in the following variables:
     -   "Fuel combustion in transport", i.e., transport.
 -   **OBS_VALUE**: Contains the numerical value of the greenhouse gases emitted.
 
-```{r}
+```{r, echo=FALSE}
 GHG_Emissions <- GHG_Emissions |>
   select(airpol, src_crf, geo, TIME_PERIOD, OBS_VALUE) |>
   filter(geo %in% eu_country_key$name_en, 
@@ -187,7 +188,7 @@ In this data set, we are only interested in the following variables:
     -   "TOTAL", i.e., all households (whatever their revenue).
 -   **OBS_VALUE**: Contains the percentage of household that are not able to keep their home adequately warm.
 
-```{r}
+```{r, echo=FALSE}
 Warm_Households <- Warm_Households |>
   select(geo, TIME_PERIOD, hhtyp, incgrp, OBS_VALUE) |>
   filter(geo %in% eu_country_key$iso2, 
@@ -196,11 +197,11 @@ Warm_Households <- Warm_Households |>
 
 ##### 5. HDR index
 
-In this data set, we have two main variables of interest: the [Gender Inequality Index](#genderinequalitiesindex) and the [Coefficient of Human Inequality](#coefficientofhumaninequalities).
+In this data set, we have two main variables of interest: the [Gender Inequality Index](#genderinequalityindex) and the [Coefficient of Human Inequality](#coefficientofhumaninequality).
 
 They are described per year as different variables (meaning we have a gii_2020, gii_2021, ..., coef_ineq_2003, coef_ineq_2004, etc.). Therefore, we need to pivot our database, and then create two independent data sets, one for each variable of interest.
 
-```{r}
+```{r, echo=FALSE}
 Soc_Indexes <- Soc_Indexes |>
   pivot_longer(
     cols = -c(iso3, country, hdicode, region),
@@ -214,7 +215,7 @@ Soc_Indexes <- Soc_Indexes |>
   )
 ```
 
-###### Gender Inequalities Index {#genderinequalitiesindex}
+###### Gender inequality Index {#genderinequalityindex}
 
 In this data set, we are only interested in the following variables:
 
@@ -222,22 +223,22 @@ In this data set, we are only interested in the following variables:
 -   **TIME_PERIOD**: Indicates the reference year of observation (from 1990 to 2023).
 -   **OBS_VALUE**: Contains the numerical value of the GII.
 
-```{r}
+```{r, echo=FALSE}
 GII <- Soc_Indexes|>
   filter(iso3 %in% eu_country_key$iso3,
          Indicator == "gii") |>
   select(iso3, TIME_PERIOD, OBS_VALUE)
 ```
 
-###### Coefficient of Human Inequalities {#coefficientofhumaninequalities}
+###### Coefficient of Human inequality {#coefficientofhumaninequality}
 
 In this data set, we are only interested in the following variables:
 
 -   **iso3**: Identifies the country or reporting area using an ISO-style three-letter code (e.g., LVA for Latvia, LTU for Lithuania). This variable is the geographic dimension of the data set.
 -   **TIME_PERIOD**: Indicates the reference year of observation (from 2010 to 2023).
--   **OBS_VALUE**: Contains the numerical value of the coefficient of human inequalities.
+-   **OBS_VALUE**: Contains the numerical value of the coefficient of human inequality.
 
-```{r}
+```{r, echo=FALSE}
 coef_ineq <- Soc_Indexes|>
   filter(iso3 %in% eu_country_key$iso3,
          Indicator == "coef_ineq")|>
@@ -252,7 +253,7 @@ To have a more complete analysis, we would like to have data for the whole Europ
 
 For the data sets that are not described per economic sector, we just have to compute the European average across countries:
 
-```{r}
+```{r, echo=FALSE}
 #| message: false
 EU27_GDP <- GDP |>                #computing the average European GDP 
   group_by(TIME_PERIOD) |>
@@ -276,20 +277,18 @@ EU27_Warming <- Warm_Households |>  #computing the average European inability to
   relocate(geo)
 Warm_Households <- bind_rows(Warm_Households, EU27_Warming)
 
-EU27_GII <- GII |>  #computing the average European gender inequalities index. 
+EU27_GII <- GII |>  #computing the average European gender inequality index. 
   group_by(TIME_PERIOD) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(country = "EU Average",
-         iso3 = "EU27") |>
-  relocate(country)
+  mutate(iso3 = "EU27") |>
+  relocate(iso3)
 GII <- bind_rows(GII, EU27_GII)
 
-EU27_Coefineq <- coef_ineq |> #computing the average European coefficient of human inequalities. 
+EU27_Coefineq <- coef_ineq |> #computing the average European coefficient of human inequality. 
   group_by(TIME_PERIOD) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(country = "EU Average",
-         iso3 = "EU27") |>
-  relocate(country)
+  mutate(iso3 = "EU27") |>
+  relocate(iso3)
 coef_ineq <- bind_rows(coef_ineq, EU27_Coefineq)
 ```
 
@@ -297,7 +296,7 @@ coef_ineq <- bind_rows(coef_ineq, EU27_Coefineq)
 
 For the data sets that are described per economic sector, we have to compute the European average across sectors:
 
-```{r}
+```{r, echo=FALSE}
 #| message: false
 EU27_AV <- Added_value |> #computing the average European gross added value, depending on the economic sector.  
   group_by(TIME_PERIOD, `Activité économique`) |>
@@ -322,7 +321,7 @@ To simplify our analysis, we have to make some modifications on some variables.
 
 For the variables related to the economic sectors, it will be easier to consider them as *factor*, rather than as *character* variables.
 
-```{r}
+```{r, echo=FALSE}
 GHG_Emissions$src_crf <- factor(GHG_Emissions$src_crf)
 Added_value$`Activité économique` <- factor(Added_value$`Activité économique`)
 ```
@@ -331,7 +330,7 @@ Added_value$`Activité économique` <- factor(Added_value$`Activité économique
 
 To be able to merge our data sets in a data base, we need to modify the name of the variable **OBS_VALUE** that is in every data set to be able to identify which OBS_VALUE is associated to which data set.
 
-```{r}
+```{r, echo=FALSE}
 names(Warm_Households)[names(Warm_Households) == "OBS_VALUE"] <- "Warm_Households_value"
 names(Envt_Tax_Revenues)[names(Envt_Tax_Revenues) == "OBS_VALUE"] <- "Envt_Tax_Revenues_value"
 names(GDP)[names(GDP) == "OBS_VALUE"] <- "GDP_value"
@@ -343,7 +342,7 @@ names(coef_ineq)[names(coef_ineq) == "OBS_VALUE"] <- "coef_ineq_value"
 
 To be able to merge the data sets including variables related to the economic sectors, it will be easier to have the same sector names, in english.
 
-```{r}
+```{r, echo=FALSE}
 Added_value <- Added_value |>
   mutate(`Activité économique` = recode(`Activité économique`,
                                         "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration" = "Transport", 
@@ -385,7 +384,7 @@ EU27_GHG <- EU27_GHG|>
     )
   ) |>
   group_by(geo, TIME_PERIOD, src_crf) |>
-  summarise(EU27_GHG = sum(OBS_VALUE), .groups = "drop")
+  summarise(EU27_GHG_value = sum(OBS_VALUE), .groups = "drop")
 
 EU27_GHG <- EU27_GHG |>
   mutate(src_crf = recode(src_crf, 
@@ -395,13 +394,17 @@ EU27_GHG <- EU27_GHG |>
 
 # Descriptive analyzes
 
-### 1. Environmental tax revenues
+Now that we have cleaned our data sets, here are some descriptive analyzes of our main target variables:
 
-```{r}
+## 1. Environmental tax revenues per tax category
+
+### Graphical representation
+
+```{r, echo=FALSE}
 ggplot(EU27_Tax, aes(x = TIME_PERIOD, y = OBS_VALUE, color = `Catégorie de recettes provenant des taxes liées à l'environnement`, group = `Catégorie de recettes provenant des taxes liées à l'environnement`)) +
-  geom_line(size = 1) +
+  geom_line(linewidth = 1) +
   labs(
-    title = "EU27 Environmental Tax Revenues by Category",
+    title = "EU average Environmental Tax Revenues by Category",
     x = "Year",
     y = "Revenue (million USD)",
     color = "Category"
@@ -409,13 +412,31 @@ ggplot(EU27_Tax, aes(x = TIME_PERIOD, y = OBS_VALUE, color = `Catégorie de rece
   theme_minimal()
 ```
 
+### Descriptive statistics
+
+```{r, echo=FALSE}
+summary_stats_EnvtTax <- EU27_Tax %>%
+  group_by(`Catégorie de recettes provenant des taxes liées à l'environnement`) %>%
+  summarise(
+    Min = min(OBS_VALUE, na.rm = TRUE),
+    Max = max(OBS_VALUE, na.rm = TRUE),
+    Mean = mean(OBS_VALUE, na.rm = TRUE),
+    Median = median(OBS_VALUE, na.rm = TRUE),
+    SD = sd(OBS_VALUE, na.rm = TRUE)
+  )
+
+kable(summary_stats_EnvtTax, caption = "Descriptive statistics of EU average Environmental Tax Revenues by Category (all years combined)")
+```
+
 COMMENT
 
-### 2. GDP per country
+## 2. GDP per country
 
-```{r}
+### Graphical representation
+
+```{r, echo=FALSE}
 p <- ggplot(GDP, aes(x = TIME_PERIOD, y = GDP_value, color = REF_AREA, group = REF_AREA)) +
-  geom_line(size = 1) +
+  geom_line(linewidth = 1) +
   labs(
     title = "GDP per Country (EU27)",
     x = "Year",
@@ -429,11 +450,29 @@ ggplotly(p)
 
 COMMENT
 
-### 3. Added Value
+### Descriptive statistics
 
-```{r}
+```{r, echo=FALSE}
+summary_stats_GDP <- GDP %>%
+  group_by(REF_AREA) %>%                        
+  summarise(
+    Min = min(GDP_value, na.rm = TRUE),
+    Max = max(GDP_value, na.rm = TRUE),
+    Mean = mean(GDP_value, na.rm = TRUE),
+    Median = median(GDP_value, na.rm = TRUE),
+    SD = sd(GDP_value, na.rm = TRUE)
+    )
+
+kable(summary_stats_GDP, 
+      caption = "Descriptive statistics of the GDP by country (all years combined)")
+```
+
+## 3. Added Value per economic sector
+
+### Graphical representation
+```{r, echo=FALSE}
 p_va <- ggplot(EU27_AV, aes(x = TIME_PERIOD, y = OBS_VALUE, color = `Activité économique`, group = `Activité économique`)) +
-  geom_line(size = 1) +
+  geom_line(linewidth = 1) +
   labs(
     title = "EU27 Average Added Value per Sector",
     x = "Year",
@@ -447,15 +486,66 @@ ggplotly(p_va)
 
 COMMENT
 
-### 4. Households
+### Descriptive statistics
 
-```{r}
+```{r, echo=FALSE}
+summary_stats_AV <- EU27_AV %>%
+  group_by(`Activité économique`) %>%
+  summarise(
+    Min = min(OBS_VALUE, na.rm = TRUE),
+    Max = max(OBS_VALUE, na.rm = TRUE),
+    Mean = mean(OBS_VALUE, na.rm = TRUE),
+    Median = median(OBS_VALUE, na.rm = TRUE),
+    SD = sd(OBS_VALUE, na.rm = TRUE)
+  )
 
+kable(summary_stats_AV, caption = "Descriptive statistics of EU average gross added value by sector (all years combined)")
+```
+
+## 4. Greenhouse gas emissions by economic sector
+
+### Graphical representation
+
+```{r, echo=FALSE}
+p_va <- ggplot(EU27_GHG, aes(x = TIME_PERIOD, y = EU27_GHG_value, color = src_crf, group = src_crf)) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "EU27 Average Greenhouse gas emissions per Sector",
+    x = "Year",
+    y = "Greenhouse gas emissions (million ton of CO2)",
+    color = "Sector"
+  ) +
+  theme_minimal()
+
+ggplotly(p_va)
+```
+
+### Descriptive statistics
+
+```{r, echo=FALSE}
+summary_stats_GHG <- EU27_GHG %>%
+  group_by(src_crf) %>%                
+  summarise(
+    Min = min(EU27_GHG_value, na.rm = TRUE),
+    Max = max(EU27_GHG_value, na.rm = TRUE),
+    Mean = mean(EU27_GHG_value, na.rm = TRUE),
+    Median = median(EU27_GHG_value, na.rm = TRUE),
+    SD = sd(EU27_GHG_value, na.rm = TRUE)
+  )
+
+kable(summary_stats_GHG, caption = "Descriptive statistics of EU average greenhouse gases emissions by sector (all years combined)")
+```
+
+## 5. Inability to keep home adequately warm by household type
+
+### Graphical representation
+
+```{r, echo=FALSE}
 ggplot(EU27_Warming, 
        aes(x = TIME_PERIOD, y = OBS_VALUE,
            color = interaction(hhtyp, incgrp),
            group = interaction(hhtyp, incgrp))) +
-  geom_line(size = 1) +
+  geom_line(linewidth = 1) +
   labs(
     title = "EU27 – inability to Keep the House Warm (by Sex × Income Group)",
     x = "Year",
@@ -467,16 +557,103 @@ ggplot(EU27_Warming,
 
 COMMENT
 
+### Descriptive statistics
+
+```{r, echo=FALSE}
+summary_stats_Warm <- EU27_Warming %>%
+  group_by(hhtyp, incgrp) %>%                    
+  summarise(
+    Min = min(OBS_VALUE, na.rm = TRUE),
+    Max = max(OBS_VALUE, na.rm = TRUE),
+    Mean = mean(OBS_VALUE, na.rm = TRUE),
+    Median = median(OBS_VALUE, na.rm = TRUE),
+    SD = sd(OBS_VALUE, na.rm = TRUE), 
+    .groups = "drop"
+  )
+
+kable(summary_stats_Warm, caption = "Descriptive statistics of the inability to keep house adequately warm, by household type (all years combined)")
+```
+
+## 6. GII per country
+
+### Graphical representation
+
+```{r, echo=FALSE}
+p <- ggplot(GII, aes(x = TIME_PERIOD, y = GII_value, color = iso3, group = iso3)) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "GII per Country (EU27)",
+    x = "Year",
+    y = "Gender inequality index",
+    color = "Country"
+  ) +
+  theme_minimal()
+
+ggplotly(p)
+```
+
+### Descriptive statistics
+
+```{r, echo=FALSE}
+summary_stats_GII <- GII %>%
+  group_by(iso3) %>%                        
+  summarise(
+    Min = min(GII_value, na.rm = TRUE),
+    Max = max(GII_value, na.rm = TRUE),
+    Mean = mean(GII_value, na.rm = TRUE),
+    Median = median(GII_value, na.rm = TRUE),
+    SD = sd(GII_value, na.rm = TRUE)
+    )
+
+kable(summary_stats_GII, 
+      caption = "Descriptive statistics of the GII by country (all years combined)")
+```
+
+## 7. Coefficient of human inequality per country
+
+### Graphical representation
+
+```{r, echo=FALSE}
+p <- ggplot(coef_ineq, aes(x = TIME_PERIOD, y = coef_ineq_value, color = iso3, group = iso3)) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "Coefficient of human inequality per Country (EU27)",
+    x = "Year",
+    y = "Coefficient of human inequality",
+    color = "Country"
+  ) +
+  theme_minimal()
+
+ggplotly(p)
+```
+
+### Descriptive statistics
+
+```{r, echo=FALSE}
+summary_stats_coefineq <- coef_ineq %>%
+  group_by(iso3) %>%                        
+  summarise(
+    Min = min(coef_ineq_value, na.rm = TRUE),
+    Max = max(coef_ineq_value, na.rm = TRUE),
+    Mean = mean(coef_ineq_value, na.rm = TRUE),
+    Median = median(coef_ineq_value, na.rm = TRUE),
+    SD = sd(coef_ineq_value, na.rm = TRUE)
+    )
+
+kable(summary_stats_coefineq, 
+      caption = "Descriptive statistics of the coefficient of human inequality by country (all years combined)")
+```
+
 # Correlations & regressions
 
 ## Between taxes and GHG
 
-```{r}
+```{r, echo=FALSE}
 GHG_Emissions <- GHG_Emissions |> 
   left_join(eu_country_key, by = c("geo" = "name_en"))
 ```
 
-```{r}
+```{r, echo=FALSE}
 # keeping sectors
 emitting_sectors <- c(
   "Agriculture",
@@ -502,7 +679,7 @@ tax_ghg <- Envt_Tax_Revenues |>
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 tax_ghg$src_crf <- as.factor(tax_ghg$src_crf)
 
 # GDP as control
@@ -513,7 +690,7 @@ tax_ghg_control <- tax_ghg %>%
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 model <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value + GDP_value + src_crf + TIME_PERIOD,
             data = tax_ghg_control)
 
@@ -540,14 +717,14 @@ Overall, the results suggest that GDP and sectoral composition are the dominant 
 
 ## Between taxes and inequalities
 
-```{r}
+```{r, echo=FALSE}
 Warm_Households_clean <- Warm_Households %>%
   left_join(eu_country_key %>% select(iso2, iso3),
             by = c("geo" = "iso2")) %>%
   rename(WarmValue = Warm_Households_value) %>%
   select(iso3, TIME_PERIOD, hhtyp, incgrp, WarmValue)
 
-GII_clean <- GII %>%
+GII_clean <- GII %>%  # KUA ? quel est l'intérêt ? 
   select(iso3, TIME_PERIOD, GII_value)
 
 coef_ineq_clean <- coef_ineq %>%
@@ -578,7 +755,7 @@ short comments (be more precise) 1. Heating difficulties Higher environmental ta
 
 3.  Effect on gender inequality (GII) Higher environmental taxes slightly reduce gender inequality (coefficient = -1.115×10⁻⁶, p \< 0.001). The model explains only 4% of GII variation (R² = 0.042), indicating a statistically clear but economically minor effect.
 
-```{r}
+```{r, echo=FALSE}
 # taxes on inability to warm house
 model_ineq <- lm(WarmValue ~ TaxRevenue + GII_value + coef_ineq_value + hhtyp + incgrp,
                  data = tax_ineq_control)
@@ -596,7 +773,7 @@ summary(model_gii_tax)
 
 ## big merge
 
-```{r}
+```{r, echo=FALSE}
 big_merge <- tax_ineq_control
 
 emitting_sectors <- c("Agriculture", "Manufacturing", "Transport", "Public electricity and heat production")
@@ -644,7 +821,7 @@ big_merge <- big_merge %>%
 
 ### impact of tax
 
-```{r}
+```{r, echo=FALSE}
 # Forecasting GHG with tax
 model_ghg_tax <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value, data = tax_ghg)
 future <- data.frame(Envt_Tax_Revenues_value = seq(min(tax_ghg$Envt_Tax_Revenues_value, na.rm = TRUE),
@@ -654,7 +831,7 @@ predicted_GHG <- predict(model_ghg_tax, newdata = future)
 predicted_GHG
 ```
 
-```{r}
+```{r, echo=FALSE}
 # Forecasting impact of tax on GII
 model_gii_tax <- lm(GII_value ~ TaxRevenue, data = tax_ineq_control)
 predicted_GII <- predict(model_gii_tax, newdata = data.frame(TaxRevenue = seq(
@@ -664,7 +841,7 @@ predicted_GII <- predict(model_gii_tax, newdata = data.frame(TaxRevenue = seq(
 predicted_GII
 ```
 
-```{r}
+```{r, echo=FALSE}
 # Forecasting impact of tax on WarmValue
 model_warm_tax <- lm(WarmValue ~ TaxRevenue, data = tax_ineq_control)
 predicted_Warm <- predict(model_warm_tax, newdata = data.frame(TaxRevenue = seq(
