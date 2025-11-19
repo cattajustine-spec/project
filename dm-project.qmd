@@ -800,57 +800,17 @@ kable(summary_stats_coefineq,
       caption = "Descriptive statistics of the coefficient of human inequality by country (all years combined)")
 ```
 
+# linear regressions
+
 ## Between taxes and GHG
 
 ```{r, echo=FALSE}
-GHG_Emissions <- GHG_Emissions |> 
-  left_join(eu_country_key, by = c("geo" = "name_en"))
-```
-
-```{r, echo=FALSE}
-# keeping sectors
-emitting_sectors <- c(
-  "Agriculture",
-  "Manufacturing",
-  "Transport",
-  "Public electricity and heat production"
-)
-
-
-# filter GHG_Emissions
-GHG_Emissions_filtered <- GHG_Emissions |>
-  filter(src_crf %in% emitting_sectors)
-
-# join with taxes
-tax_ghg <- Envt_Tax_Revenues |>
-  left_join(
-    GHG_Emissions_filtered,
-    by = c("REF_AREA" = "iso3", "TIME_PERIOD" = "TIME_PERIOD")
-  ) |>
-  filter(!is.na(GHG_Emissions_value)) |>
-  select(REF_AREA, TIME_PERIOD, `Catégorie de recettes provenant des taxes liées à l'environnement`, Envt_Tax_Revenues_value, src_crf, GHG_Emissions_value)
-
-
-```
-
-```{r, echo=FALSE}
-tax_ghg$src_crf <- as.factor(tax_ghg$src_crf)
-
-# GDP as control
-tax_ghg_control <- tax_ghg %>%
-  left_join(GDP %>% select(REF_AREA, TIME_PERIOD, GDP_value),
-    by = c("REF_AREA", "TIME_PERIOD")
-  )
-
-```
-
-```{r, echo=FALSE}
-model <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value + GDP_value + src_crf + TIME_PERIOD,
-            data = tax_ghg_control)
+model <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value + GDP_value + sector + TIME_PERIOD,
+            data = all_merged)
 
 summary(model)
 ```
-
+REDO THE COMMENT :
 We estimated a linear regression to examine the relationship between environmental taxes and greenhouse gas emissions, while controlling for GDP, emission sector, and year. The model includes 16,700 observations after excluding 500 rows with missing data. It explains approximately 62% of the variation in emissions (R-squared = 0.624), which is higher than in the previous version.
 
 The coefficient on environmental tax revenues is –0.024, which is not statistically significant (p = 0.363). This indicates that, after accounting for GDP, sectoral structure, and time, there is no detectable correlation between environmental tax revenues and GHG emissions in this data set.
@@ -872,58 +832,30 @@ Overall, the results suggest that GDP and sectoral composition are the dominant 
 ## Between taxes and inequalities
 
 ```{r, echo=FALSE}
-Warm_Households_clean <- Warm_Households %>%
-  left_join(eu_country_key %>% select(iso2, iso3),
-            by = c("geo" = "iso2")) %>%
-  rename(WarmValue = Warm_Households_value) %>%
-  select(iso3, TIME_PERIOD, hhtyp, incgrp, WarmValue)
+# taxes on inability to warm house
+model_ineq <- lm(Warm_Households_value ~ Envt_Tax_Revenues_value + GII_value + coef_ineq_value + hhtyp + incgrp,
+                 data = all_merged)
 
-GII_clean <- GII %>%  # KUA ? quel est l'intérêt ? 
-  select(iso3, TIME_PERIOD, GII_value)
+summary(model_ineq)
 
-coef_ineq_clean <- coef_ineq %>%
-  select(iso3, TIME_PERIOD, coef_ineq_value)
+# taxes on inequalities
+model_ineq_tax <- lm(coef_ineq_value ~ Envt_Tax_Revenues_value + hhtyp + incgrp, data = all_merged)
+summary(model_ineq_tax)
 
-tax_clean <- Envt_Tax_Revenues %>%
-  select(REF_AREA, TIME_PERIOD, Envt_Tax_Revenues_value) %>%
-  rename(iso3 = REF_AREA,
-         TaxRevenue = Envt_Tax_Revenues_value)
+model_gii_tax <- lm(GII_value ~ Envt_Tax_Revenues_value + hhtyp + incgrp, data = all_merged)
+summary(model_gii_tax)
 
-# merge
-tax_ineq_control <- tax_clean %>%
-  left_join(GII_clean, by = c("iso3", "TIME_PERIOD")) %>%
-  left_join(coef_ineq_clean, by = c("iso3", "TIME_PERIOD")) %>%
-  left_join(Warm_Households_clean, by = c("iso3", "TIME_PERIOD")) %>%
-  mutate(
-    hhtyp = as.factor(hhtyp),
-    incgrp = as.factor(incgrp),
-    TaxRevenue = as.numeric(TaxRevenue),
-    GII_value = as.numeric(GII_value),
-    coef_ineq_value = as.numeric(coef_ineq_value),
-    WarmValue = as.numeric(WarmValue))
 ```
 
-short comments (be more precise) 1. Heating difficulties Higher environmental taxes slightly reduce households’ inability to heat their homes (coefficient = -5.97×10⁻⁵, p \< 0.001). Gender inequality (GII) and overall inequality (coef_ineq) are the main drivers, with coefficients 71.2 and 3.02, respectively (both p \< 0.001). Household type and income group also matter. Model explains 59% of variation (adj. R² = 0.590).
+
+short comments (redo)
+
+1. Heating difficulties Higher environmental taxes slightly reduce households’ inability to heat their homes (coefficient = -5.97×10⁻⁵, p \< 0.001). Gender inequality (GII) and overall inequality (coef_ineq) are the main drivers, with coefficients 71.2 and 3.02, respectively (both p \< 0.001). Household type and income group also matter. Model explains 59% of variation (adj. R² = 0.590).
 
 2.  Effect on income inequality Higher environmental taxes are associated with a tiny increase in income inequality (coefficient = 1.705×10⁻⁵, p \< 0.001). The model explains less than 1% of inequality variation (R² = 0.0095), so the economic effect is very small despite statistical significance.
 
 3.  Effect on gender inequality (GII) Higher environmental taxes slightly reduce gender inequality (coefficient = -1.115×10⁻⁶, p \< 0.001). The model explains only 4% of GII variation (R² = 0.042), indicating a statistically clear but economically minor effect.
 
-```{r, echo=FALSE}
-# taxes on inability to warm house
-model_ineq <- lm(WarmValue ~ TaxRevenue + GII_value + coef_ineq_value + hhtyp + incgrp,
-                 data = tax_ineq_control)
-
-summary(model_ineq)
-
-# taxes on inequalities
-model_ineq_tax <- lm(coef_ineq_value ~ TaxRevenue + hhtyp + incgrp, data = tax_ineq_control)
-summary(model_ineq_tax)
-
-model_gii_tax <- lm(GII_value ~ TaxRevenue + hhtyp + incgrp, data = tax_ineq_control)
-summary(model_gii_tax)
-
-```
 
 
 -\> je dois revoir la suite pour utiliser le big merge si nécessaire -\> across : pour avoir impact de taxe / emission sur pays + quel niveau de taxe par pays !!!
@@ -933,7 +865,6 @@ conclu =\> social cost associated to tax ? == faire une politique en tenant comp
 
 # Forecasting
 
-### impact of tax
 
 ```{r, echo=FALSE}
 # Forecasting GHG with tax
