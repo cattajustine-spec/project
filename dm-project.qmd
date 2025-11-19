@@ -874,7 +874,7 @@ The coefficient of human inequality varies widely across Europe. Spain records t
 
 The EU27 average sits at ≈ 8.64, but the dispersion across countries is notable. Several Southern and Eastern European countries—such as Portugal (≈ 12.75), Italy (≈ 12.08), and Bulgaria (≈ 11.84)—exhibit consistently high levels of human inequality. In contrast, Nordic and Central European countries such as Denmark (≈ 5.77) and Finland (≈ 5.73) maintain some of the lowest inequality levels across the data set.
 
-# linear regressions
+# Linear Regressions
 MAYBE ADD CORRELATION GRAPHS !!
 
 ## Between taxes and GHG
@@ -886,7 +886,9 @@ model <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value + GDP_value + sector +
 
 summary(model)
 ```
+
 ##### Comment :
+
 We estimated a linear regression to examine the relationship between environmental tax revenues and greenhouse gas emissions, while controlling for GDP, emission sector, and year. The model explains about 65% of the variation in emissions (R-squared = 0.6542).
 
 The coefficient on environmental tax revenues is –0.043, and it is highly statistically significant (p < 0.001). This suggests that, holding GDP, sector, and time constant, higher environmental tax revenues are associated with slightly lower greenhouse gas emissions. However, the magnitude of the effect remains very small, implying a limited practical impact.
@@ -906,7 +908,25 @@ Overall, the results suggest that GDP and sectoral composition remain the domina
 ### Between taxes (n) and GHG (n+k, given k € [1; 15] to have enough data)
 
 ### Between tax category and GHG
--> which type of tax is the more efficient on GHG emissions ? 
+
+```{r}
+all_merged$tax_category <- as.factor(all_merged$tax_category)
+
+model_taxcat <- lm(GHG_Emissions_value ~ tax_category + GDP_value + sector + TIME_PERIOD,
+                   data = all_merged)
+
+summary(model_taxcat)
+```
+
+##### Comment :
+
+We estimated a linear regression to examine the relationship between different types of environmental taxes and greenhouse gas emissions, while controlling for GDP, sector, and year. The model explains about 65.8% of the variation in emissions (R-squared = 0.658), slightly higher than the previous model that considered total tax revenues.
+
+The coefficients on all tax categories—energy, pollution, resource, and transport taxes—are effectively zero and not statistically significant (p = 1 for all categories). This indicates that, after accounting for GDP, sector, and time, there is no detectable relationship between any specific type of tax and GHG emissions in this data set.
+
+Other coefficient are roughly the same as before.
+
+Answering the question, based on this regression, no specific type of environmental tax appears to be more efficient at reducing GHG emissions, as none of the tax category coefficients are statistically significant. This suggests that, at the observed levels and in this dataset, other factors—especially GDP, sectoral composition, and time trends—dominate emission outcomes.
 
 ## Between taxes and social inequalities
 ### All taxes
