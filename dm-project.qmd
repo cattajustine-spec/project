@@ -704,7 +704,7 @@ kable(summary_stats_AV, caption = "Descriptive statistics of EU average gross ad
 
 ##### Comment :
 
-Looking at the EU27 average gross value added by sector, three major sectors dominate and remain close in magnitude: manufacturing, transport, and the energy-related industry (public electricity and heat production). Each of these sectors shows mean added values between 80 and 96 billion USD, making them central pillars of the European economy.
+Looking at the EU27 average gross value added by sector, three major sectors dominate and remain close in magnitude: manufacturing, transport, and industry (with energy related industries such as public electricity and heat production). Each of these sectors shows mean added values between 80 and 96 billion USD, making them central pillars of the European economy.
 
 Agriculture, by contrast, contributes much less, with an average value added of only ≈ 9.5 billion USD, which is expected given its smaller role in modern European economies. The manufacturing sector alone ranges from 46 to 142 billion USD, highlighting both its scale and its variability over time.
 
@@ -718,7 +718,7 @@ p_GHG <- ggplot(EU27_GHG, aes(x = TIME_PERIOD, y = GHG_Emissions_value, color = 
   labs(
     title = "EU27 Average Greenhouse gas emissions per Sector",
     x = "Year",
-    y = "Greenhouse gas emissions (million ton of CO2)",
+    y = "Greenhouse gas emissions (thousands of ton of CO2)",
     color = "Sector"
   ) +
   theme_minimal()
@@ -741,6 +741,13 @@ summary_stats_GHG <- EU27_GHG %>%
 
 kable(summary_stats_GHG, caption = "Descriptive statistics of EU average greenhouse gases emissions by sector (all years combined)")
 ```
+##### Comment :
+
+The EU27 average data show greenhouse gas emissions across four sectors: agriculture, manufacturing, energy industries, and transport. All sectors display a downward trend except transport, which starts rising again after 2010. With the exception of agriculture, all sectors experienced a marked drop in 2020 due to the COVID-19 shock, followed by a partial rebound.
+
+Industrial emissions, particularly from the energy sector, have declined sharply over the long run (from values reaching above 53,000 kt CO₂-eq to much lower levels). Manufacturing emissions also decreased, though at a more moderate pace, with a mean of ≈ 33,400 kt.
+
+Since around 2009–2012, transport emissions have surpassed those of manufacturing, and by 2023 they also exceeded energy industries emissions. Transport has become the single largest emitting sector, consistent with its relatively high mean value (≈ 29,200 kt CO₂-eq), compared with ≈ 45,000 kt for electricity and heat production (energy) and ≈ 14,900 kt for agriculture.
 
 ## 5. Inability to keep home adequately warm by household type
 
@@ -761,9 +768,6 @@ ggplot(EU27_Warming,
   theme_minimal()
 ```
 
-COMMENT
-
-
 ### Descriptive statistics
 
 ```{r, echo=FALSE}
@@ -780,6 +784,14 @@ summary_stats_Warm <- EU27_Warming %>%
 
 kable(summary_stats_Warm, caption = "Descriptive statistics of the inability to keep house adequately warm, by household type (all years combined)")
 ```
+
+##### Comment :
+
+For the EU27 average, six curves represent different subgroups defined by sex and income. The values correspond to the percentage of each subgroup unable to keep their home adequately warm. All groups follow roughly the same pattern: a sharp increase between 2003 and 2005, a gradual decline afterward, and two significant shocks: a drop in 2008–2009 and a spike in 2022–2023, which can be linked to rising energy prices following the Russia–EU energy crisis.
+
+Among all subgroups, the total-population categories show the lowest percentages, remaining below 10% since 2015. Conversely, households with incomes below 60% of the national median (below the poverty threshold) consistently show the highest rates, around 20% on average.
+
+Women in low-income single households consistently report slightly higher percentages than men. For instance, low-income women (A1F, B_MD60) have an average inability rate of ≈ 21.1%, compared with ≈ 23.1% for low-income men (A1M, B_MD60), while total-population rates remain much lower at ≈ 10–15% across categories.
 
 ## 6. GII per country
 
@@ -815,6 +827,11 @@ summary_stats_GII <- GII %>%
 kable(summary_stats_GII, 
       caption = "Descriptive statistics of the GII by country (all years combined)")
 ```
+##### Comment :
+
+The Gender Inequality Index (GII) shows a clear downward trend across all European countries between 1990 and 2024. At the beginning of the period, Romania exhibited by far the highest level of inequality, followed by Cyprus and Estonia, while the EU27 average stood around 0.25. In contrast, the lowest GII levels were found in Sweden, Denmark, Finland, and the Netherlands, a pattern that still holds in 2024.
+
+By 2024, the countries with the highest GII values are Cyprus, Romania, and Hungary, while the EU27 average has fallen to approximately 0.08, reflecting substantial progress over time. This aligns with the descriptive statistics: Romania has the highest mean GII (≈ 0.36), while Sweden and Denmark are among the lowest, with mean values of ≈ 0.05 and ≈ 0.054, respectively.
 
 ## 7. Coefficient of human inequality per country
 
@@ -851,6 +868,12 @@ kable(summary_stats_coefineq,
       caption = "Descriptive statistics of the coefficient of human inequality by country (all years combined)")
 ```
 
+##### Comment :
+
+The coefficient of human inequality varies widely across Europe. Spain records the highest values overall, with a mean of ≈ 13.48, while Slovenia and the Czech Republic stand out as the countries with the lowest inequality, both with mean values slightly above 5.
+
+The EU27 average sits at ≈ 8.64, but the dispersion across countries is notable. Several Southern and Eastern European countries—such as Portugal (≈ 12.75), Italy (≈ 12.08), and Bulgaria (≈ 11.84)—exhibit consistently high levels of human inequality. In contrast, Nordic and Central European countries such as Denmark (≈ 5.77) and Finland (≈ 5.73) maintain some of the lowest inequality levels across the data set.
+
 # linear regressions
 MAYBE ADD CORRELATION GRAPHS !!
 
@@ -863,24 +886,22 @@ model <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value + GDP_value + sector +
 
 summary(model)
 ```
-REDO THE COMMENT :
-We estimated a linear regression to examine the relationship between environmental taxes and greenhouse gas emissions, while controlling for GDP, emission sector, and year. The model includes 16,700 observations after excluding 500 rows with missing data. It explains approximately 62% of the variation in emissions (R-squared = 0.624), which is higher than in the previous version.
+##### Comment :
+We estimated a linear regression to examine the relationship between environmental tax revenues and greenhouse gas emissions, while controlling for GDP, emission sector, and year. The model explains about 65% of the variation in emissions (R-squared = 0.6542).
 
-The coefficient on environmental tax revenues is –0.024, which is not statistically significant (p = 0.363). This indicates that, after accounting for GDP, sectoral structure, and time, there is no detectable correlation between environmental tax revenues and GHG emissions in this data set.
+The coefficient on environmental tax revenues is –0.043, and it is highly statistically significant (p < 0.001). This suggests that, holding GDP, sector, and time constant, higher environmental tax revenues are associated with slightly lower greenhouse gas emissions. However, the magnitude of the effect remains very small, implying a limited practical impact.
 
-GDP has a positive and highly significant effect on emissions, with a coefficient of 0.048 (p \< 0.001). This means that countries with higher GDP tend to have higher emissions, consistent with scale effects: larger economies produce more output and therefore more emissions.
+GDP has a positive and very large significant effect on emissions, with a coefficient of 0.043 (p < 0.001). This indicates that countries with higher economic output tend to emit more, consistent with scale effects: larger economies produce more goods and services, and thus more emissions.
 
 Sectoral effects are strong and highly significant. Relative to the baseline category (Agriculture), estimated additional emissions are:
+- Manufacturing: +16,440 units
+- Energy industry: +27,370 units
+- Transport: +16,150 units
+These substantial differences reflect the much higher emission intensities of industrial, energy, and transport activities compared with agriculture.
 
--   Manufacturing: +18,040 units
--   Public electricity and heat production: +29,820 units
--   Transport: +15,340 units
+The coefficient on the time variable is –913, highly significant (p < 0.001), indicating a robust downward trend in emissions over time. This is consistent with what we saw before in the descriptive data.
 
-These large differences reflect the inherent emission intensities of these sectors.
-
-The coefficient on the year variable is –1,034, highly significant (p \< 0.001), indicating a strong downward trend in emissions over time, likely due to EU climate policies, efficiency improvements, and structural economic changes.
-
-Overall, the results suggest that GDP and sectoral composition are the dominant drivers of emissions, while environmental taxes, in the form measured here, show no statistically significant association with emission levels. The negative time trend indicates that emissions have declined over the studied period independently of environmental tax revenues.
+Overall, the results suggest that GDP and sectoral composition remain the dominant drivers of emissions. Environmental tax revenues show a statistically significant negative association with emissions, but the magnitude of the effect is small. The pronounced negative time trend indicates that greenhouse gas emissions have declined over the period independently of the direct influence of environmental tax revenues.
 
 ### Between taxes (n) and GHG (n+k, given k € [1; 15] to have enough data)
 
