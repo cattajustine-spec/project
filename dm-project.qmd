@@ -865,33 +865,38 @@ conclu =\> social cost associated to tax ? == faire une politique en tenant comp
 
 # Forecasting
 
+### impact of tax on ghg
 
 ```{r, echo=FALSE}
-# Forecasting GHG with tax
-model_ghg_tax <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value, data = tax_ghg)
-future <- data.frame(Envt_Tax_Revenues_value = seq(min(tax_ghg$Envt_Tax_Revenues_value, na.rm = TRUE),
-                                      max(tax_ghg$Envt_Tax_Revenues_value, na.rm = TRUE),
+
+model_ghg_tax <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value, data = all_merged)
+future <- data.frame(Envt_Tax_Revenues_value = seq(min(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
+                                      max(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
                                       length.out = 25))
 predicted_GHG <- predict(model_ghg_tax, newdata = future)
 predicted_GHG
 ```
 
+### Forecasting impact of tax on GII
+
 ```{r, echo=FALSE}
-# Forecasting impact of tax on GII
-model_gii_tax <- lm(GII_value ~ TaxRevenue, data = tax_ineq_control)
-predicted_GII <- predict(model_gii_tax, newdata = data.frame(TaxRevenue = seq(
-  min(tax_ineq_control$TaxRevenue, na.rm = TRUE),
-  max(tax_ineq_control$TaxRevenue, na.rm = TRUE),
+
+model_gii_tax <- lm(GII_value ~ Envt_Tax_Revenues_value, data = all_merged)
+predicted_GII <- predict(model_gii_tax, newdata = data.frame(Envt_Tax_Revenues_value = seq(
+  min(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
+  max(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
   length.out = 25)))
 predicted_GII
 ```
 
+
+### Forecasting impact of tax on Households incapable of warming their home
 ```{r, echo=FALSE}
-# Forecasting impact of tax on WarmValue
-model_warm_tax <- lm(WarmValue ~ TaxRevenue, data = tax_ineq_control)
-predicted_Warm <- predict(model_warm_tax, newdata = data.frame(TaxRevenue = seq(
-  min(tax_ineq_control$TaxRevenue, na.rm = TRUE),
-  max(tax_ineq_control$TaxRevenue, na.rm = TRUE),
+
+model_warm_tax <- lm(Warm_Households_value ~ Envt_Tax_Revenues_value, data = all_merged)
+predicted_Warm <- predict(model_warm_tax, newdata = data.frame(Envt_Tax_Revenues_value = seq(
+  min(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
+  max(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
   length.out = 25)))
 predicted_Warm
 ```
