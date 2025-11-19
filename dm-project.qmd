@@ -907,6 +907,24 @@ Overall, the results suggest that GDP and sectoral composition remain the domina
 
 ### Between taxes (n) and GHG (n+k, given k € [1; 15] to have enough data)
 
+```{r}
+
+# Create leads 1 to 15
+for (k in 1:15) {
+  GHG_Emissions[[paste0("GHG_Emissions_value.lead", k)]] <- ave(
+    GHG_Emissions$GHG_Emissions_value, 
+    GHG_Emissions$name_en, GHG_Emissions$sector,
+    FUN = function(x) c(x[(1+k):length(x)], rep(NA, k))
+  )
+}
+
+```
+
+
+```{r}
+```
+
+
 ### Between tax category and GHG
 
 ```{r}
