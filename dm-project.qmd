@@ -617,7 +617,13 @@ summary_stats_EnvtTax <- EU27_Tax %>%
 kable(summary_stats_EnvtTax, caption = "Descriptive statistics of EU average Environmental Tax Revenues by Category (all years combined)")
 ```
 
-COMMENT
+##### Comment :
+
+The graph shows that, on average across Europe, environmental tax revenues have increased substantially between 1990 and 2023. They initially declined until the early 2000s, falling below 7.5 billion USD, before rising sharply and then stabilizing between 13 and 15 billion USD from the mid-2000s to the early 2020s.
+
+We can also see that the vast majority of these revenues come from energy-related taxes, which may reflect the importance of energy both in emissions and in the European economy. This is consistent with the descriptive statistics, where energy taxes have by far the highest mean value (≈ 8.69 billion USD, compared with only ≈ 0.53 billion USD for pollution taxes).
+
+By contrast, revenues from transport taxes and pollution taxes represent only a small share of the total. Transport tax revenues have increased the most visibly, especially between 2000 and 2005, rising from roughly 1.5 to 2.5 billion USD.
 
 ## 2. GDP per country
 
@@ -637,8 +643,6 @@ p_GDP <- ggplot(GDP, aes(x = TIME_PERIOD, y = GDP_value, color = iso3, group = i
 ggplotly(p_GDP)
 ```
 
-COMMENT
-
 ### Descriptive statistics
 
 ```{r, echo=FALSE}
@@ -655,6 +659,15 @@ summary_stats_GDP <- GDP %>%
 kable(summary_stats_GDP, 
       caption = "Descriptive statistics of the GDP by country (all years combined)")
 ```
+
+##### Comment :
+
+It is quite clear that GDP levels across European countries are generally rising over time. Four major economies lead by a large margin: Germany, France, Italy, and Spain. All of them experienced a noticeable boom around 2002, which may be linked to the consolidation following the introduction of the euro in 1999.
+
+Germany is by far the largest economy, with an average GDP of ≈ 3.1 trillion USD, followed by France (≈ 2.19 trillion USD) and Italy (≈ 1.75 trillion USD). Spain remains lower but still significant, with a mean of ≈ 1.08 trillion USD.
+
+Most other countries remain much smaller, except the Netherlands, which stands out with a mean GDP of ≈ 706 billion USD. Overall, the EU27 average GDP reaches roughly 780 billion USD in 2024, reflecting large disparities across the Union.
+
 
 ## 3. Added Value per economic sector
 
@@ -673,8 +686,6 @@ p_va <- ggplot(EU27_AV, aes(x = TIME_PERIOD, y = AV_value, color = sector, group
 ggplotly(p_va)
 ```
 
-COMMENT
-
 ### Descriptive statistics
 
 ```{r, echo=FALSE}
@@ -690,6 +701,12 @@ summary_stats_AV <- EU27_AV %>%
 
 kable(summary_stats_AV, caption = "Descriptive statistics of EU average gross added value by sector (all years combined)")
 ```
+
+##### Comment :
+
+Looking at the EU27 average gross value added by sector, three major sectors dominate and remain close in magnitude: manufacturing, transport, and the energy-related industry (public electricity and heat production). Each of these sectors shows mean added values between 80 and 96 billion USD, making them central pillars of the European economy.
+
+Agriculture, by contrast, contributes much less, with an average value added of only ≈ 9.5 billion USD, which is expected given its smaller role in modern European economies. The manufacturing sector alone ranges from 46 to 142 billion USD, highlighting both its scale and its variability over time.
 
 ## 4. Greenhouse gas emissions by economic sector
 
