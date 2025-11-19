@@ -491,6 +491,7 @@ EU27_GHG <- EU27_GHG |>
                           "Fuel combustion in energy industries"="Public electricity and heat production", 
                           "Fuel combustion in transport"="Transport"))
 ```
+
 ```{r}
 Envt_Tax_Revenues <- Envt_Tax_Revenues |>
   rename(iso3 = REF_AREA, tax_categorie = `Catégorie de recettes provenant des taxes liées à l'environnement`) 
@@ -531,9 +532,6 @@ Warm_Households <- Warm_Households |>
 
 ```
 
-```{r}
-
-```
 
 ```{r}
 all_merged <- Envt_Tax_Revenues |>
@@ -802,6 +800,54 @@ kable(summary_stats_coefineq,
       caption = "Descriptive statistics of the coefficient of human inequality by country (all years combined)")
 ```
 
+# Merging all data sets on country-year pairs
+We do this big join to have in only one data set all these informations:
+
+ - TaxRevenue (environmental tax revenues)
+ - GII_value (gender inequality)
+ - coef_ineq_value (income inequality index)
+ - WarmValue (share unable to heat home)
+ - hhtyp, incgrp (household type, income group)
+ - src_crf (GHG emission sector)
+ - GHG_Emissions_value
+ - GDP_value
+ - sector, AV_value (added value by economic sector)
+
+```{r}
+Envt_Tax_Revenues <- Envt_Tax_Revenues |>
+  rename(iso3 = REF_AREA, tax_categorie = `Catégorie de recettes provenant des taxes liées à l'environnement`) 
+
+GDP <- GDP |> rename(iso3 = REF_AREA) 
+
+Added_value <- Added_value |>
+  rename(iso3 = REF_AREA,
+    AV_sector = `Activité économique`) 
+
+GHG_Emissions <- GHG_Emissions |> rename(name_en = geo)
+
+Warm_Households <- Warm_Households |> rename(iso2 = geo)
+```
+
+
+```{r}
+GHG_Emissions <- GHG_Emissions |>
+  left_join(eu_country_key |> select(name_en, iso3), by = "name_en")
+
+Warm_Households <- Warm_Households |>
+  left_join(eu_country_key |> select(iso2, iso3), by = "iso2")
+
+```
+
+```{r}
+all_merged <- Envt_Tax_Revenues |>
+  left_join(GDP, by = c("iso3", "TIME_PERIOD")) |>
+  left_join(Added_value, by = c("iso3", "TIME_PERIOD")) |>
+  left_join(GHG_Emissions, by = c("iso3", "TIME_PERIOD")) |>
+  left_join(Warm_Households, by = c("iso3", "TIME_PERIOD")) |>
+  left_join(GII, by = c("iso3", "TIME_PERIOD")) |>
+  left_join(coef_ineq, by = c("iso3", "TIME_PERIOD"))
+
+```
 
 # Correlations & regressions
 
