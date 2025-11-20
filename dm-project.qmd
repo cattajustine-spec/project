@@ -422,6 +422,17 @@ Added_value$`Activité économique` <- factor(Added_value$`Activité économique
 EU27_AV$`Activité économique` <- factor(EU27_AV$`Activité économique`)
 ```
 
+Same reasoning for the household types in the Warm_Households data set, and for the tax categories in the Envt_Tax_Revenues data set. 
+
+```{r}
+Warm_Households$hhtyp <- factor(Warm_Households$hhtyp)
+EU27_Warming$hhtyp <- factor(EU27_Warming$hhtyp)
+Warm_Households$incgrp <- factor(Warm_Households$incgrp)
+EU27_Warming$incgrp <- factor(EU27_Warming$incgrp)
+Envt_Tax_Revenues$`Catégorie de recettes provenant des taxes liées à l'environnement` <- factor(Envt_Tax_Revenues$`Catégorie de recettes provenant des taxes liées à l'environnement`)
+EU27_Tax$`Catégorie de recettes provenant des taxes liées à l'environnement` <- factor(EU27_Tax$`Catégorie de recettes provenant des taxes liées à l'environnement`)
+```
+
 ##### Renaming some variables {#renamingsomevariables}
 
 To be able to merge our data sets in a data base, we need to modify the name of the variable **OBS_VALUE** that is in every data set to be able to identify which OBS_VALUE is associated to which data set.
@@ -471,7 +482,7 @@ Added_value <- Added_value |>
   mutate(`Activité économique` = recode(`Activité économique`,
                                         "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration" = "Transport", 
                                         "Agriculture, sylviculture et pêche"= "Agriculture", 
-                                        "Industrie (sauf construction)" = "Public electricity and heat production", 
+                                        "Industrie (sauf construction)" = "Industry (including energy)",
                                         "Activités de fabrication" = "Manufacturing"
                                         ))
 
@@ -479,7 +490,7 @@ EU27_AV <- EU27_AV |>
   mutate(`Activité économique` = recode(`Activité économique`,
                                         "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration" = "Transport", 
                                         "Agriculture, sylviculture et pêche"= "Agriculture", 
-                                        "Industrie (sauf construction)" = "Public electricity and heat production", 
+                                        "Industrie (sauf construction)" = "Industry (including energy)",
                                         "Activités de fabrication" = "Manufacturing"
                                         ))
 
@@ -495,7 +506,7 @@ GHG_Emissions <- GHG_Emissions|>  #here we are combining the sectors related to 
   summarise(GHG_Emissions_value = sum(GHG_Emissions_value), .groups = "drop")
 GHG_Emissions <- GHG_Emissions |>
   mutate(src_crf = recode(src_crf, 
-                          "Fuel combustion in energy industries"="Public electricity and heat production", 
+                          "Fuel combustion in energy industries"="Industry (including energy)", 
                           "Fuel combustion in transport"="Transport"))
 
 EU27_GHG <- EU27_GHG|>
@@ -510,7 +521,7 @@ EU27_GHG <- EU27_GHG|>
   summarise(GHG_Emissions_value = sum(GHG_Emissions_value), .groups = "drop")
 EU27_GHG <- EU27_GHG |>
   mutate(src_crf = recode(src_crf, 
-                          "Fuel combustion in energy industries"="Public electricity and heat production", 
+                          "Fuel combustion in energy industries"="Industry (including energy)", 
                           "Fuel combustion in transport"="Transport"))
 ```
 
@@ -775,6 +786,7 @@ p_GII <- ggplot(GII, aes(x = TIME_PERIOD, y = GII_value, color = iso3, group = i
     y = "Gender inequality index",
     color = "Country"
   ) +
+  scale_y_continuous(limits = c(0, 1)) +   
   theme_minimal()
 
 ggplotly(p_GII)
@@ -909,6 +921,19 @@ conclu =\> social cost associated to tax ? == faire une politique en tenant comp
 
 ### Between taxes and GDP
 #### All taxes
+```{r}
+# Filtrer les taxes de la catégorie "all tax"
+all_tax_data <- all_merged %>%
+  filter(tax_category == "Any tax base")
+
+# Régression linéaire simple : GDP ~ taxes environnementales
+model_gdp_tax <- lm(GDP_value ~ Envt_Tax_Revenues_value, data = all_tax_data)
+
+# Résumé du modèle
+summary(model_gdp_tax)
+```
+
+
 #### Per tax category
 
 ### Between taxes and added value
@@ -997,7 +1022,6 @@ predicted_GII
 #### on Households inability to adequatly warm their home
 ->check for all taxes & per taxes (en regardant surtout la taxe la - grave / la + efficace pour les social inequalities, déterminée dans la section régressions linéaires) : quel impact ?  
 ```{r, echo=FALSE}
-
 model_warm_tax <- lm(Warm_Households_value ~ Envt_Tax_Revenues_value, data = all_merged)
 predicted_Warm <- predict(model_warm_tax, newdata = data.frame(Envt_Tax_Revenues_value = seq(
   min(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
@@ -1014,11 +1038,18 @@ predicted_Warm
  -->quel montant pour quel secteur (depending on the type of tax) ? 
  
 # Conclusion 
+
+## Comparaison
 Quel type de taxe est : 
  - le + efficace sur les GHG -> quel montant pour 0net d'ici 2050 ? 
  - le - grave sur les inégalités sociales -> quel impact d'une telle taxe (celle la + efficace du POV des GHG) sur les inégalités ? 
  - le - grave sur l'économie -> quel impact d'une telle taxe (celle la + efficace du POV des GHG) sur l'économie ? 
 
+### Tableau comparatif des taxes: 
+Create a table to compare the taxes: 
+![](Tax_comparison_table.png)
+
+## Ouverture
 Si une telle les 3 types de taxes ne sont pas compatibles / impact trop grand sur les inégalités et/ou sur l'économie / impact trop faible sur les GHG, quelles alternatives (en plus de la taxe / à la place de la taxe) ? 
  - subvention : à la recherche ? 
  - changement modes de consommation, institutions : sobriété éco ? décroissance
