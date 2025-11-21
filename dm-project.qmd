@@ -948,6 +948,12 @@ lapply(reg_results, summary)
 ```
 ##### Comment :
 
+We estimated a series of linear regressions to examine whether environmental tax revenues in year n have an effect on greenhouse gas emissions in subsequent years, from n+1 to n+5. Across the five models, the number of observations decreases gradually as the lead increases, because later lead variables contain more missing data. Despite this reduction in sample size, all models explain roughly 65% of the variation in emissions (R-squared between 0.650 and 0.654), which is highly consistent across specifications.
+
+In all five regressions, the coefficient on environmental tax revenues is negative, statistically significant, and relatively stable. It ranges from –0.052 in the n+1 specification to –0.061 in the n+2 and n+3 models, before decreasing slightly to –0.058 and –0.051 at horizons n+4 and n+5. These results suggest that higher environmental tax revenues are associated with slightly lower greenhouse gas emissions in subsequent years. However, although the relationship is statistically robust (p < 0.001 in all models), the magnitude of the effect remains small, indicating a limited practical impact of tax levels on future emissions.
+
+All other coefficients are close to the ones saw before (GDP around 0.043, Manufacturing: +15,200 to +16,100 units, Public electricity and heat production: +25,150 to +26,930 units, Transport: approximately +16,100 units, and time has coefficients between –902 and –959, all highly significant)
+
 ### c. Between tax category and GHG emissions
 
 Here we try to evaluate the coefficient between an increase in tax in one specific area (environmentally related taxes are grouped by what sector they impact : transport, energy, resource or pollution) in the year n and the impact on Greenhouse gases emissions in the year n+k, most efficient lag.
