@@ -923,17 +923,29 @@ Now we try to evaluate the coefficient between an increase in taxes in the year 
 
 ```{r}
 
-# Create leads 1 to 15
-for (k in 1:15) {
+# Create leads 1 to 5
+for (k in 1:5) {
   GHG_Emissions[[paste0("GHG_Emissions_value.lead", k)]] <- ave(
     GHG_Emissions$GHG_Emissions_value, 
     GHG_Emissions$name_en, GHG_Emissions$sector,
-    FUN = function(x) c(x[(1+k):length(x)], rep(NA, k))
-  )
-}
+    FUN = function(x) c(x[(1+k):length(x)], rep(NA, k)))}
 
+# add them in all merged
+all_merged_plus_leads <- merge(all_merged, GHG_Emissions,
+  by = c("iso3", "TIME_PERIOD", "sector", "GHG_Emissions_value"),
+  all.x = TRUE)
+all_merged_plus_leads <- all_merged_plus_leads |>
+    select(iso3, TIME_PERIOD, tax_category, Envt_Tax_Revenues_value, GHG_Emissions_value, GHG_Emissions_value.lead1, GHG_Emissions_value.lead2, GHG_Emissions_value.lead3, GHG_Emissions_value.lead4, GHG_Emissions_value.lead5 )
 ```
 
+```{r}
+reg_results <- lapply(1:5, function(k) {formula_k <- as.formula(
+    paste0("GHG_Emissions_value.lead", k,
+           " ~ Envt_Tax_Revenues_value + GDP_value + sector + TIME_PERIOD"))
+  lm(formula_k, data = merged)})
+
+lapply(reg_results, summary)
+```
 ##### Comment :
 
 ### c. Between tax category and GHG emissions
