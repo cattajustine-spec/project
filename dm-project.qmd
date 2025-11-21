@@ -578,7 +578,7 @@ all_merged <- Envt_Tax_Revenues |>
   left_join(Warm_Households, by = c("iso3", "TIME_PERIOD")) |>
   left_join(GII, by = c("iso3", "TIME_PERIOD")) |>
   left_join(coef_ineq, by = c("iso3", "TIME_PERIOD")) |>
-  select(name_en, TIME_PERIOD, tax_category, Envt_Tax_Revenues_value, sector, AV_value, GDP_value, GHG_Emissions_value, hhtyp, incgrp, Warm_Households_value, GII_value, coef_ineq_value)
+  select(iso3, TIME_PERIOD, tax_category, sector, hhtyp, incgrp, Envt_Tax_Revenues_value, AV_value, GDP_value, GHG_Emissions_value, Warm_Households_value, GII_value, coef_ineq_value)
 ```
 
 # Descriptive analyzes
