@@ -23,7 +23,7 @@ Building on these empirical relationships, we will construct forecasts for the p
 By combining environmental effectiveness, economic feasibility, and social impact, we can then address our overarching question: Is it socially and economically optimal for the EU to rely exclusively on environmental taxation to achieve net-zero emissions by 2050? If taxation alone proves insufficient or too socially costly, our results may highlight the need for complementary policies such as subsidies for green technologies, targeted social transfers, or sector-specific regulations to ensure a fair and effective ecological transition.
 
 
-## Link to the github project;
+## Link to the github project
 
 Our project is available on github [here](https://github.com/cattajustine-spec/project).
 
@@ -147,13 +147,13 @@ Soc_Indexes <- vroom(here("data", "HDR_indexes.csv"))
 | Number of columns  | `r ncol(Soc_Indexes)`  |
 :::
 
-### Modifying the data sets
+# Modifying the data sets
 
 Because the data sets we chose are quite huge, we first need to remove all the variables we will not use, then add missing variables that we think are important for our analysis, and then modify the variables we kept.
 
 Finally, to simplify our analysis, we will merge all our data sets in one data base. 
 
-#### Country keys {#countrykeys}
+### Country keys {#countrykeys}
 
   Our analysis is on the 27 countries in the European Union, in the following list to be precise : Austria, Belgium, Bulgaria, Croatia, Cyprus, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden
 
@@ -168,7 +168,7 @@ eu_country_key <- data.frame(name_en = eu_countries) |>
   ) 
 ```
 
-#### Removing unwanted variables
+### Removing unwanted variables
 
 ##### 1. Environmental tax revenues (in million of USD)
 
@@ -345,9 +345,9 @@ coef_ineq <- Soc_Indexes|>
   select(iso3, TIME_PERIOD, OBS_VALUE)
 ```
 
-#### Adding some entities
+### Adding some entities
 
-##### Add European average (across countries)
+#### Add European average (across countries)
 For the data sets that are not described per economic sector, we compute the European average across countries:
 
 ```{r, echo=FALSE}
@@ -389,7 +389,7 @@ EU27_Coefineq <- coef_ineq |> #computing the average European coefficient of hum
 coef_ineq <- bind_rows(coef_ineq, EU27_Coefineq)
 ```
 
-##### Add country average (accross sectors)
+#### Add country average (accross sectors)
 
 For the data sets that are described per economic sector, we have to compute the European average across sectors:
 
@@ -410,7 +410,7 @@ EU27_GHG <- GHG_Emissions |> #computing the average European greenhouse gas emis
 GHG_Emissions <- bind_rows(GHG_Emissions, EU27_GHG)
 ```
 
-#### Modifiying the characteristics of the variables
+### Modifiying the characteristics of the variables
 
 For the variables related to the economic sectors, it will be easier to consider them as *factor*, rather than as *character* variables.
 
@@ -421,7 +421,7 @@ Added_value$`Activité économique` <- factor(Added_value$`Activité économique
 EU27_AV$`Activité économique` <- factor(EU27_AV$`Activité économique`)
 ```
 
-##### Renaming some variables {#renamingsomevariables}
+### Renaming some variables {#renamingsomevariables}
 
 To be able to merge our data sets in a data base, we need to modify the name of the variable **OBS_VALUE** that is in every data set to be able to identify which OBS_VALUE is associated to which data set.
 
@@ -542,7 +542,7 @@ EU27_Warming <- EU27_Warming |> rename(iso2 = geo)
 ```
 
 
-### Merging all data sets on country-year pairs
+# Merging all data sets on country-year pairs
 
 We do this big join to have in only one data set all these variables:
 
@@ -877,9 +877,14 @@ The EU27 average sits at ≈ 8.64, but the dispersion across countries is notabl
 # Linear Regressions
 MAYBE ADD CORRELATION GRAPHS !!
 
-## Between taxes and GHG
+## 1. Between taxes and Greenhouse Gases emissions
 
-### Between taxes (n) and GHG (n)
+We try to answer one of our fundamental question : "Do taxes reduce emissions ?"
+
+### a. Between taxes (n) and GHG (n)
+
+First we try to evaluate the coefficient between an increase in taxes in the year n and the impact on Greenhouse gases emissions in the same year n.
+
 ```{r, echo=FALSE}
 model <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value + GDP_value + sector + TIME_PERIOD,
             data = all_merged)
@@ -905,7 +910,9 @@ The coefficient on the time variable is –913, highly significant (p < 0.001), 
 
 Overall, the results suggest that GDP and sectoral composition remain the dominant drivers of emissions. Environmental tax revenues show a statistically significant negative association with emissions, but the magnitude of the effect is small. The pronounced negative time trend indicates that greenhouse gas emissions have declined over the period independently of the direct influence of environmental tax revenues.
 
-### Between taxes (n) and GHG (n+k, given k € [1; 15] to have enough data)
+### b. Between taxes (n) and GHG (n+k, given k € [1; 5] to have enough data)
+
+Now we try to evaluate the coefficient between an increase in taxes in the year n and the impact on Greenhouse gases emissions in the following years n+1, to n+5.
 
 ```{r}
 
@@ -920,12 +927,11 @@ for (k in 1:15) {
 
 ```
 
+##### Comment :
 
-```{r}
-```
+### c. Between tax category and GHG emissions
 
-
-### Between tax category and GHG
+Here we try to evaluate the coefficient between an increase in tax in one specific area (environmentally related taxes are grouped by what sector they impact : transport, energy, resource or pollution) in the year n and the impact on Greenhouse gases emissions in the year n+k, most efficient lag.
 
 ```{r}
 all_merged$tax_category <- as.factor(all_merged$tax_category)
@@ -946,8 +952,23 @@ Other coefficient are roughly the same as before.
 
 Answering the question, based on this regression, no specific type of environmental tax appears to be more efficient at reducing GHG emissions, as none of the tax category coefficients are statistically significant. This suggests that, at the observed levels and in this dataset, other factors—especially GDP, sectoral composition, and time trends—dominate emission outcomes.
 
-## Between taxes and social inequalities
-### All taxes
+### d. Between tax category and GHG sector
+
+Here we try to evaluate the coefficient between an increase in tax in one specific area (environmentally related taxes are grouped by what sector they impact : transport, energy, resource or pollution) in the year n and the impact on Greenhouse gases emissions in each sector, in the year n+k, most efficient lag.
+
+```{r}
+all_merged$tax_category <- as.factor(all_merged$tax_category)
+
+model_taxcat <- lm(GHG_Emissions_value ~ tax_category + GDP_value + sector + TIME_PERIOD,
+                   data = all_merged)
+
+summary(model_taxcat)
+```
+
+##### Comment :
+
+## 2. Between taxes and social inequalities
+### a. All taxes
 ```{r, echo=FALSE}
 # taxes on inability to warm house (economic inequalities)
 model_ineq <- lm(Warm_Households_value ~ Envt_Tax_Revenues_value + GII_value + coef_ineq_value + hhtyp + incgrp,
@@ -963,7 +984,7 @@ model_gii_tax <- lm(GII_value ~ Envt_Tax_Revenues_value + hhtyp + incgrp, data =
 summary(model_gii_tax)
 
 ```
-
+##### Comment :
 
 short comments (redo)
 
@@ -974,31 +995,45 @@ short comments (redo)
 3.  Effect on gender inequality (GII) Higher environmental taxes slightly reduce gender inequality (coefficient = -1.115×10⁻⁶, p \< 0.001)**KUA?il faut qu'on explique pk !**!. The model explains only 4% of GII variation (R² = 0.042), indicating a statistically clear but economically minor effect.
 
 
-
--\> je dois revoir la suite pour utiliser le big merge si nécessaire -\> across : pour avoir impact de taxe / emission sur pays + quel niveau de taxe par pays !!!
-
-conclu =\> social cost associated to tax ? == faire une politique en tenant compte
-
-### Per tax category
+### b. Per tax category
 ->which type of environmental tax has the best impact on social inequalities ? 
+##### Comment :
 
-## Between tax and economy
+## 3. Between tax and economy
 ->what is the impact of environmental taxes on the economy ? 
 
-### Between taxes and GDP
-#### All taxes
-#### Per tax category
+### 3.1. Between taxes and GDP
+#### a. All taxes
+```{r, echo=FALSE}
 
-### Between taxes and added value
+```
+
+##### Comment :
+
+#### b. Per tax category
+```{r, echo=FALSE}
+
+```
+
+##### Comment :
+
+### 3.2. Between taxes and added value
+```{r, echo=FALSE}
+
+```
+
+##### Comment :
 ->which economic sector is the most economically efficient & produces the less emissions (à favoriser, éventuellement subsidies -> info à garder pour la conclusion) 
 ->which is the less efficient & emits the most ? ->target the tax on this sector ! 
 ->what kind of tax for what eco sector is the + eco efficient ? 
 
 # Forecasting : if we continue as we do
-->impact of environmental taxes on: 
 
-### greenhouse gas emissions
-->check for all taxes & per taxes (vérifier si la taxe qui a le + d'impact, cf. section sur les régressions linéaires, emenne bien à un ghg le + bas en 2050)
+We use this forecast to try to predict the impact of environmental taxes on different variables.
+
+### 1. Greenhouse Gas emissions
+
+
 ```{r, echo=FALSE}
 model_ghg_tax <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value, data = all_merged)
 future <- data.frame(Envt_Tax_Revenues_value = seq(min(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
@@ -1007,10 +1042,23 @@ future <- data.frame(Envt_Tax_Revenues_value = seq(min(all_merged$Envt_Tax_Reven
 predicted_GHG <- predict(model_ghg_tax, newdata = future)
 predicted_GHG
 ```
+#### a. For all taxes 
+```{r, echo=FALSE}
 
-### social inequalities: 
-#### on the GII
-->check for all taxes & per taxes 
+```
+
+##### Comment :
+
+#### b. Per tax
+```{r, echo=FALSE}
+
+```
+
+##### Comment :
+
+### 2. social inequalities: 
+
+
 ```{r, echo=FALSE}
 
 model_gii_tax <- lm(GII_value ~ Envt_Tax_Revenues_value, data = all_merged)
@@ -1019,14 +1067,8 @@ predicted_GII <- predict(model_gii_tax, newdata = data.frame(Envt_Tax_Revenues_v
   max(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
   length.out = 25)))
 predicted_GII
-```
 
-#### on the coef_ineq
-->check for all taxes & per taxes 
-
-#### on Households inability to adequatly warm their home
-->check for all taxes & per taxes 
-```{r, echo=FALSE}
+## RAJOUTER COEF INEQ
 
 model_warm_tax <- lm(Warm_Households_value ~ Envt_Tax_Revenues_value, data = all_merged)
 predicted_Warm <- predict(model_warm_tax, newdata = data.frame(Envt_Tax_Revenues_value = seq(
@@ -1036,16 +1078,23 @@ predicted_Warm <- predict(model_warm_tax, newdata = data.frame(Envt_Tax_Revenues
 predicted_Warm
 ```
 
-### the economy : 
-#### on the GDP
-->check for all taxes & per taxes 
-#### on the AV
-->check for all taxes & per taxes  & check per eco sector
+##### Comment :
+
+
+
+### 3. The economy : forecast of the GDP
+```{r, echo=FALSE}
+
+```
+
+##### Comment :
 
 
 # Forecasting: if we plan to get to the 0 net emission by 2050
 
-### greenhouse gas emissions
+We propose a tax of ... to reach the 0 net emission by 2050. blabla comment on l'a trouvée...
+
+### 1. Levels greenhouse gas emissions reached with our proposed tax
 ->check for all taxes & per taxes (en regardant surtout la taxe la + efficace sur les GHG, déterminée dans la section régressions linéaires), quel montant ? 
 ```{r, echo=FALSE}
 model_ghg_tax <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value, data = all_merged)
@@ -1055,10 +1104,11 @@ future <- data.frame(Envt_Tax_Revenues_value = seq(min(all_merged$Envt_Tax_Reven
 predicted_GHG <- predict(model_ghg_tax, newdata = future)
 predicted_GHG
 ```
+##### Comment :
 
-### social inequalities: 
-#### on the GII
-->check for all taxes & per taxes (en regardant surtout la taxe la - grave / la + efficace pour les social inequalities, déterminée dans la section régressions linéaires) : quel impact ? 
+
+### 2. Social inequalities
+
 ```{r, echo=FALSE}
 
 model_gii_tax <- lm(GII_value ~ Envt_Tax_Revenues_value, data = all_merged)
@@ -1067,14 +1117,8 @@ predicted_GII <- predict(model_gii_tax, newdata = data.frame(Envt_Tax_Revenues_v
   max(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
   length.out = 25)))
 predicted_GII
-```
 
-#### on the coef_ineq
-->check for all taxes & per taxes (en regardant surtout la taxe la - grave / la + efficace pour les social inequalities, déterminée dans la section régressions linéaires) : quel impact ? 
-
-#### on Households inability to adequatly warm their home
-->check for all taxes & per taxes (en regardant surtout la taxe la - grave / la + efficace pour les social inequalities, déterminée dans la section régressions linéaires) : quel impact ?  
-```{r, echo=FALSE}
+## Rajouter coef ineq
 
 model_warm_tax <- lm(Warm_Households_value ~ Envt_Tax_Revenues_value, data = all_merged)
 predicted_Warm <- predict(model_warm_tax, newdata = data.frame(Envt_Tax_Revenues_value = seq(
@@ -1083,13 +1127,15 @@ predicted_Warm <- predict(model_warm_tax, newdata = data.frame(Envt_Tax_Revenues
   length.out = 25)))
 predicted_Warm
 ```
+##### Comment :
 
-### the economy : 
-#### on the GDP
-->check for all taxes & per taxes (en regardant surtut la taxe la meilleure / la moins terrible pour l'économie, déterminée dans la section régressions linéaires)
-#### on the AV
-->check for all taxes & per taxes  & check per eco sector
- -->quel montant pour quel secteur (depending on the type of tax) ? 
+
+### 3. Is the model viable ? Its impact on the GDP 
+```{r, echo=FALSE}
+
+```
+##### Comment :
+
  
 # Conclusion 
 Quel type de taxe est : 
