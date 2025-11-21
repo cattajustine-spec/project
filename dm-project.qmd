@@ -5,7 +5,14 @@ format: html
 ---
 
 # Summary 
-
+  Introduction
+  Modifying the data sets
+  Merging the data sets
+  Descriptive analyses
+  Linear Regressions
+  Forecastings : if we don't change anything / if we try to reach zero net emissions by 2050
+  Conclusion
+  
 # Introduction
 
 ## Description of our research question
