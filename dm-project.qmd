@@ -423,7 +423,7 @@ EU27_AV$`Activité économique` <- factor(EU27_AV$`Activité économique`)
 
 Same reasoning for the household types in the Warm_Households data set, and for the tax categories in the Envt_Tax_Revenues data set. 
 
-```{r}
+```{r, echo=FALSE}
 Warm_Households$hhtyp <- factor(Warm_Households$hhtyp)
 EU27_Warming$hhtyp <- factor(EU27_Warming$hhtyp)
 Warm_Households$incgrp <- factor(Warm_Households$incgrp)
@@ -455,7 +455,7 @@ names(EU27_Coefineq)[names(EU27_Coefineq) == "OBS_VALUE"] <- "coef_ineq_value"
 
 To be able to merge the data sets, it will be easier to have the tax categories in English.
 
-```{r}
+```{r, echo=FALSE}
 Envt_Tax_Revenues <- Envt_Tax_Revenues |>
   mutate(`Catégorie de recettes provenant des taxes liées à l'environnement` = recode(`Catégorie de recettes provenant des taxes liées à l'environnement`, 
                                                                                       "Assiette relatives aux taxes sur les resources" = "Tax base related to resource taxes", 
@@ -527,7 +527,7 @@ To be able to merge all the data sets, it will be easier to rename the country c
 
 We also rename the different sectors in the different data bases as "sector" to be able to merge more easily and have two values for the same sector : one for the Added Value and one for the Greenhouse gases emissions.
 
-```{r}
+```{r, echo=FALSE}
 Envt_Tax_Revenues <- Envt_Tax_Revenues |>
   rename(iso3 = REF_AREA, tax_category = `Catégorie de recettes provenant des taxes liées à l'environnement`)
 EU27_Tax <- EU27_Tax |>
@@ -569,7 +569,7 @@ We do this big join to have in only one data set all these variables:
       - household type
       - income group
 
-```{r}
+```{r, echo=FALSE}
 GHG_Emissions <- GHG_Emissions |>
   left_join(eu_country_key |> select(name_en, iso3), by = "name_en")
 
@@ -578,7 +578,7 @@ Warm_Households <- Warm_Households |>
 ```
 
 
-```{r}
+```{r, echo=FALSE}
 #| message: false
 #| warning: false
 all_merged <- Envt_Tax_Revenues |>
@@ -926,7 +926,7 @@ Overall, the results suggest that GDP and sectoral composition remain the domina
 
 Now we try to evaluate the coefficient between an increase in taxes in the year n and the impact on Greenhouse gases emissions in the following years n+1, to n+5.
 
-```{r}
+```{r, echo=FALSE}
 
 # Create leads 1 to 15
 for (k in 1:15) {
@@ -945,7 +945,7 @@ for (k in 1:15) {
 
 Here we try to evaluate the coefficient between an increase in tax in one specific area (environmentally related taxes are grouped by what sector they impact : transport, energy, resource or pollution) in the year n and the impact on Greenhouse gases emissions in the year n+k, most efficient lag.
 
-```{r}
+```{r, echo=FALSE}
 all_merged$tax_category <- as.factor(all_merged$tax_category)
 
 model_taxcat <- lm(GHG_Emissions_value ~ tax_category + GDP_value + sector + TIME_PERIOD,
@@ -968,7 +968,7 @@ Answering the question, based on this regression, no specific type of environmen
 
 Here we try to evaluate the coefficient between an increase in tax in one specific area (environmentally related taxes are grouped by what sector they impact : transport, energy, resource or pollution) in the year n and the impact on Greenhouse gases emissions in each sector, in the year n+k, most efficient lag.
 
-```{r}
+```{r, echo=FALSE}
 all_merged$tax_category <- as.factor(all_merged$tax_category)
 
 model_taxcat <- lm(GHG_Emissions_value ~ tax_category + GDP_value + sector + TIME_PERIOD,
@@ -1008,7 +1008,7 @@ short comments (redo)
 
 #### Graphical representation
 
-```{r}
+```{r, echo=FALSE}
 ineq_plot_data <- all_merged %>%
   select(
     Envt_Tax_Revenues_value,
@@ -1047,7 +1047,7 @@ ggplot(ineq_plot_data,
 ->what is the impact of environmental taxes on the economy ? 
 
 ### 3.1. Between taxes and GDP
-#### a. All taxes
+#### Regression
 ```{r, echo=FALSE}
 all_tax_data <- all_merged %>%
   filter(tax_category == "Any tax base")
@@ -1064,7 +1064,9 @@ The model exhibits an exceptionally high explanatory power: the adjusted R² is 
 
 The overall model significance is confirmed by the extremely large F-statistic (p < 0.001), showing that environmental tax revenues provide strong explanatory power for GDP in this subset. While the relationship is purely correlational, these results suggest that in contexts where environmental taxes are aggregated under a broad “any tax base” classification, higher environmental tax revenues tend to coincide with substantially higher levels of economic activity.
 
-```{r}
+#### Graphical representation
+
+```{r, echo=FALSE}
 clean_tax_data <- all_tax_data %>%
   filter(
     !is.na(GDP_value),
@@ -1083,24 +1085,6 @@ ggplot(clean_tax_data, aes(x = Envt_Tax_Revenues_value, y = GDP_value)) +
   ) +
   theme_minimal()
 ```
-
-#### b. Per tax category
-```{r, echo=FALSE}
-all_merged$tax_category <- relevel(all_merged$tax_category, 
-                                   ref = "Tax base related to energy taxes")
-model_emissions_taxval <- lm(GDP_value ~ tax_category + Envt_Tax_Revenues_value,
-                             data = all_merged)
-summary(model_emissions_taxval)
-```
-
-##### Comment :
-The regression results indicate a strong and highly significant relationship between GDP, environmental tax revenues, and tax categories. All estimated coefficients are statistically significant at the 1% level (p < 0.001), meaning that the variables included in the model reliably explain differences in GDP. The overall model is also highly significant (F-statistic p < 0.001), confirming that the set of predictors jointly contributes to explaining economic performance.
-
-Compared to the reference category (“Tax base related to energy taxes”), the categories related to transport, pollution, and resource taxes are associated with higher levels of GDP. This suggests that countries (or years) where environmental taxation relies more heavily on these bases tend to exhibit stronger economic activity. Conversely, the negative coefficient for the “Any tax base” category may reflect contexts where environmental taxation is less targeted or less structured, potentially being associated with weaker economic outcomes.
-
-Environmental tax revenues themselves have a positive and highly significant effect: higher receipts from environmental taxes are associated with higher GDP levels. While this correlation does not imply causality, it may indicate that stronger economies can raise more environmental tax revenue, or that well-designed environmental taxes can coexist with — or even support — economic performance.
-
-The adjusted R² of about 0.47 indicates that nearly half of the variation in GDP is explained by the included variables, which is relatively high for macroeconomic cross-country or panel data. Overall, the results suggest that both the structure and the magnitude of environmental taxation are meaningfully related to economic activity.
 
 ### 3.2. Between taxes and added value
 #### Regression
@@ -1145,7 +1129,7 @@ The transport sector exhibits one of the strongest relationships, with a sizeabl
 Overall, while the results do not imply causality, they reveal a consistent pattern: sectors with higher environmental tax revenues tend to report higher added value. This suggests that environmental taxation—at least in aggregate—does not appear to hinder sectoral economic performance and may even evolve alongside periods of stronger economic activity.
 
 #### Graphical representation
-```{r}
+```{r, echo=FALSE}
 ggplot(all_merged %>% drop_na(Envt_Tax_Revenues_value, AV_value),
        aes(x = Envt_Tax_Revenues_value, y = AV_value)) +
   geom_point(alpha = 0.1, color = "darkgreen") +
@@ -1196,19 +1180,9 @@ future <- data.frame(Envt_Tax_Revenues_value = seq(min(all_merged$Envt_Tax_Reven
 predicted_GHG <- predict(model_ghg_tax, newdata = future)
 predicted_GHG
 ```
-#### a. For all taxes 
-```{r, echo=FALSE}
-
-```
 
 ##### Comment :
 
-#### b. Per tax
-```{r, echo=FALSE}
-
-```
-
-##### Comment :
 
 ### 2. social inequalities: 
 
