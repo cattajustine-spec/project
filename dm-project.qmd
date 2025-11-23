@@ -1052,13 +1052,48 @@ The adjusted R² of about 0.47 indicates that nearly half of the variation in GD
 
 ### 3.2. Between taxes and added value
 ```{r, echo=FALSE}
+sector <- c("Transport", "Agriculture", "Industry (including energy)", "Manufacturing")
 
+model_AV_tax <- lapply(sector, function(s){
+  data_s <- all_merged %>% filter(sector == s)
+  lm(AV_value ~ Envt_Tax_Revenues_value, data = data_s)
+})
+
+names(model_AV_tax) <- sector
+
+lapply(model_AV_tax, summary)
 ```
 
 ##### Comment :
+Transport sector
+
+The results show a strong and statistically significant positive relationship between environmental tax revenues and added value in the transport sector. The coefficient on environmental tax revenues is positive and highly significant (p < 0.001), indicating that higher environmental tax revenues are associated with higher sectoral added value. The model explains about 39% of the variation in added value, which is relatively substantial for sector-level data. Although the relationship is correlational, this result suggests that periods or countries with higher environmental tax revenues tend to coincide with stronger economic activity in the transport sector.
+
+Agriculture sector
+
+In the agricultural sector, environmental tax revenues are also positively and significantly related to added value. The coefficient is smaller in magnitude compared to other sectors, reflecting the smaller economic scale of agriculture, but remains highly significant (p < 0.001). The model explains about 32% of the variation in added value. This indicates a moderately strong association, suggesting that increases in environmental tax revenues align with higher value creation in agriculture, although the sector is structurally less responsive than transport or industry.
+
+Industry (including energy)
+
+The regression for industry (including energy) reveals a strong and highly significant positive association between environmental tax revenues and added value. The coefficient is the highest among all sectors, indicating that added value in industry is particularly sensitive to variations in environmental tax revenue. The model explains around 35% of the added value variability, highlighting a robust correlation. These results may reflect the capital-intensive and heavily regulated nature of industry and energy production, where environmental taxation and economic output often evolve together.
+
+Manufacturing sector
+
+The manufacturing sector also displays a positive and statistically significant effect of environmental tax revenues on added value (p < 0.001). The estimated coefficient is close to that of the transport sector, indicating a comparably strong association. The model explains about 34% of the variation in added value, suggesting a substantial link between fiscal environmental instruments and economic performance in manufacturing. As in other sectors, these results reflect correlation rather than causality, but they indicate that higher environmental tax revenues tend to coincide with higher manufacturing activity.
+
+
+
+Global comparative summary
+
+Across all four sectors—transport, agriculture, industry (including energy), and manufacturing—the relationship between environmental tax revenues and added value is consistently positive, highly significant, and economically meaningful. Although the strength of the effect varies across sectors, the overall pattern suggests that higher environmental tax revenues tend to coincide with higher levels of sectoral economic activity.
+
+The transport sector exhibits one of the strongest relationships, with a sizeable coefficient and an R² of about 39%, indicating that environmental tax revenues explain a notable share of the variation in its added value. Manufacturing and industry (including energy) also show substantial effects, with R² values around 34–35%, reflecting the structural sensitivity of these capital-intensive sectors to regulatory and fiscal environments. In contrast, the agricultural sector displays a smaller coefficient and a more moderate explanatory power (R² ≈ 32%), which likely reflects its smaller economic scale and lower exposure to environmental taxation mechanisms.
+
+Overall, while the results do not imply causality, they reveal a consistent pattern: sectors with higher environmental tax revenues tend to report higher added value. This suggests that environmental taxation—at least in aggregate—does not appear to hinder sectoral economic performance and may even evolve alongside periods of stronger economic activity.
+
+
 ->which economic sector is the most economically efficient & produces the less emissions (à favoriser, éventuellement subsidies -> info à garder pour la conclusion) 
 ->which is the less efficient & emits the most ? ->target the tax on this sector ! 
-->what kind of tax for what eco sector is the + eco efficient ? 
 
 # Forecasting : if we continue as we do
 
@@ -1177,10 +1212,6 @@ Quel type de taxe est :
  - le + efficace sur les GHG -> quel montant pour 0net d'ici 2050 ? 
  - le - grave sur les inégalités sociales -> quel impact d'une telle taxe (celle la + efficace du POV des GHG) sur les inégalités ? 
  - le - grave sur l'économie -> quel impact d'une telle taxe (celle la + efficace du POV des GHG) sur l'économie ? 
-
-### Tableau comparatif des taxes: 
-Create a table to compare the taxes: 
-![](Tax_comparison_table.png)
 
 ## Ouverture
 Si une telle les 3 types de taxes ne sont pas compatibles / impact trop grand sur les inégalités et/ou sur l'économie / impact trop faible sur les GHG, quelles alternatives (en plus de la taxe / à la place de la taxe) ? 
