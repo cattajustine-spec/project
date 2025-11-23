@@ -1007,10 +1007,6 @@ short comments (redo)
 3.  Effect on gender inequality (GII) Higher environmental taxes slightly reduce gender inequality (coefficient = -1.115×10⁻⁶, p \< 0.001)**KUA?il faut qu'on explique pk !**!. The model explains only 4% of GII variation (R² = 0.042), indicating a statistically clear but economically minor effect.
 
 
-### b. Per tax category
-->which type of environmental tax has the best impact on social inequalities ? 
-##### Comment :
-
 ## 3. Between tax and economy
 ->what is the impact of environmental taxes on the economy ? 
 
@@ -1032,6 +1028,26 @@ The model exhibits an exceptionally high explanatory power: the adjusted R² is 
 
 The overall model significance is confirmed by the extremely large F-statistic (p < 0.001), showing that environmental tax revenues provide strong explanatory power for GDP in this subset. While the relationship is purely correlational, these results suggest that in contexts where environmental taxes are aggregated under a broad “any tax base” classification, higher environmental tax revenues tend to coincide with substantially higher levels of economic activity.
 
+```{r}
+clean_tax_data <- all_tax_data %>%
+  filter(
+    !is.na(GDP_value),
+    !is.na(Envt_Tax_Revenues_value),
+    is.finite(GDP_value),
+    is.finite(Envt_Tax_Revenues_value)
+  )
+
+ggplot(clean_tax_data, aes(x = Envt_Tax_Revenues_value, y = GDP_value)) +
+  geom_point(alpha = 0.1, size = 1.2, color = "darkgreen") +
+  geom_smooth(method = "lm", se = TRUE, color = "darkred") +
+  labs(
+    title = "Relationship between Environmental Tax Revenues and GDP",
+    x = "Environmental Tax Revenues",
+    y = "GDP"
+  ) +
+  theme_minimal()
+```
+
 #### b. Per tax category
 ```{r, echo=FALSE}
 all_merged$tax_category <- relevel(all_merged$tax_category, 
@@ -1051,6 +1067,7 @@ Environmental tax revenues themselves have a positive and highly significant eff
 The adjusted R² of about 0.47 indicates that nearly half of the variation in GDP is explained by the included variables, which is relatively high for macroeconomic cross-country or panel data. Overall, the results suggest that both the structure and the magnitude of environmental taxation are meaningfully related to economic activity.
 
 ### 3.2. Between taxes and added value
+#### Regression
 ```{r, echo=FALSE}
 sector <- c("Transport", "Agriculture", "Industry (including energy)", "Manufacturing")
 
@@ -1091,6 +1108,39 @@ The transport sector exhibits one of the strongest relationships, with a sizeabl
 
 Overall, while the results do not imply causality, they reveal a consistent pattern: sectors with higher environmental tax revenues tend to report higher added value. This suggests that environmental taxation—at least in aggregate—does not appear to hinder sectoral economic performance and may even evolve alongside periods of stronger economic activity.
 
+#### Graphical representation
+```{r}
+ggplot(all_merged %>% drop_na(Envt_Tax_Revenues_value, AV_value),
+       aes(x = Envt_Tax_Revenues_value, y = AV_value)) +
+  geom_point(alpha = 0.1, color = "darkgreen") +
+  geom_smooth(method = "lm", se = TRUE, color = "darkred") +
+  facet_wrap(~ sector, scales = "free") +
+  labs(
+    title = "Relationship between Environmental Tax Revenues and Added Value by Sector",
+    x = "Environmental Tax Revenues",
+    y = "Added Value"
+  ) +
+  theme_minimal()
+```
+Agriculture
+
+The relationship is positive but weaker than in other sectors, reflecting the smaller scale and lower exposure of agriculture to environmental taxation.
+
+Industry (including energy)
+
+Shows a strong positive association; this sector reacts the most, likely due to its capital intensity and direct exposure to environmental regulation.
+
+Manufacturing
+
+Displays a clear positive relationship, similar in strength to transport, indicating that higher environmental tax revenues coincide with higher manufacturing activity.
+
+Transport
+
+Strong linear relationship with added value; environmental tax revenue seems closely aligned with economic output in this sector.
+
+Overall
+
+Across all sectors, environmental tax revenues are positively and significantly related to added value. While the strength varies, the consistent upward trend suggests that environmental taxation is not associated with weaker sectoral performance; rather, periods with higher environmental tax revenues tend to coincide with stronger economic activity.
 
 ->which economic sector is the most economically efficient & produces the less emissions (à favoriser, éventuellement subsidies -> info à garder pour la conclusion) 
 ->which is the less efficient & emits the most ? ->target the tax on this sector ! 
@@ -1206,12 +1256,6 @@ predicted_Warm
 
  
 # Conclusion 
-
-## Comparaison
-Quel type de taxe est : 
- - le + efficace sur les GHG -> quel montant pour 0net d'ici 2050 ? 
- - le - grave sur les inégalités sociales -> quel impact d'une telle taxe (celle la + efficace du POV des GHG) sur les inégalités ? 
- - le - grave sur l'économie -> quel impact d'une telle taxe (celle la + efficace du POV des GHG) sur l'économie ? 
 
 ## Ouverture
 Si une telle les 3 types de taxes ne sont pas compatibles / impact trop grand sur les inégalités et/ou sur l'économie / impact trop faible sur les GHG, quelles alternatives (en plus de la taxe / à la place de la taxe) ? 
