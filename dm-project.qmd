@@ -1006,6 +1006,42 @@ short comments (redo)
 
 3.  Effect on gender inequality (GII) Higher environmental taxes slightly reduce gender inequality (coefficient = -1.115×10⁻⁶, p \< 0.001)**KUA?il faut qu'on explique pk !**!. The model explains only 4% of GII variation (R² = 0.042), indicating a statistically clear but economically minor effect.
 
+#### Graphical representation
+
+```{r}
+ineq_plot_data <- all_merged %>%
+  select(
+    Envt_Tax_Revenues_value,
+    Warm_Households_value,
+    coef_ineq_value,
+    GII_value
+  ) %>%
+  pivot_longer(
+    cols = c(Warm_Households_value, coef_ineq_value, GII_value),
+    names_to = "inequality_indicator",
+    values_to = "ineq_value"
+  ) %>%
+    filter(
+    !is.na(Envt_Tax_Revenues_value),
+    !is.na(ineq_value),
+    is.finite(Envt_Tax_Revenues_value),
+    is.finite(ineq_value)
+  )
+
+ggplot(ineq_plot_data,
+       aes(x = Envt_Tax_Revenues_value, y = ineq_value)) +
+  geom_point(alpha = 0.1, size = 1, color = "darkgreen") +
+  geom_smooth(method = "lm", se = TRUE, color = "darkred") +
+  facet_wrap(~inequality_indicator, scales = "free_y") +
+  labs(
+    title = "Relationship Between Environmental Tax Revenues and Social Inequality Indicators",
+    x = "Environmental Tax Revenues",
+    y = "Value of Social Inequality Indicator"
+  ) +
+  theme_minimal()
+```
+
+
 
 ## 3. Between tax and economy
 ->what is the impact of environmental taxes on the economy ? 
