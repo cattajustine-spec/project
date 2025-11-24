@@ -959,6 +959,12 @@ clean_tax_data <- all_merged %>%
   )
 
 ggplot(clean_tax_data, aes(x = Envt_Tax_Revenues_value, y = GDP_value)) +
+  geom_point(aes(color = "Observations"), alpha = 0.1, size = 1.2) +
+  geom_smooth(aes(color = "Regression line"), method = "lm", se = TRUE) +
+  scale_color_manual(
+    name = "Legend",
+    values = c("Observations" = "darkgreen", "Regression line" = "darkred")
+  ) +
   labs(
     title = "Relationship between Environmental Tax Revenues and GDP",
     x = "Environmental Tax Revenues",
