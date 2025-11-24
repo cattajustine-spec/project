@@ -429,7 +429,18 @@ Added_value$`Activité économique` <- factor(Added_value$`Activité économique
 EU27_AV$`Activité économique` <- factor(EU27_AV$`Activité économique`)
 ```
 
-### Renaming some variables {#renamingsomevariables}
+Same reasoning for the household types in the Warm_Households data set, and for the tax categories in the Envt_Tax_Revenues data set. 
+
+```{r, echo=FALSE}
+Warm_Households$hhtyp <- factor(Warm_Households$hhtyp)
+EU27_Warming$hhtyp <- factor(EU27_Warming$hhtyp)
+Warm_Households$incgrp <- factor(Warm_Households$incgrp)
+EU27_Warming$incgrp <- factor(EU27_Warming$incgrp)
+Envt_Tax_Revenues$`Catégorie de recettes provenant des taxes liées à l'environnement` <- factor(Envt_Tax_Revenues$`Catégorie de recettes provenant des taxes liées à l'environnement`)
+EU27_Tax$`Catégorie de recettes provenant des taxes liées à l'environnement` <- factor(EU27_Tax$`Catégorie de recettes provenant des taxes liées à l'environnement`)
+```
+
+##### Renaming some variables {#renamingsomevariables}
 
 To be able to merge our data sets in a data base, we need to modify the name of the variable **OBS_VALUE** that is in every data set to be able to identify which OBS_VALUE is associated to which data set.
 
@@ -452,7 +463,7 @@ names(EU27_Coefineq)[names(EU27_Coefineq) == "OBS_VALUE"] <- "coef_ineq_value"
 
 To be able to merge the data sets, it will be easier to have the tax categories in English.
 
-```{r}
+```{r, echo=FALSE}
 Envt_Tax_Revenues <- Envt_Tax_Revenues |>
   mutate(`Catégorie de recettes provenant des taxes liées à l'environnement` = recode(`Catégorie de recettes provenant des taxes liées à l'environnement`, 
                                                                                       "Assiette relatives aux taxes sur les resources" = "Tax base related to resource taxes", 
@@ -477,7 +488,7 @@ Added_value <- Added_value |>
   mutate(`Activité économique` = recode(`Activité économique`,
                                         "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration" = "Transport", 
                                         "Agriculture, sylviculture et pêche"= "Agriculture", 
-                                        "Industrie (sauf construction)" = "Public electricity and heat production", 
+                                        "Industrie (sauf construction)" = "Industry (including energy)",
                                         "Activités de fabrication" = "Manufacturing"
                                         ))
 
@@ -485,7 +496,7 @@ EU27_AV <- EU27_AV |>
   mutate(`Activité économique` = recode(`Activité économique`,
                                         "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration" = "Transport", 
                                         "Agriculture, sylviculture et pêche"= "Agriculture", 
-                                        "Industrie (sauf construction)" = "Public electricity and heat production", 
+                                        "Industrie (sauf construction)" = "Industry (including energy)",
                                         "Activités de fabrication" = "Manufacturing"
                                         ))
 
@@ -501,7 +512,7 @@ GHG_Emissions <- GHG_Emissions|>  #here we are combining the sectors related to 
   summarise(GHG_Emissions_value = sum(GHG_Emissions_value), .groups = "drop")
 GHG_Emissions <- GHG_Emissions |>
   mutate(src_crf = recode(src_crf, 
-                          "Fuel combustion in energy industries"="Public electricity and heat production", 
+                          "Fuel combustion in energy industries"="Industry (including energy)", 
                           "Fuel combustion in transport"="Transport"))
 
 EU27_GHG <- EU27_GHG|>
@@ -516,7 +527,7 @@ EU27_GHG <- EU27_GHG|>
   summarise(GHG_Emissions_value = sum(GHG_Emissions_value), .groups = "drop")
 EU27_GHG <- EU27_GHG |>
   mutate(src_crf = recode(src_crf, 
-                          "Fuel combustion in energy industries"="Public electricity and heat production", 
+                          "Fuel combustion in energy industries"="Industry (including energy)", 
                           "Fuel combustion in transport"="Transport"))
 ```
 
@@ -524,7 +535,7 @@ To be able to merge all the data sets, it will be easier to rename the country c
 
 We also rename the different sectors in the different data bases as "sector" to be able to merge more easily and have two values for the same sector : one for the Added Value and one for the Greenhouse gases emissions.
 
-```{r}
+```{r, echo=FALSE}
 Envt_Tax_Revenues <- Envt_Tax_Revenues |>
   rename(iso3 = REF_AREA, tax_category = `Catégorie de recettes provenant des taxes liées à l'environnement`)
 EU27_Tax <- EU27_Tax |>
@@ -566,7 +577,7 @@ We do this big join to have in only one data set all these variables:
       - household type
       - income group
 
-```{r}
+```{r, echo=FALSE}
 GHG_Emissions <- GHG_Emissions |>
   left_join(eu_country_key |> select(name_en, iso3), by = "name_en")
 
@@ -575,7 +586,7 @@ Warm_Households <- Warm_Households |>
 ```
 
 
-```{r}
+```{r, echo=FALSE}
 #| message: false
 #| warning: false
 all_merged <- Envt_Tax_Revenues |>
@@ -593,47 +604,7 @@ all_merged <- Envt_Tax_Revenues |>
 
 Now that we have cleaned our data sets, here are some descriptive analyzes of our main target variables:
 
-## 1. Environmental tax revenues per tax category
-
-### Graphical representation
-
-```{r, echo=FALSE}
-ggplot(EU27_Tax, aes(x = TIME_PERIOD, y = Envt_Tax_Revenues_value, color = tax_category, group = tax_category)) +
-  geom_line(linewidth = 1) +
-  labs(
-    title = "EU average Environmental Tax Revenues by Category",
-    x = "Year",
-    y = "Revenue (million USD)",
-    color = "Category"
-  ) +
-  theme_minimal()
-```
-
-### Descriptive statistics
-
-```{r, echo=FALSE}
-summary_stats_EnvtTax <- EU27_Tax %>%
-  group_by(tax_category) %>%
-  summarise(
-    Min = min(Envt_Tax_Revenues_value, na.rm = TRUE),
-    Max = max(Envt_Tax_Revenues_value, na.rm = TRUE),
-    Mean = mean(Envt_Tax_Revenues_value, na.rm = TRUE),
-    Median = median(Envt_Tax_Revenues_value, na.rm = TRUE),
-    SD = sd(Envt_Tax_Revenues_value, na.rm = TRUE)
-  )
-
-kable(summary_stats_EnvtTax, caption = "Descriptive statistics of EU average Environmental Tax Revenues by Category (all years combined)")
-```
-
-##### Comment :
-
-The graph shows that, on average across Europe, environmental tax revenues have increased substantially between 1990 and 2023. They initially declined until the early 2000s, falling below 7.5 billion USD, before rising sharply and then stabilizing between 13 and 15 billion USD from the mid-2000s to the early 2020s.
-
-We can also see that the vast majority of these revenues come from energy-related taxes, which may reflect the importance of energy both in emissions and in the European economy. This is consistent with the descriptive statistics, where energy taxes have by far the highest mean value (≈ 8.69 billion USD, compared with only ≈ 0.53 billion USD for pollution taxes).
-
-By contrast, revenues from transport taxes and pollution taxes represent only a small share of the total. Transport tax revenues have increased the most visibly, especially between 2000 and 2005, rising from roughly 1.5 to 2.5 billion USD.
-
-## 2. GDP per country
+## 1. GDP per country
 
 ### Graphical representation
 
@@ -677,7 +648,7 @@ Germany is by far the largest economy, with an average GDP of ≈ 3.1 trillion U
 Most other countries remain much smaller, except the Netherlands, which stands out with a mean GDP of ≈ 706 billion USD. Overall, the EU27 average GDP reaches roughly 780 billion USD in 2024, reflecting large disparities across the Union.
 
 
-## 3. Added Value per economic sector
+## 2. Added Value per economic sector
 
 ### Graphical representation
 ```{r, echo=FALSE}
@@ -716,7 +687,7 @@ Looking at the EU27 average gross value added by sector, three major sectors dom
 
 Agriculture, by contrast, contributes much less, with an average value added of only ≈ 9.5 billion USD, which is expected given its smaller role in modern European economies. The manufacturing sector alone ranges from 46 to 142 billion USD, highlighting both its scale and its variability over time.
 
-## 4. Greenhouse gas emissions by economic sector
+## 3. Greenhouse gas emissions by economic sector
 
 ### Graphical representation
 
@@ -749,6 +720,7 @@ summary_stats_GHG <- EU27_GHG %>%
 
 kable(summary_stats_GHG, caption = "Descriptive statistics of EU average greenhouse gases emissions by sector (all years combined)")
 ```
+
 ##### Comment :
 
 The EU27 average data show greenhouse gas emissions across four sectors: agriculture, manufacturing, energy industries, and transport. All sectors display a downward trend except transport, which starts rising again after 2010. With the exception of agriculture, all sectors experienced a marked drop in 2020 due to the COVID-19 shock, followed by a partial rebound.
@@ -757,7 +729,7 @@ Industrial emissions, particularly from the energy sector, have declined sharply
 
 Since around 2009–2012, transport emissions have surpassed those of manufacturing, and by 2023 they also exceeded energy industries emissions. Transport has become the single largest emitting sector, consistent with its relatively high mean value (≈ 29,200 kt CO₂-eq), compared with ≈ 45,000 kt for electricity and heat production (energy) and ≈ 14,900 kt for agriculture.
 
-## 5. Inability to keep home adequately warm by household type
+## 4. Inability to keep home adequately warm by household type
 
 ### Graphical representation
 
@@ -801,7 +773,7 @@ Among all subgroups, the total-population categories show the lowest percentages
 
 Women in low-income single households consistently report slightly higher percentages than men. For instance, low-income women (A1F, B_MD60) have an average inability rate of ≈ 21.1%, compared with ≈ 23.1% for low-income men (A1M, B_MD60), while total-population rates remain much lower at ≈ 10–15% across categories.
 
-## 6. GII per country
+## 5. GII per country
 
 ### Graphical representation
 
@@ -814,6 +786,7 @@ p_GII <- ggplot(GII, aes(x = TIME_PERIOD, y = GII_value, color = iso3, group = i
     y = "Gender inequality index",
     color = "Country"
   ) +
+  scale_y_continuous(limits = c(0, 1)) +   
   theme_minimal()
 
 ggplotly(p_GII)
@@ -835,13 +808,14 @@ summary_stats_GII <- GII %>%
 kable(summary_stats_GII, 
       caption = "Descriptive statistics of the GII by country (all years combined)")
 ```
+
 ##### Comment :
 
 The Gender Inequality Index (GII) shows a clear downward trend across all European countries between 1990 and 2024. At the beginning of the period, Romania exhibited by far the highest level of inequality, followed by Cyprus and Estonia, while the EU27 average stood around 0.25. In contrast, the lowest GII levels were found in Sweden, Denmark, Finland, and the Netherlands, a pattern that still holds in 2024.
 
 By 2024, the countries with the highest GII values are Cyprus, Romania, and Hungary, while the EU27 average has fallen to approximately 0.08, reflecting substantial progress over time. This aligns with the descriptive statistics: Romania has the highest mean GII (≈ 0.36), while Sweden and Denmark are among the lowest, with mean values of ≈ 0.05 and ≈ 0.054, respectively.
 
-## 7. Coefficient of human inequality per country
+## 6. Coefficient of human inequality per country
 
 ### Graphical representation
 
@@ -922,7 +896,7 @@ Overall, the results suggest that GDP and sectoral composition remain the domina
 
 Now we try to evaluate the coefficient between an increase in taxes in the year n and the impact on Greenhouse gases emissions in the following years n+1, to n+5.
 
-```{r}
+```{r, echo=FALSE}
 
 # Create leads 1 to 5
 for (k in 1:5) {
@@ -938,6 +912,7 @@ all_merged_plus_leads <- merge(all_merged, GHG_Emissions,
 all_merged_plus_leads <- all_merged_plus_leads |>
     select(iso3, TIME_PERIOD, tax_category, Envt_Tax_Revenues_value, GHG_Emissions_value, GHG_Emissions_value.lead1, GHG_Emissions_value.lead2, GHG_Emissions_value.lead3, GHG_Emissions_value.lead4, GHG_Emissions_value.lead5 )
 ```
+
 
 ```{r}
 reg_results <- lapply(1:5, function(k) {formula_k <- as.formula(
@@ -960,7 +935,7 @@ All other coefficients are close to the ones saw before (GDP around 0.043, Manuf
 
 Here we try to evaluate the coefficient between an increase in tax in one specific area (environmentally related taxes are grouped by what sector they impact : transport, energy, resource or pollution) in the year n and the impact on Greenhouse gases emissions in each sector, in the year n+k, most efficient lag.
 
-```{r}
+```{r, echo=FALSE}
 all_merged$tax_category <- as.factor(all_merged$tax_category)
 
 model_taxcat <- lm(GHG_Emissions_value ~ tax_category + GDP_value + sector + TIME_PERIOD,
@@ -998,38 +973,164 @@ short comments (redo)
 
 3.  Effect on gender inequality (GII) Higher environmental taxes slightly reduce gender inequality (coefficient = -1.115×10⁻⁶, p \< 0.001)**KUA?il faut qu'on explique pk !**!. The model explains only 4% of GII variation (R² = 0.042), indicating a statistically clear but economically minor effect.
 
+#### Graphical representation
 
-### b. Per tax category
-->which type of environmental tax has the best impact on social inequalities ? 
-##### Comment :
+```{r, echo=FALSE}
+ineq_plot_data <- all_merged %>%
+  select(
+    Envt_Tax_Revenues_value,
+    Warm_Households_value,
+    coef_ineq_value,
+    GII_value
+  ) %>%
+  pivot_longer(
+    cols = c(Warm_Households_value, coef_ineq_value, GII_value),
+    names_to = "inequality_indicator",
+    values_to = "ineq_value"
+  ) %>%
+    filter(
+    !is.na(Envt_Tax_Revenues_value),
+    !is.na(ineq_value),
+    is.finite(Envt_Tax_Revenues_value),
+    is.finite(ineq_value)
+  )
+
+ggplot(ineq_plot_data,
+       aes(x = Envt_Tax_Revenues_value, y = ineq_value)) +
+  geom_point(alpha = 0.1, size = 1, color = "darkgreen") +
+  geom_smooth(method = "lm", se = TRUE, color = "darkred") +
+  facet_wrap(~inequality_indicator, scales = "free_y") +
+  labs(
+    title = "Relationship Between Environmental Tax Revenues and Social Inequality Indicators",
+    x = "Environmental Tax Revenues",
+    y = "Value of Social Inequality Indicator"
+  ) +
+  theme_minimal()
+```
+
+
 
 ## 3. Between tax and economy
 ->what is the impact of environmental taxes on the economy ? 
 
 ### 3.1. Between taxes and GDP
-#### a. All taxes
+#### Regression
 ```{r, echo=FALSE}
-
+all_tax_data <- all_merged %>%
+  filter(tax_category == "Any tax base")
+model_gdp_tax <- lm(GDP_value ~ Envt_Tax_Revenues_value, data = all_tax_data)
+summary(model_gdp_tax)
 ```
 
 ##### Comment :
+The regression restricted to the “Any tax base” category reveals a very strong and highly significant relationship between GDP and environmental tax revenues. The coefficient on environmental tax revenues is positive and statistically significant at the 1% level (p < 0.001), with an exceptionally large t-value (406), indicating that the estimate is extremely precise. This suggests that within this broad and non-specific tax category, higher environmental tax revenues are strongly associated with higher GDP levels.
 
-#### b. Per tax category
+The intercept is not statistically significant, meaning that the model does not provide strong evidence about the expected GDP when environmental tax revenues are near zero. However, this has little substantive impact, since the main explanatory power comes from the revenue variable.
+
+The model exhibits an exceptionally high explanatory power: the adjusted R² is 0.93, meaning that roughly 93% of the variation in GDP within this subset is explained solely by environmental tax revenues. This is an unusually high value for macroeconomic data and indicates a very tight empirical relationship between the two variables in this specific tax category.
+
+The overall model significance is confirmed by the extremely large F-statistic (p < 0.001), showing that environmental tax revenues provide strong explanatory power for GDP in this subset. While the relationship is purely correlational, these results suggest that in contexts where environmental taxes are aggregated under a broad “any tax base” classification, higher environmental tax revenues tend to coincide with substantially higher levels of economic activity.
+
+#### Graphical representation
+
 ```{r, echo=FALSE}
+clean_tax_data <- all_tax_data %>%
+  filter(
+    !is.na(GDP_value),
+    !is.na(Envt_Tax_Revenues_value),
+    is.finite(GDP_value),
+    is.finite(Envt_Tax_Revenues_value)
+  )
 
+ggplot(clean_tax_data, aes(x = Envt_Tax_Revenues_value, y = GDP_value)) +
+  geom_point(alpha = 0.1, size = 1.2, color = "darkgreen") +
+  geom_smooth(method = "lm", se = TRUE, color = "darkred") +
+  labs(
+    title = "Relationship between Environmental Tax Revenues and GDP",
+    x = "Environmental Tax Revenues",
+    y = "GDP"
+  ) +
+  theme_minimal()
 ```
-
-##### Comment :
 
 ### 3.2. Between taxes and added value
+#### Regression
 ```{r, echo=FALSE}
+sector <- c("Transport", "Agriculture", "Industry (including energy)", "Manufacturing")
 
+model_AV_tax <- lapply(sector, function(s){
+  data_s <- all_merged %>% filter(sector == s)
+  lm(AV_value ~ Envt_Tax_Revenues_value, data = data_s)
+})
+
+names(model_AV_tax) <- sector
+
+lapply(model_AV_tax, summary)
 ```
 
 ##### Comment :
+Transport sector
+
+The results show a strong and statistically significant positive relationship between environmental tax revenues and added value in the transport sector. The coefficient on environmental tax revenues is positive and highly significant (p < 0.001), indicating that higher environmental tax revenues are associated with higher sectoral added value. The model explains about 39% of the variation in added value, which is relatively substantial for sector-level data. Although the relationship is correlational, this result suggests that periods or countries with higher environmental tax revenues tend to coincide with stronger economic activity in the transport sector.
+
+Agriculture sector
+
+In the agricultural sector, environmental tax revenues are also positively and significantly related to added value. The coefficient is smaller in magnitude compared to other sectors, reflecting the smaller economic scale of agriculture, but remains highly significant (p < 0.001). The model explains about 32% of the variation in added value. This indicates a moderately strong association, suggesting that increases in environmental tax revenues align with higher value creation in agriculture, although the sector is structurally less responsive than transport or industry.
+
+Industry (including energy)
+
+The regression for industry (including energy) reveals a strong and highly significant positive association between environmental tax revenues and added value. The coefficient is the highest among all sectors, indicating that added value in industry is particularly sensitive to variations in environmental tax revenue. The model explains around 35% of the added value variability, highlighting a robust correlation. These results may reflect the capital-intensive and heavily regulated nature of industry and energy production, where environmental taxation and economic output often evolve together.
+
+Manufacturing sector
+
+The manufacturing sector also displays a positive and statistically significant effect of environmental tax revenues on added value (p < 0.001). The estimated coefficient is close to that of the transport sector, indicating a comparably strong association. The model explains about 34% of the variation in added value, suggesting a substantial link between fiscal environmental instruments and economic performance in manufacturing. As in other sectors, these results reflect correlation rather than causality, but they indicate that higher environmental tax revenues tend to coincide with higher manufacturing activity.
+
+
+
+Global comparative summary
+
+Across all four sectors—transport, agriculture, industry (including energy), and manufacturing—the relationship between environmental tax revenues and added value is consistently positive, highly significant, and economically meaningful. Although the strength of the effect varies across sectors, the overall pattern suggests that higher environmental tax revenues tend to coincide with higher levels of sectoral economic activity.
+
+The transport sector exhibits one of the strongest relationships, with a sizeable coefficient and an R² of about 39%, indicating that environmental tax revenues explain a notable share of the variation in its added value. Manufacturing and industry (including energy) also show substantial effects, with R² values around 34–35%, reflecting the structural sensitivity of these capital-intensive sectors to regulatory and fiscal environments. In contrast, the agricultural sector displays a smaller coefficient and a more moderate explanatory power (R² ≈ 32%), which likely reflects its smaller economic scale and lower exposure to environmental taxation mechanisms.
+
+Overall, while the results do not imply causality, they reveal a consistent pattern: sectors with higher environmental tax revenues tend to report higher added value. This suggests that environmental taxation—at least in aggregate—does not appear to hinder sectoral economic performance and may even evolve alongside periods of stronger economic activity.
+
+#### Graphical representation
+```{r, echo=FALSE}
+ggplot(all_merged %>% drop_na(Envt_Tax_Revenues_value, AV_value),
+       aes(x = Envt_Tax_Revenues_value, y = AV_value)) +
+  geom_point(alpha = 0.1, color = "darkgreen") +
+  geom_smooth(method = "lm", se = TRUE, color = "darkred") +
+  facet_wrap(~ sector, scales = "free") +
+  labs(
+    title = "Relationship between Environmental Tax Revenues and Added Value by Sector",
+    x = "Environmental Tax Revenues",
+    y = "Added Value"
+  ) +
+  theme_minimal()
+```
+Agriculture
+
+The relationship is positive but weaker than in other sectors, reflecting the smaller scale and lower exposure of agriculture to environmental taxation.
+
+Industry (including energy)
+
+Shows a strong positive association; this sector reacts the most, likely due to its capital intensity and direct exposure to environmental regulation.
+
+Manufacturing
+
+Displays a clear positive relationship, similar in strength to transport, indicating that higher environmental tax revenues coincide with higher manufacturing activity.
+
+Transport
+
+Strong linear relationship with added value; environmental tax revenue seems closely aligned with economic output in this sector.
+
+Overall
+
+Across all sectors, environmental tax revenues are positively and significantly related to added value. While the strength varies, the consistent upward trend suggests that environmental taxation is not associated with weaker sectoral performance; rather, periods with higher environmental tax revenues tend to coincide with stronger economic activity.
+
 ->which economic sector is the most economically efficient & produces the less emissions (à favoriser, éventuellement subsidies -> info à garder pour la conclusion) 
 ->which is the less efficient & emits the most ? ->target the tax on this sector ! 
-->what kind of tax for what eco sector is the + eco efficient ? 
 
 # Forecasting : if we continue as we do
 
@@ -1046,19 +1147,9 @@ future <- data.frame(Envt_Tax_Revenues_value = seq(min(all_merged$Envt_Tax_Reven
 predicted_GHG <- predict(model_ghg_tax, newdata = future)
 predicted_GHG
 ```
-#### a. For all taxes 
-```{r, echo=FALSE}
-
-```
 
 ##### Comment :
 
-#### b. Per tax
-```{r, echo=FALSE}
-
-```
-
-##### Comment :
 
 ### 2. social inequalities: 
 
@@ -1142,11 +1233,8 @@ predicted_Warm
 
  
 # Conclusion 
-Quel type de taxe est : 
- - le + efficace sur les GHG -> quel montant pour 0net d'ici 2050 ? 
- - le - grave sur les inégalités sociales -> quel impact d'une telle taxe (celle la + efficace du POV des GHG) sur les inégalités ? 
- - le - grave sur l'économie -> quel impact d'une telle taxe (celle la + efficace du POV des GHG) sur l'économie ? 
 
+## Ouverture
 Si une telle les 3 types de taxes ne sont pas compatibles / impact trop grand sur les inégalités et/ou sur l'économie / impact trop faible sur les GHG, quelles alternatives (en plus de la taxe / à la place de la taxe) ? 
  - subvention : à la recherche ? 
  - changement modes de consommation, institutions : sobriété éco ? décroissance
