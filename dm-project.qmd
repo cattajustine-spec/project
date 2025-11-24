@@ -185,17 +185,10 @@ In this data set, we are only interested in the following variables:
 -   **REF_AREA**: Identifies the country or reporting area using an ISO3 code (e.g., LVA for Latvia, LTU for Lithuania). This variable is the geographic dimension of the data set. 
 -   **TIME_PERIOD**: Indicates the reference year of observation (from 1994 to 2023).
 -   **OBS_VALUE**: Contains the numerical value of environmentally related tax revenues.
--   **Catégorie de recettes provenant des taxes liées à l'environnement**: A label in French describing the tax revenue category in plain language. In this data set, there are five mutually-exclusive categories:
-    -   "Assiette relatives aux taxes sur l'énergie", i.e., energy-related taxes.
-    -   "Assiette relatives aux taxes sur le transport", i.e., transport-related taxes.
-    -   "Assiette relatives aux taxes sur les pollutions", i.e., pollution-related taxes.
-    -   "Assiette relatives aux taxes sur les resources", i.e., resource-related taxes.
-    -   “Toute assiette de taxes”, i.e., all environmental tax bases combined.
 
 ```{r, echo=FALSE}
 Envt_Tax_Revenues <- Envt_Tax_Revenues |>
-  select(REF_AREA, TIME_PERIOD, OBS_VALUE, 
-         `Catégorie de recettes provenant des taxes liées à l'environnement`) |>
+  select(REF_AREA, TIME_PERIOD, OBS_VALUE) |>
   filter(REF_AREA %in% eu_country_key$iso3)
 ```
 
@@ -368,8 +361,7 @@ EU27_GDP <- GDP |>                #computing the average European GDP
 GDP <- bind_rows(GDP, EU27_GDP)
 
 EU27_Tax <- Envt_Tax_Revenues |>   #computing the average European environmental tax revenue, depending on the tax category. 
-  group_by(TIME_PERIOD,
-           `Catégorie de recettes provenant des taxes liées à l'environnement`) |>
+  group_by(TIME_PERIOD) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
   mutate(REF_AREA = "EU27") |>
   relocate(REF_AREA)
@@ -436,8 +428,6 @@ Warm_Households$hhtyp <- factor(Warm_Households$hhtyp)
 EU27_Warming$hhtyp <- factor(EU27_Warming$hhtyp)
 Warm_Households$incgrp <- factor(Warm_Households$incgrp)
 EU27_Warming$incgrp <- factor(EU27_Warming$incgrp)
-Envt_Tax_Revenues$`Catégorie de recettes provenant des taxes liées à l'environnement` <- factor(Envt_Tax_Revenues$`Catégorie de recettes provenant des taxes liées à l'environnement`)
-EU27_Tax$`Catégorie de recettes provenant des taxes liées à l'environnement` <- factor(EU27_Tax$`Catégorie de recettes provenant des taxes liées à l'environnement`)
 ```
 
 ##### Renaming some variables {#renamingsomevariables}
@@ -459,26 +449,6 @@ names(GII)[names(GII) == "OBS_VALUE"] <- "GII_value"
 names(EU27_GII)[names(EU27_GII) == "OBS_VALUE"] <- "GII_value"
 names(coef_ineq)[names(coef_ineq) == "OBS_VALUE"] <- "coef_ineq_value"
 names(EU27_Coefineq)[names(EU27_Coefineq) == "OBS_VALUE"] <- "coef_ineq_value"
-```
-
-To be able to merge the data sets, it will be easier to have the tax categories in English.
-
-```{r, echo=FALSE}
-Envt_Tax_Revenues <- Envt_Tax_Revenues |>
-  mutate(`Catégorie de recettes provenant des taxes liées à l'environnement` = recode(`Catégorie de recettes provenant des taxes liées à l'environnement`, 
-                                                                                      "Assiette relatives aux taxes sur les resources" = "Tax base related to resource taxes", 
-                                                                                      "Assiette relatives aux taxes sur les pollutions" = "Tax base related to pollution taxes", 
-                                                                                      "Assiette relatives aux taxes sur le transport" = "Tax base related to transport taxes", 
-                                                                                      "Assiette relatives aux taxes sur l'énergie" = "Tax base related to energy taxes", 
-                                                                                      "Toute assiette de taxes" = "Any tax base"))
-
-EU27_Tax <- EU27_Tax |>
-  mutate(`Catégorie de recettes provenant des taxes liées à l'environnement` = recode(`Catégorie de recettes provenant des taxes liées à l'environnement`, 
-                                                                                      "Assiette relatives aux taxes sur les resources" = "Tax base related to resource taxes", 
-                                                                                      "Assiette relatives aux taxes sur les pollutions" = "Tax base related to pollution taxes", 
-                                                                                      "Assiette relatives aux taxes sur le transport" = "Tax base related to transport taxes", 
-                                                                                      "Assiette relatives aux taxes sur l'énergie" = "Tax base related to energy taxes", 
-                                                                                      "Toute assiette de taxes" = "Any tax base"))
 ```
 
 To be able to merge the data sets including variables related to the economic sectors, it will be easier to have the same sector names, in English.
@@ -537,9 +507,9 @@ We also rename the different sectors in the different data bases as "sector" to 
 
 ```{r, echo=FALSE}
 Envt_Tax_Revenues <- Envt_Tax_Revenues |>
-  rename(iso3 = REF_AREA, tax_category = `Catégorie de recettes provenant des taxes liées à l'environnement`)
+  rename(iso3 = REF_AREA)
 EU27_Tax <- EU27_Tax |>
-  rename(iso3 = REF_AREA, tax_category = `Catégorie de recettes provenant des taxes liées à l'environnement`)
+  rename(iso3 = REF_AREA)
 
 GDP <- GDP |> rename(iso3 = REF_AREA)
 EU27_GDP <- EU27_GDP |> rename(iso3 = REF_AREA)
@@ -947,7 +917,6 @@ summary(model_taxcat)
 ##### Comment :
 
 ## 2. Between taxes and social inequalities
-### a. All taxes
 ```{r, echo=FALSE}
 # taxes on inability to warm house (economic inequalities)
 model_ineq <- lm(Warm_Households_value ~ Envt_Tax_Revenues_value + GII_value + coef_ineq_value + hhtyp + incgrp,
