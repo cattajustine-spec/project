@@ -537,7 +537,7 @@ We do this big join to have in only one data set all these variables:
 
  - Country
  - Year of observation
- - Environmentally related tax revenues
+ - Environmentally related tax revenues (aggregated)
  - GHG emissions by economic sector
  - Added value by economic sector (using the same sector as the GHG emissions one)
  - GDP_value
@@ -567,7 +567,7 @@ all_merged <- Envt_Tax_Revenues |>
   left_join(Warm_Households, by = c("iso3", "TIME_PERIOD")) |>
   left_join(GII, by = c("iso3", "TIME_PERIOD")) |>
   left_join(coef_ineq, by = c("iso3", "TIME_PERIOD")) |>
-  select(iso3, TIME_PERIOD, tax_category, sector, hhtyp, incgrp, Envt_Tax_Revenues_value, AV_value, GDP_value, GHG_Emissions_value, Warm_Households_value, GII_value, coef_ineq_value)
+  select(iso3, TIME_PERIOD, sector, hhtyp, incgrp, Envt_Tax_Revenues_value, AV_value, GDP_value, GHG_Emissions_value, Warm_Households_value, GII_value, coef_ineq_value)
 ```
 
 # Descriptive analyzes
@@ -880,17 +880,17 @@ all_merged_plus_leads <- merge(all_merged, GHG_Emissions,
   by = c("iso3", "TIME_PERIOD", "sector", "GHG_Emissions_value"),
   all.x = TRUE)
 all_merged_plus_leads <- all_merged_plus_leads |>
-    select(iso3, TIME_PERIOD, tax_category, Envt_Tax_Revenues_value, GHG_Emissions_value, GHG_Emissions_value.lead1, GHG_Emissions_value.lead2, GHG_Emissions_value.lead3, GHG_Emissions_value.lead4, GHG_Emissions_value.lead5 )
+    select(iso3, TIME_PERIOD, Envt_Tax_Revenues_value, GHG_Emissions_value, GHG_Emissions_value.lead1, GHG_Emissions_value.lead2, GHG_Emissions_value.lead3, GHG_Emissions_value.lead4, GHG_Emissions_value.lead5 )
 ```
 
-
-```{r}
 reg_results <- lapply(1:5, function(k) {formula_k <- as.formula(
     paste0("GHG_Emissions_value.lead", k,
            " ~ Envt_Tax_Revenues_value + GDP_value + sector + TIME_PERIOD"))
-  lm(formula_k, data = merged)})
+  lm(formula_k, data = all_merged)})
 
-lapply(reg_results, summary)
+l# apply(reg_results, summary)
+```{r}
+
 ```
 ##### Comment :
 
@@ -901,20 +901,6 @@ In all five regressions, the coefficient on environmental tax revenues is negati
 All other coefficients are close to the ones saw before (GDP around 0.043, Manufacturing: +15,200 to +16,100 units, Public electricity and heat production: +25,150 to +26,930 units, Transport: approximately +16,100 units, and time has coefficients between –902 and –959, all highly significant)
 
 
-### d. Between tax category and GHG sector
-
-Here we try to evaluate the coefficient between an increase in tax in one specific area (environmentally related taxes are grouped by what sector they impact : transport, energy, resource or pollution) in the year n and the impact on Greenhouse gases emissions in each sector, in the year n+k, most efficient lag.
-
-```{r, echo=FALSE}
-all_merged$tax_category <- as.factor(all_merged$tax_category)
-
-model_taxcat <- lm(GHG_Emissions_value ~ tax_category + GDP_value + sector + TIME_PERIOD,
-                   data = all_merged)
-
-summary(model_taxcat)
-```
-
-##### Comment :
 
 ## 2. Between taxes and social inequalities
 ```{r, echo=FALSE}
@@ -942,52 +928,13 @@ short comments (redo)
 
 3.  Effect on gender inequality (GII) Higher environmental taxes slightly reduce gender inequality (coefficient = -1.115×10⁻⁶, p \< 0.001)**KUA?il faut qu'on explique pk !**!. The model explains only 4% of GII variation (R² = 0.042), indicating a statistically clear but economically minor effect.
 
-#### Graphical representation
-
-```{r, echo=FALSE}
-ineq_plot_data <- all_merged %>%
-  select(
-    Envt_Tax_Revenues_value,
-    Warm_Households_value,
-    coef_ineq_value,
-    GII_value
-  ) %>%
-  pivot_longer(
-    cols = c(Warm_Households_value, coef_ineq_value, GII_value),
-    names_to = "inequality_indicator",
-    values_to = "ineq_value"
-  ) %>%
-    filter(
-    !is.na(Envt_Tax_Revenues_value),
-    !is.na(ineq_value),
-    is.finite(Envt_Tax_Revenues_value),
-    is.finite(ineq_value)
-  )
-
-ggplot(ineq_plot_data,
-       aes(x = Envt_Tax_Revenues_value, y = ineq_value)) +
-  geom_point(alpha = 0.1, size = 1, color = "darkgreen") +
-  geom_smooth(method = "lm", se = TRUE, color = "darkred") +
-  facet_wrap(~inequality_indicator, scales = "free_y") +
-  labs(
-    title = "Relationship Between Environmental Tax Revenues and Social Inequality Indicators",
-    x = "Environmental Tax Revenues",
-    y = "Value of Social Inequality Indicator"
-  ) +
-  theme_minimal()
-```
-
-
-
 ## 3. Between tax and economy
 ->what is the impact of environmental taxes on the economy ? 
 
 ### 3.1. Between taxes and GDP
 #### Regression
 ```{r, echo=FALSE}
-all_tax_data <- all_merged %>%
-  filter(tax_category == "Any tax base")
-model_gdp_tax <- lm(GDP_value ~ Envt_Tax_Revenues_value, data = all_tax_data)
+model_gdp_tax <- lm(GDP_value ~ Envt_Tax_Revenues_value, data = all_merged)
 summary(model_gdp_tax)
 ```
 
@@ -1003,7 +950,7 @@ The overall model significance is confirmed by the extremely large F-statistic (
 #### Graphical representation
 
 ```{r, echo=FALSE}
-clean_tax_data <- all_tax_data %>%
+clean_tax_data <- all_merged %>%
   filter(
     !is.na(GDP_value),
     !is.na(Envt_Tax_Revenues_value),
@@ -1012,14 +959,14 @@ clean_tax_data <- all_tax_data %>%
   )
 
 ggplot(clean_tax_data, aes(x = Envt_Tax_Revenues_value, y = GDP_value)) +
-  geom_point(alpha = 0.1, size = 1.2, color = "darkgreen") +
-  geom_smooth(method = "lm", se = TRUE, color = "darkred") +
   labs(
     title = "Relationship between Environmental Tax Revenues and GDP",
     x = "Environmental Tax Revenues",
     y = "GDP"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(legend.title = element_text(size = 10, face = "bold"))
+
 ```
 
 ### 3.2. Between taxes and added value
