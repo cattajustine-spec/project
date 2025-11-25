@@ -48,6 +48,8 @@ library(plotly)
 library(tidyr)
 library(knitr)
 library(plm)
+library(tidyverse)
+library(broom)
 ```
 
 ```{r, echo=FALSE}
@@ -1118,10 +1120,18 @@ predicted_Warm
 
 # Forecasting: if we plan to get to the 0 net emission by 2050
 
-We propose a tax of ... to reach the 0 net emission by 2050. blabla comment on l'a trouvée...
+In this project, we are trying to look at the level of tax that would be necessary to reach the 0 net emissions by 2050 required by the European Union. To do so, we should first look at the level of tax that allows for this evolution, and then check the evolution of the GHG emissions per sector induced by this level of tax. Furthermore, we should look at the impact of this level of tax on the social inequalities and on the economy. 
 
-### 1. Levels greenhouse gas emissions reached with our proposed tax
-->check for all taxes & per taxes (en regardant surtout la taxe la + efficace sur les GHG, déterminée dans la section régressions linéaires), quel montant ? 
+
+### 1. Level of tax to reach the 0 net emissions
+```{r}
+
+```
+
+
+### 2. Levels greenhouse gas emissions to reach 
+
+
 ```{r, echo=FALSE}
 model_ghg_tax <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value, data = all_merged)
 future <- data.frame(Envt_Tax_Revenues_value = seq(min(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
@@ -1131,9 +1141,7 @@ predicted_GHG <- predict(model_ghg_tax, newdata = future)
 predicted_GHG
 ```
 ##### Comment :
-
-
-### 2. Social inequalities
+### 3. Social inequalities w/this tax
 
 ```{r, echo=FALSE}
 
@@ -1156,7 +1164,7 @@ predicted_Warm
 ##### Comment :
 
 
-### 3. Is the model viable ? Its impact on the GDP 
+### 4. Is the model viable ? Its impact on the GDP 
 
 ```{r, echo=FALSE}
 
