@@ -381,6 +381,20 @@ EU27_Coefineq <- coef_ineq |> #computing the average European coefficient of hum
   mutate(iso3 = "EU27") |>
   relocate(iso3)
 coef_ineq <- bind_rows(coef_ineq, EU27_Coefineq)
+
+EU27_Warming <- Warm_Households |>  #computing the average European inability to keep home adequately warm, depending on the household composition and income.  
+  group_by(TIME_PERIOD, hhtyp, incgrp) |>
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
+  mutate(geo = "EU27") |>
+  relocate(geo)
+
+#adding in Warm households, using country keys to have by iso3
+Warm_Households <- Warm_Households |> rename(iso2 = geo) |>
+  left_join(eu_country_key |> select(iso2, iso3), by = "iso2")
+EU27_Warming <- EU27_Warming |> rename(iso2 = geo) |> left_join(eu_country_key |> select(iso2, iso3), by = "iso2")
+Warm_Households <- bind_rows(Warm_Households, EU27_Warming) 
+Warm_Households <- Warm_Households |> select (iso3, TIME_PERIOD, hhtyp, incgrp, OBS_VALUE)
+
 ```
 
 #### Add European total per sector
