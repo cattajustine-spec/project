@@ -10,7 +10,7 @@ format: html
   Merging the data sets
   Descriptive analyses
   Linear Regressions
-  Forecastings : if we don't change anything / if we try to reach zero net emissions by 2050
+  Forecasts : if we don't change anything / if we try to reach zero net emissions by 2050
   Conclusion
   
 # Introduction
@@ -36,8 +36,9 @@ Our project is available on github [here](https://github.com/cattajustine-spec/p
 
 ### Setup
 
-```{r, echo=FALSE}
+```{r echo=FALSE}
 #| message: false
+#| warning: false
 library(vroom)
 library(ggplot2)
 library(knitr)
@@ -1053,32 +1054,21 @@ We use this forecast to try to predict the impact of environmental taxes on diff
 
 ### 1. Greenhouse Gas emissions by sector
 
+#### a. Time series forecast of the total Greenhouse Gas emissions
 ```{r, echo=FALSE}
 agg_yearly <- EU27_GHG |>
   filter(!is.na(GHG_Emissions_value), !is.na(sector)) |>
   group_by(TIME_PERIOD) |>
   summarise(GHG_total = sum(GHG_Emissions_value, na.rm = TRUE))
 
-model_agg <- lm(GHG_total ~ TIME_PERIOD, data = agg_yearly)
-
-future_agg <- data.frame(TIME_PERIOD = seq(from = 2024, to = 2050, 1))
-forecast_agg <- predict(model_agg, newdata = future_agg)
-
-cbind(future_agg, predicted = forecast_agg)
-
-```
-
-##### essai de régression time series
-```{r}
-
 ts_data <- ts(agg_yearly$GHG_total, start=min(agg_yearly$TIME_PERIOD))
 model <- auto.arima(ts_data)
-forecast(model, h=27)
-
+fc <- forecast(model, h=27)
+fc
 ```
 
 
-
+#### Ploting the forecast
 
 ##### Our values between 1990 and 2023
 ```{r}
@@ -1087,10 +1077,37 @@ EU27_ghg_tot <- EU27_GHG |>
   group_by(TIME_PERIOD) |>
   summarise(GHG_total = sum(GHG_Emissions_value, na.rm = TRUE)) |>
   arrange(TIME_PERIOD)
-
-EU27_ghg_tot
 ```
 
+```{r}
+# model -> data set -> plot
+forecast_df <- tibble(TIME_PERIOD = 
+  (max(agg_yearly$TIME_PERIOD) + 1):(max(agg_yearly$TIME_PERIOD) + 27),
+  Point_Forecast = fc$mean, Lo80 = fc$lower[, 1], Hi80 = fc$upper[, 1], Lo95 = fc$lower[, 2], Hi95 = fc$upper[, 2])
+```
+
+
+```{r}
+GHG_all_2050 <- ggplot() +
+  geom_line(data=EU27_ghg_tot, aes(x = TIME_PERIOD, y = GHG_total, color = "Observations")) +
+  geom_line(data=forecast_df, aes(x = TIME_PERIOD, y = Point_Forecast, color = "Time series forecast")) +
+  geom_point(data=forecast_df, aes(x = TIME_PERIOD, y = Lo95, color = "Low 95%")) +
+  geom_point(data=forecast_df, aes(x = TIME_PERIOD, y = Hi95, color = "High 95%")) +
+   geom_vline(xintercept = 2023.5, linetype = "dotted") +
+  scale_color_manual(
+    name = "Legend",
+    values = c("Observations" = "steelblue", "Time series forecast" = "brown2", "Low 95%" = "salmon1", "High 95%" = "salmon1")
+  ) +
+  labs(
+    title = "EU27 Average Greenhouse gas emissions in total, forecast to 2050",
+    x = "Year",
+    y = "Greenhouse gas emissions (thousands of ton of CO2)"
+  ) +
+  scale_y_continuous(limits = c(0, 4e+06)) +  
+  theme_minimal()
+
+ggplotly(GHG_all_2050)
+```
 
 
 
@@ -1122,7 +1139,7 @@ predicted_GII <- predict(model_gii_tax, newdata = data.frame(Envt_Tax_Revenues_v
   length.out = 25)))
 predicted_GII
 
-## RAJOUTER COEF INEQ
+# RAJOUTER COEF INEQ
 
 model_warm_tax <- lm(Warm_Households_value ~ Envt_Tax_Revenues_value, data = all_merged)
 predicted_Warm <- predict(model_warm_tax, newdata = data.frame(Envt_Tax_Revenues_value = seq(
