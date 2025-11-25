@@ -653,7 +653,7 @@ kable(summary_stats_AV, caption = "Descriptive statistics of EU average gross ad
 
 ##### Comment :
 
-Looking at the EU27 average gross value added by sector, three major sectors dominate and remain close in magnitude: manufacturing, transport, and industry (with energy related industries such as public electricity and heat production). Each of these sectors shows mean added values between 80 and 96 billion USD, making them central pillars of the European economy.
+Looking at the EU27 average gross value added by sector, three major sectors dominate and remain close in magnitude: manufacturing, transport, and industry (with energy related industries such as public electricity and heat production). Each of these sectors shows mean added values between 80 and 96 billion USD, making them the core of the European economy. They all started with a high value between 1990 and 1994, before coming down sharply in 1995. They increased again after 2002, and stayed stable until 2021.
 
 Agriculture, by contrast, contributes much less, with an average value added of only ≈ 9.5 billion USD, which is expected given its smaller role in modern European economies. The manufacturing sector alone ranges from 46 to 142 billion USD, highlighting both its scale and its variability over time.
 
@@ -827,11 +827,10 @@ The coefficient of human inequality varies widely across Europe. Spain records t
 The EU27 average sits at ≈ 8.64, but the dispersion across countries is notable. Several Southern and Eastern European countries—such as Portugal (≈ 12.75), Italy (≈ 12.08), and Bulgaria (≈ 11.84)—exhibit consistently high levels of human inequality. In contrast, Nordic and Central European countries such as Denmark (≈ 5.77) and Finland (≈ 5.73) maintain some of the lowest inequality levels across the data set.
 
 # Linear Regressions
-MAYBE ADD CORRELATION GRAPHS !!
 
 ## 1. Between taxes and Greenhouse Gases emissions
 
-We try to answer one of our fundamental question : "Do taxes reduce emissions ?"
+We try to answer one of our fundamental question : "Do taxes reduce emissions ?".
 
 ### a. Between taxes (n) and GHG (n)
 
@@ -862,12 +861,11 @@ The coefficient on the time variable is –913, highly significant (p < 0.001), 
 
 Overall, the results suggest that GDP and sectoral composition remain the dominant drivers of emissions. Environmental tax revenues show a statistically significant negative association with emissions, but the magnitude of the effect is small. The pronounced negative time trend indicates that greenhouse gas emissions have declined over the period independently of the direct influence of environmental tax revenues.
 
-### b. Between taxes (n) and GHG (n+k, given k € [1; 5] to have enough data)
+### b. Between taxes (n) and GHG (n+k, given k € [1; 5])
 
 Now we try to evaluate the coefficient between an increase in taxes in the year n and the impact on Greenhouse gases emissions in the following years n+1, to n+5.
 
 ```{r, echo=FALSE}
-
 # Create leads 1 to 5
 for (k in 1:5) {
   GHG_Emissions[[paste0("GHG_Emissions_value.lead", k)]] <- ave(
@@ -880,27 +878,25 @@ all_merged_plus_leads <- merge(all_merged, GHG_Emissions,
   by = c("iso3", "TIME_PERIOD", "sector", "GHG_Emissions_value"),
   all.x = TRUE)
 all_merged_plus_leads <- all_merged_plus_leads |>
-    select(iso3, TIME_PERIOD, Envt_Tax_Revenues_value, GHG_Emissions_value, GHG_Emissions_value.lead1, GHG_Emissions_value.lead2, GHG_Emissions_value.lead3, GHG_Emissions_value.lead4, GHG_Emissions_value.lead5 )
+    select(iso3, TIME_PERIOD, GDP_value, sector, Envt_Tax_Revenues_value, GHG_Emissions_value, GHG_Emissions_value.lead1, GHG_Emissions_value.lead2, GHG_Emissions_value.lead3, GHG_Emissions_value.lead4, GHG_Emissions_value.lead5 )
 ```
 
+
+```{r}
 reg_results <- lapply(1:5, function(k) {formula_k <- as.formula(
     paste0("GHG_Emissions_value.lead", k,
            " ~ Envt_Tax_Revenues_value + GDP_value + sector + TIME_PERIOD"))
-  lm(formula_k, data = all_merged)})
+  lm(formula_k, data = all_merged_plus_leads)})
 
-l# apply(reg_results, summary)
-```{r}
-
+lapply(reg_results, summary)
 ```
 ##### Comment :
 
 We estimated a series of linear regressions to examine whether environmental tax revenues in year n have an effect on greenhouse gas emissions in subsequent years, from n+1 to n+5. Across the five models, the number of observations decreases gradually as the lead increases, because later lead variables contain more missing data. Despite this reduction in sample size, all models explain roughly 65% of the variation in emissions (R-squared between 0.650 and 0.654), which is highly consistent across specifications.
 
-In all five regressions, the coefficient on environmental tax revenues is negative, statistically significant, and relatively stable. It ranges from –0.052 in the n+1 specification to –0.061 in the n+2 and n+3 models, before decreasing slightly to –0.058 and –0.051 at horizons n+4 and n+5. These results suggest that higher environmental tax revenues are associated with slightly lower greenhouse gas emissions in subsequent years. However, although the relationship is statistically robust (p < 0.001 in all models), the magnitude of the effect remains small, indicating a limited practical impact of tax levels on future emissions.
+Across the five specifications, the coefficient on environmental tax revenues is negative, statistically significant, and remarkably stable. It ranges from –0.052 at horizon n + 1 to –0.061 at n + 2 and n + 3, before settling around –0.058 at n + 4 and –0.051 at n + 5. This pattern suggests that higher environmental tax revenues are systematically associated with slightly lower future GHG emissions, although the magnitude of the effect remains small in practical terms. Statistical significance is very strong in all models (p < 0.001).
 
-All other coefficients are close to the ones saw before (GDP around 0.043, Manufacturing: +15,200 to +16,100 units, Public electricity and heat production: +25,150 to +26,930 units, Transport: approximately +16,100 units, and time has coefficients between –902 and –959, all highly significant)
-
-
+All other coefficients are close to the ones saw before (GDP around 0.043, Manufacturing: +15,200 to +16,100 units, Industry (including energy production): +25,000 to +26,900 units, Transport: approximately +16,100 units, and time has coefficients between –902 and –959, all highly significant)
 
 ## 2. Between taxes and social inequalities
 ```{r, echo=FALSE}
@@ -920,18 +916,13 @@ summary(model_gii_tax)
 ```
 ##### Comment :
 
-short comments (redo)
-
-1. Heating difficulties Higher environmental taxes slightly reduce households’ inability to heat their homes (coefficient = -5.97×10⁻⁵, p \< 0.001). Gender inequality (GII) and overall inequality (coef_ineq) are the main drivers, with coefficients 71.2 and 3.02, respectively ??? (both p \< 0.001). Household type and income group also matter. Model explains 59% of variation (adj. R² = 0.590).
-
-2.  Effect on income inequality (??warming ??) Higher environmental taxes are associated with a tiny increase in income inequality (coefficient = 1.705×10⁻⁵, p \< 0.001). The model explains less than 1% of inequality variation (R² = 0.0095), so the economic effect is very small despite statistical significance.
-
-3.  Effect on gender inequality (GII) Higher environmental taxes slightly reduce gender inequality (coefficient = -1.115×10⁻⁶, p \< 0.001)**KUA?il faut qu'on explique pk !**!. The model explains only 4% of GII variation (R² = 0.042), indicating a statistically clear but economically minor effect.
+REDOOOO
 
 ## 3. Between tax and economy
 ->what is the impact of environmental taxes on the economy ? 
 
 ### 3.1. Between taxes and GDP
+
 #### Regression
 ```{r, echo=FALSE}
 model_gdp_tax <- lm(GDP_value ~ Envt_Tax_Revenues_value, data = all_merged)
@@ -1007,8 +998,6 @@ Manufacturing sector
 
 The manufacturing sector also displays a positive and statistically significant effect of environmental tax revenues on added value (p < 0.001). The estimated coefficient is close to that of the transport sector, indicating a comparably strong association. The model explains about 34% of the variation in added value, suggesting a substantial link between fiscal environmental instruments and economic performance in manufacturing. As in other sectors, these results reflect correlation rather than causality, but they indicate that higher environmental tax revenues tend to coincide with higher manufacturing activity.
 
-
-
 Global comparative summary
 
 Across all four sectors—transport, agriculture, industry (including energy), and manufacturing—the relationship between environmental tax revenues and added value is consistently positive, highly significant, and economically meaningful. Although the strength of the effect varies across sectors, the overall pattern suggests that higher environmental tax revenues tend to coincide with higher levels of sectoral economic activity.
@@ -1058,15 +1047,9 @@ Across all sectors, environmental tax revenues are positively and significantly 
 
 We use this forecast to try to predict the impact of environmental taxes on different variables.
 
-### 1. Greenhouse Gas emissions
-
+### 1. Greenhouse Gas emissions by sector
 
 ```{r, echo=FALSE}
-model_ghg_tax <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value, data = all_merged)
-future <- data.frame(Envt_Tax_Revenues_value = seq(min(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
-                                      max(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
-                                      length.out = 25))
-predicted_GHG <- predict(model_ghg_tax, newdata = future)
 predicted_GHG
 ```
 
@@ -1148,6 +1131,7 @@ predicted_Warm
 
 
 ### 3. Is the model viable ? Its impact on the GDP 
+
 ```{r, echo=FALSE}
 
 ```
