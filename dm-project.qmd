@@ -48,6 +48,7 @@ library(plotly)
 library(tidyr)
 library(knitr)
 library(plm)
+library(forecast)
 ```
 
 ```{r, echo=FALSE}
@@ -1039,6 +1040,50 @@ We use this forecast to try to predict the impact of environmental taxes on diff
 ### 1. Greenhouse Gas emissions by sector
 
 ```{r, echo=FALSE}
+agg_yearly <- EU27_GHG |>
+  filter(!is.na(GHG_Emissions_value), !is.na(sector)) |>
+  group_by(TIME_PERIOD) |>
+  summarise(GHG_total = sum(GHG_Emissions_value, na.rm = TRUE))
+
+model_agg <- lm(GHG_total ~ TIME_PERIOD, data = agg_yearly)
+
+future_agg <- data.frame(TIME_PERIOD = seq(from = 2024, to = 2050, 1))
+forecast_agg <- predict(model_agg, newdata = future_agg)
+
+cbind(future_agg, predicted = forecast_agg)
+
+```
+
+##### essai de régression time series
+```{r}
+
+ts_data <- ts(agg_yearly$GHG_total, start=min(agg_yearly$TIME_PERIOD))
+model <- auto.arima(ts_data)
+forecast(model, h=27)
+
+```
+
+
+
+
+##### Our values between 1990 and 2023
+```{r}
+EU27_ghg_tot <- EU27_GHG |>  
+  filter(!is.na(GHG_Emissions_value)) |>
+  group_by(TIME_PERIOD) |>
+  summarise(GHG_total = sum(GHG_Emissions_value, na.rm = TRUE)) |>
+  arrange(TIME_PERIOD)
+
+EU27_ghg_tot
+```
+
+
+
+
+##### Comment :
+This is a linear forecast showing a decrease in greenhouse gas emissions over the projected horizon (2050) of roughly 400 thousand of tons per year. Starting from about 37800 units, emissions reach around 25100 units by the final step. This downward trend suggests that, under current conditions and model assumptions, emissions are expected to continue slowly decrease without signs of stabilization or reversal. In other words, the model anticipates persistent, long-term decrease in GHG emissions unless significant policy or structural changes occur.
+
+```{r}
 model_ghg_year <- lm(GHG_Emissions_value ~ TIME_PERIOD, data = all_merged)
 future <- data.frame(TIME_PERIOD = seq(min(all_merged$TIME_PERIOD),
                                        max(all_merged$TIME_PERIOD), 1))
