@@ -10,7 +10,7 @@ format: html
   Merging the data sets
   Descriptive analyses
   Linear Regressions
-  Forecastings : if we don't change anything / if we try to reach zero net emissions by 2050
+  Forecasts : if we don't change anything / if we try to reach zero net emissions by 2050
   Conclusion
   
 # Introduction
@@ -36,8 +36,9 @@ Our project is available on github [here](https://github.com/cattajustine-spec/p
 
 ### Setup
 
-```{r, echo=FALSE}
+```{r echo=FALSE}
 #| message: false
+#| warning: false
 library(vroom)
 library(ggplot2)
 library(knitr)
@@ -50,6 +51,7 @@ library(knitr)
 library(plm)
 library(tidyverse)
 library(broom)
+library(forecast)
 ```
 
 ```{r, echo=FALSE}
@@ -174,8 +176,8 @@ eu_country_key <- data.frame(name_en = eu_countries) |>
   mutate(
     iso3 = countrycode(name_en, origin = "country.name", destination = "iso3c"),
     iso2 = countrycode(name_en, origin = "country.name", destination = "iso2c"),
-    name_fr = countrycode(name_en, origin = "country.name", destination = "country.name.fr")
-  ) 
+    name_fr = countrycode(name_en, origin = "country.name", destination = "country.name.fr"))  |>
+  bind_rows(tibble(name_en = "EU27", name_fr = "EU27", iso2 = "EU27", iso3 = "EU27"))
 ```
 
 ### Removing unwanted variables
@@ -257,7 +259,7 @@ In this data set, we are only interested in the following variables:
 
 ```{r, echo=FALSE}
 GHG_Emissions <- GHG_Emissions |>
-  select(airpol, src_crf, geo, TIME_PERIOD, OBS_VALUE) |>
+  select(src_crf, geo, TIME_PERIOD, OBS_VALUE) |>
   filter(geo %in% eu_country_key$name_en, 
          src_crf != "Total (excluding memo items)")
 ```
@@ -369,13 +371,6 @@ EU27_Tax <- Envt_Tax_Revenues |>   #computing the average European environmental
   relocate(REF_AREA)
 Envt_Tax_Revenues <- bind_rows(Envt_Tax_Revenues, EU27_Tax)
 
-EU27_Warming <- Warm_Households |>  #computing the average European inability to keep home adequately warm, depending on the household composition and income.  
-  group_by(TIME_PERIOD, hhtyp, incgrp) |>
-  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(geo = "EU27") |>
-  relocate(geo)
-Warm_Households <- bind_rows(Warm_Households, EU27_Warming)
-
 EU27_GII <- GII |>  #computing the average European gender inequality index. 
   group_by(TIME_PERIOD) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
@@ -389,27 +384,48 @@ EU27_Coefineq <- coef_ineq |> #computing the average European coefficient of hum
   mutate(iso3 = "EU27") |>
   relocate(iso3)
 coef_ineq <- bind_rows(coef_ineq, EU27_Coefineq)
+
+EU27_Warming <- Warm_Households |>  #computing the average European inability to keep home adequately warm, depending on the household composition and income.  
+  group_by(TIME_PERIOD, hhtyp, incgrp) |>
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
+  mutate(geo = "EU27") |>
+  relocate(geo)
+
+#adding in Warm households, using country keys to have by iso3
+Warm_Households <- Warm_Households |> rename(iso2 = geo) |>
+  left_join(eu_country_key |> select(iso2, iso3), by = "iso2")
+EU27_Warming <- EU27_Warming |> rename(iso2 = geo) |> left_join(eu_country_key |> select(iso2, iso3), by = "iso2")
+Warm_Households <- bind_rows(Warm_Households, EU27_Warming) 
+Warm_Households <- Warm_Households |> select (iso3, TIME_PERIOD, hhtyp, incgrp, OBS_VALUE)
+
 ```
 
-#### Add country average (accross sectors)
+#### Add European total per sector
 
-For the data sets that are described per economic sector, we have to compute the European average across sectors:
+For the data sets that are described per economic sector, we have to compute the European total sum per sectors:
 
 ```{r, echo=FALSE}
 #| message: false
 EU27_AV <- Added_value |> #computing the average European gross added value, depending on the economic sector.  
   group_by(TIME_PERIOD, `Activité économique`) |>
-  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
+  summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) |>
   mutate(REF_AREA = "EU27") |>
   relocate(REF_AREA)
 Added_value <- bind_rows(Added_value, EU27_AV)
 
 EU27_GHG <- GHG_Emissions |> #computing the average European greenhouse gas emissions, depending on the economic sector.  
   group_by(TIME_PERIOD, src_crf) |>
-  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(geo = "EU average") |>
+  summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) |>
+  mutate(geo = "EU27") |>
   relocate(geo)
-GHG_Emissions <- bind_rows(GHG_Emissions, EU27_GHG)
+
+#adding in GHG_Emissions, using country keys to have by iso3
+GHG_Emissions <- GHG_Emissions |> rename(name_en = geo) |>
+  left_join(eu_country_key |> select(name_en, iso3), by = "name_en")
+EU27_GHG <- EU27_GHG  |> rename(name_en = geo) |> left_join(eu_country_key |> select(name_en, iso3), by = "name_en")
+GHG_Emissions <- bind_rows(GHG_Emissions, EU27_GHG) 
+GHG_Emissions <- GHG_Emissions  |> select (iso3, TIME_PERIOD, src_crf, OBS_VALUE)
+
 ```
 
 ### Modifiying the characteristics of the variables
@@ -480,7 +496,7 @@ GHG_Emissions <- GHG_Emissions|>  #here we are combining the sectors related to 
       TRUE ~ src_crf
     )
   ) |>
-  group_by(geo, TIME_PERIOD, src_crf) |>
+  group_by(iso3, TIME_PERIOD, src_crf) |>
   summarise(GHG_Emissions_value = sum(GHG_Emissions_value), .groups = "drop")
 GHG_Emissions <- GHG_Emissions |>
   mutate(src_crf = recode(src_crf, 
@@ -495,7 +511,7 @@ EU27_GHG <- EU27_GHG|>
       TRUE ~ src_crf
     )
   ) |>
-  group_by(geo, TIME_PERIOD, src_crf) |>
+  group_by(name_en, TIME_PERIOD, src_crf) |>
   summarise(GHG_Emissions_value = sum(GHG_Emissions_value), .groups = "drop")
 EU27_GHG <- EU27_GHG |>
   mutate(src_crf = recode(src_crf, 
@@ -523,13 +539,8 @@ EU27_AV <- EU27_AV |>
   rename(iso3 = REF_AREA,
     sector = `Activité économique`) 
 
-GHG_Emissions <- GHG_Emissions |> rename(name_en = geo,
-                                         sector = src_crf)
-EU27_GHG <- EU27_GHG |> rename(name_en = geo,
-                                         sector = src_crf)
-
-Warm_Households <- Warm_Households |> rename(iso2 = geo)
-EU27_Warming <- EU27_Warming |> rename(iso2 = geo)
+GHG_Emissions <- GHG_Emissions |> rename (sector = src_crf)
+EU27_GHG <- EU27_GHG |> rename (sector = src_crf)
 ```
 
 
@@ -549,13 +560,7 @@ We do this big join to have in only one data set all these variables:
       - household type
       - income group
 
-```{r, echo=FALSE}
-GHG_Emissions <- GHG_Emissions |>
-  left_join(eu_country_key |> select(name_en, iso3), by = "name_en")
-
-Warm_Households <- Warm_Households |>
-  left_join(eu_country_key |> select(iso2, iso3), by = "iso2")
-```
+### Merging all data sets
 
 
 ```{r, echo=FALSE}
@@ -872,7 +877,7 @@ Now we try to evaluate the coefficient between an increase in taxes in the year 
 for (k in 1:5) {
   GHG_Emissions[[paste0("GHG_Emissions_value.lead", k)]] <- ave(
     GHG_Emissions$GHG_Emissions_value, 
-    GHG_Emissions$name_en, GHG_Emissions$sector,
+    GHG_Emissions$iso3, GHG_Emissions$sector,
     FUN = function(x) c(x[(1+k):length(x)], rep(NA, k)))}
 
 # add them in all merged
@@ -884,7 +889,7 @@ all_merged_plus_leads <- all_merged_plus_leads |>
 ```
 
 
-```{r}
+```{r, echo=FALSE}
 reg_results <- lapply(1:5, function(k) {formula_k <- as.formula(
     paste0("GHG_Emissions_value.lead", k,
            " ~ Envt_Tax_Revenues_value + GDP_value + sector + TIME_PERIOD"))
@@ -1051,35 +1056,75 @@ We use this forecast to try to predict the impact of environmental taxes on diff
 
 ### 1. Greenhouse Gas emissions by sector
 
+#### a. Time series forecast of the total Greenhouse Gas emissions
+```{r, echo=FALSE}
+agg_yearly <- EU27_GHG |>
+  filter(!is.na(GHG_Emissions_value), !is.na(sector)) |>
+  group_by(TIME_PERIOD) |>
+  summarise(GHG_total = sum(GHG_Emissions_value, na.rm = TRUE))
+
+ts_data <- ts(agg_yearly$GHG_total, start=min(agg_yearly$TIME_PERIOD))
+model <- auto.arima(ts_data)
+fc <- forecast(model, h=27)
+fc
+```
+
+
+#### Ploting the forecast
+
+##### Our values between 1990 and 2023
+```{r, echo=FALSE}
+EU27_ghg_tot <- EU27_GHG |>  
+  filter(!is.na(GHG_Emissions_value)) |>
+  group_by(TIME_PERIOD) |>
+  summarise(GHG_total = sum(GHG_Emissions_value, na.rm = TRUE)) |>
+  arrange(TIME_PERIOD)
+```
+
+```{r, echo=FALSE}
+# model -> data set -> plot
+forecast_df <- tibble(TIME_PERIOD = 
+  (max(agg_yearly$TIME_PERIOD) + 1):(max(agg_yearly$TIME_PERIOD) + 27),
+  Point_Forecast = fc$mean, Lo80 = fc$lower[, 1], Hi80 = fc$upper[, 1], Lo95 = fc$lower[, 2], Hi95 = fc$upper[, 2])
+```
+
+
+```{r, echo=FALSE}
+GHG_all_2050 <- ggplot() +
+  geom_line(data=EU27_ghg_tot, aes(x = TIME_PERIOD, y = GHG_total, color = "Observations")) +
+  geom_line(data=forecast_df, aes(x = TIME_PERIOD, y = Point_Forecast, color = "Time series forecast")) +
+  geom_point(data=forecast_df, aes(x = TIME_PERIOD, y = Lo95, color = "Low 95%")) +
+  geom_point(data=forecast_df, aes(x = TIME_PERIOD, y = Hi95, color = "High 95%")) +
+   geom_vline(xintercept = 2023.5, linetype = "dotted") +
+  scale_color_manual(
+    name = "Legend",
+    values = c("Observations" = "steelblue", "Time series forecast" = "brown2", "Low 95%" = "salmon1", "High 95%" = "salmon1")
+  ) +
+  labs(
+    title = "EU27 Average Greenhouse gas emissions in total, forecast to 2050",
+    x = "Year",
+    y = "Greenhouse gas emissions (thousands of ton of CO2)"
+  ) +
+  scale_y_continuous(limits = c(0, 4e+06)) +  
+  theme_minimal()
+
+ggplotly(GHG_all_2050)
+```
+
+
+
+##### Comment :
+This is a linear forecast showing a decrease in greenhouse gas emissions over the projected horizon (2050) of roughly 400 thousand of tons per year. Starting from about 37800 units, emissions reach around 25100 units by the final step. This downward trend suggests that, under current conditions and model assumptions, emissions are expected to continue slowly decrease without signs of stabilization or reversal. In other words, the model anticipates persistent, long-term decrease in GHG emissions unless significant policy or structural changes occur.
+
 ```{r, echo=FALSE}
 model_ghg_year <- lm(GHG_Emissions_value ~ TIME_PERIOD, data = all_merged)
 future <- data.frame(TIME_PERIOD = seq(min(all_merged$TIME_PERIOD),
                                        max(all_merged$TIME_PERIOD), 1))
 predicted_GHG <- predict(model_ghg_year, newdata = future)
 predicted_GHG
-
 ```
 
-##### Comment :
-This is a
-The linear forecast shows a steady increase in greenhouse gas emissions over the projected horizon of roughly 6200 thousand of tons. Starting from about 19,900 units, emissions reach more than 168,000 units by the final step (2050). This upward trend suggests that, under current conditions and model assumptions, emissions are expected to continue growing without signs of stabilization or reversal. In other words, the model anticipates persistent, long-term increases in GHG emissions unless significant policy or structural changes occur.
 
-
-```{r}
-predictions_by_sector <- all_merged |>
-  filter(!is.na(sector) & !is.na(GHG_Emissions_value)) |>
-  group_by(sector, .by = "sector") |>
-  summarise(model = list(lm(GHG_Emissions_value ~ TIME_PERIOD, data = cur_data())),
-    .groups = "drop") |>
-  mutate(future = list(data.frame(TIME_PERIOD = seq(min(all_merged$TIME_PERIOD),
-                                               max(all_merged$TIME_PERIOD) + 5, 1))),
-    predicted = map2(model, future, ~ predict(.x, newdata = .y))) |>
-  select(sector, future, predicted) |>
-  unnest(c(future, predicted))
-
-predictions_by_sector
-
-```
 
 faire le plot
 avant 2023 et apres 2023
@@ -1096,7 +1141,7 @@ predicted_GII <- predict(model_gii_tax, newdata = data.frame(Envt_Tax_Revenues_v
   length.out = 25)))
 predicted_GII
 
-## RAJOUTER COEF INEQ
+# RAJOUTER COEF INEQ
 
 model_warm_tax <- lm(Warm_Households_value ~ Envt_Tax_Revenues_value, data = all_merged)
 predicted_Warm <- predict(model_warm_tax, newdata = data.frame(Envt_Tax_Revenues_value = seq(
@@ -1124,7 +1169,79 @@ In this project, we are trying to look at the level of tax that would be necessa
 
 
 ### 1. Level of tax to reach the 0 net emissions
-```{r}
+
+```{r, echo=FALSE}
+# --- 2) Extract EU27 GHG emissions (per sector, per year) ---
+overall_EU27GHG <- all_merged %>%
+  filter(iso3 == "EU27") %>%
+  group_by(TIME_PERIOD, sector) %>%
+  summarize(ghg = sum(GHG_Emissions_value, na.rm = TRUE), .groups = "drop")
+
+# --- 3) Merge GHG and TAX data ---
+data_forecast_tax_0net <- overall_EU27GHG %>%
+  left_join(EU27_Tax, by = "TIME_PERIOD") %>%
+  filter(!is.na(ghg), !is.na(Envt_Tax_Revenues_value)) %>%
+  mutate(
+    log_ghg_p1 = log(ghg + 1),
+    log_tax_p1 = log(Envt_Tax_Revenues_value + 1),
+    sector = as.factor(sector),
+    year = as.numeric(TIME_PERIOD)
+  )
+
+# ---- 4) Estimate model ----
+mod <- lm(log_ghg_p1 ~ log_tax_p1 + sector + year, data = data_model)
+summary(mod)
+
+# --- 5) Prediction function ---
+predict_total_ghg_given_tax <- function(Envt_Tax_Revenues_value, year_target = 2050, model = mod) {
+  sectors <- levels(data_model$sector)
+  newdata <- tibble(
+    sector = factor(sectors, levels = levels(data_model$sector)),
+    tax_eu = tax_value,
+    log_tax_p1 = log(tax_value + 1),
+    year = year_target
+  )
+  pred_log <- predict(model, newdata)
+  pred_ghg <- pmax(0, exp(pred_log) - 1)
+  tib <- tibble(sector = sectors, pred_ghg)
+  tib$total_ghg <- sum(pred_ghg)
+  tib
+}
+
+# --- 6) Solve for tax level in 2050 such that total emissions ≈ 0 ---
+epsilon <- 1e-6
+year_target <- 2050
+
+froot <- function(tax_val) {
+  predict_total_ghg_given_tax(tax_val, year_target)$total_ghg - epsilon
+}
+
+# Interval for solving
+tax_latest <- eu_tax_yearly %>% filter(TIME_PERIOD == max(TIME_PERIOD)) %>% pull(tax_eu)
+
+lower <- max(0, tax_latest * 0.5)
+upper <- max(tax_latest * 10, 1e6)
+
+# Expand upper bound until sign change
+attempt <- 1
+while(attempt <= 20 && froot(lower) * froot(upper) > 0) {
+  upper <- upper * 2
+  attempt <- attempt + 1
+}
+
+if(froot(lower) * froot(upper) <= 0) {
+  sol <- uniroot(froot, lower = lower, upper = upper, tol = 1e-10)
+  tax_2050_required <- sol$root
+} else {
+  warning("Could not find root — emissions cannot reach near-zero under this model.")
+  tax_2050_required <- NA
+}
+
+tax_2050_required
+
+# --- 7) Predicted sector-by-sector emissions at this tax level ---
+pred_2050 <- predict_total_ghg_given_tax(tax_2050_required, 2050)
+print(pred_2050)
 
 ```
 
