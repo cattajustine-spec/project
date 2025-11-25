@@ -34,7 +34,7 @@ By combining environmental effectiveness, economic feasibility, and social impac
 
 Our project is available on github [here](https://github.com/cattajustine-spec/project).
 
-### Setup
+## Setup
 
 ```{r echo=FALSE}
 #| message: false
@@ -406,7 +406,7 @@ For the data sets that are described per economic sector, we have to compute the
 
 ```{r, echo=FALSE}
 #| message: false
-EU27_AV <- Added_value |> #computing the average European gross added value, depending on the economic sector.  
+EU27_AV <- Added_value |> #computing the total European gross added value, depending on the economic sector.  
   group_by(TIME_PERIOD, `Activité économique`) |>
   summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) |>
   mutate(REF_AREA = "EU27") |>
@@ -448,7 +448,7 @@ Warm_Households$incgrp <- factor(Warm_Households$incgrp)
 EU27_Warming$incgrp <- factor(EU27_Warming$incgrp)
 ```
 
-##### Renaming some variables {#renamingsomevariables}
+#### Renaming some variables {#renamingsomevariables}
 
 To be able to merge our data sets in a data base, we need to modify the name of the variable **OBS_VALUE** that is in every data set to be able to identify which OBS_VALUE is associated to which data set.
 
@@ -632,7 +632,7 @@ Most other countries remain much smaller, except the Netherlands, which stands o
 p_va <- ggplot(EU27_AV, aes(x = TIME_PERIOD, y = AV_value, color = sector, group = sector)) +
   geom_line(linewidth = 1) +
   labs(
-    title = "EU27 Average Added Value per Sector",
+    title = "EU27 Total Added Value per Sector",
     x = "Year",
     y = "Value Added (million USD)",
     color = "Sector"
@@ -655,14 +655,14 @@ summary_stats_AV <- EU27_AV %>%
     SD = sd(AV_value, na.rm = TRUE)
   )
 
-kable(summary_stats_AV, caption = "Descriptive statistics of EU average gross added value by sector (all years combined)")
+kable(summary_stats_AV, caption = "Descriptive statistics of EU total gross added value by sector (all years combined)")
 ```
 
 ##### Comment :
 
-Looking at the EU27 average gross value added by sector, three major sectors dominate and remain close in magnitude: manufacturing, transport, and industry (with energy related industries such as public electricity and heat production). Each of these sectors shows mean added values between 80 and 96 billion USD, making them the core of the European economy. They all started with a high value between 1990 and 1994, before coming down sharply in 1995. They increased again after 2002, and stayed stable until 2021.
+Looking at the EU27 total gross added value by sector, three major sectors dominate and remain close in magnitude: manufacturing, transport, and industry (with energy related industries such as public electricity and heat production). Each of these sectors shows total added values between 610 and 3,410 billion USD, making them the core of the European economy. They all increased quite linearly accross the selected time period (1990 - 2024), with a slightly lower growth rate between 1995 and 2005. 
 
-Agriculture, by contrast, contributes much less, with an average value added of only ≈ 9.5 billion USD, which is expected given its smaller role in modern European economies. The manufacturing sector alone ranges from 46 to 142 billion USD, highlighting both its scale and its variability over time.
+Agriculture, by contrast, contributes much less, with a total added value of only ≈ 215 billion USD on average, which is expected given its smaller role in modern European economies. 
 
 ## 3. Greenhouse gas emissions by economic sector
 
