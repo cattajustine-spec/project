@@ -172,8 +172,8 @@ eu_country_key <- data.frame(name_en = eu_countries) |>
   mutate(
     iso3 = countrycode(name_en, origin = "country.name", destination = "iso3c"),
     iso2 = countrycode(name_en, origin = "country.name", destination = "iso2c"),
-    name_fr = countrycode(name_en, origin = "country.name", destination = "country.name.fr")
-  ) 
+    name_fr = countrycode(name_en, origin = "country.name", destination = "country.name.fr"))  |>
+  bind_rows(tibble(name_en = "EU27", name_fr = "EU27", iso2 = "EU27", iso3 = "EU27"))
 ```
 
 ### Removing unwanted variables
@@ -255,7 +255,7 @@ In this data set, we are only interested in the following variables:
 
 ```{r, echo=FALSE}
 GHG_Emissions <- GHG_Emissions |>
-  select(airpol, src_crf, geo, TIME_PERIOD, OBS_VALUE) |>
+  select(src_crf, geo, TIME_PERIOD, OBS_VALUE) |>
   filter(geo %in% eu_country_key$name_en, 
          src_crf != "Total (excluding memo items)")
 ```
@@ -367,13 +367,6 @@ EU27_Tax <- Envt_Tax_Revenues |>   #computing the average European environmental
   relocate(REF_AREA)
 Envt_Tax_Revenues <- bind_rows(Envt_Tax_Revenues, EU27_Tax)
 
-EU27_Warming <- Warm_Households |>  #computing the average European inability to keep home adequately warm, depending on the household composition and income.  
-  group_by(TIME_PERIOD, hhtyp, incgrp) |>
-  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(geo = "EU27") |>
-  relocate(geo)
-Warm_Households <- bind_rows(Warm_Households, EU27_Warming)
-
 EU27_GII <- GII |>  #computing the average European gender inequality index. 
   group_by(TIME_PERIOD) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
@@ -389,25 +382,32 @@ EU27_Coefineq <- coef_ineq |> #computing the average European coefficient of hum
 coef_ineq <- bind_rows(coef_ineq, EU27_Coefineq)
 ```
 
-#### Add country average (accross sectors)
+#### Add European total per sector
 
-For the data sets that are described per economic sector, we have to compute the European average across sectors:
+For the data sets that are described per economic sector, we have to compute the European total sum per sectors:
 
 ```{r, echo=FALSE}
 #| message: false
 EU27_AV <- Added_value |> #computing the average European gross added value, depending on the economic sector.  
   group_by(TIME_PERIOD, `Activité économique`) |>
-  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
+  summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) |>
   mutate(REF_AREA = "EU27") |>
   relocate(REF_AREA)
 Added_value <- bind_rows(Added_value, EU27_AV)
 
 EU27_GHG <- GHG_Emissions |> #computing the average European greenhouse gas emissions, depending on the economic sector.  
   group_by(TIME_PERIOD, src_crf) |>
-  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(geo = "EU average") |>
+  summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) |>
+  mutate(geo = "EU27") |>
   relocate(geo)
-GHG_Emissions <- bind_rows(GHG_Emissions, EU27_GHG)
+
+#adding in GHG_Emissions, using country keys to have by iso3
+GHG_Emissions <- GHG_Emissions |> rename(name_en = geo) |>
+  left_join(eu_country_key |> select(name_en, iso3), by = "name_en")
+EU27_GHG <- EU27_GHG  |> rename(name_en = geo) |> left_join(eu_country_key |> select(name_en, iso3), by = "name_en")
+GHG_Emissions <- bind_rows(GHG_Emissions, EU27_GHG) 
+GHG_Emissions <- GHG_Emissions  |> select (iso3, TIME_PERIOD, src_crf, OBS_VALUE)
+
 ```
 
 ### Modifiying the characteristics of the variables
@@ -478,7 +478,7 @@ GHG_Emissions <- GHG_Emissions|>  #here we are combining the sectors related to 
       TRUE ~ src_crf
     )
   ) |>
-  group_by(geo, TIME_PERIOD, src_crf) |>
+  group_by(iso3, TIME_PERIOD, src_crf) |>
   summarise(GHG_Emissions_value = sum(GHG_Emissions_value), .groups = "drop")
 GHG_Emissions <- GHG_Emissions |>
   mutate(src_crf = recode(src_crf, 
@@ -493,7 +493,7 @@ EU27_GHG <- EU27_GHG|>
       TRUE ~ src_crf
     )
   ) |>
-  group_by(geo, TIME_PERIOD, src_crf) |>
+  group_by(name_en, TIME_PERIOD, src_crf) |>
   summarise(GHG_Emissions_value = sum(GHG_Emissions_value), .groups = "drop")
 EU27_GHG <- EU27_GHG |>
   mutate(src_crf = recode(src_crf, 
@@ -521,13 +521,8 @@ EU27_AV <- EU27_AV |>
   rename(iso3 = REF_AREA,
     sector = `Activité économique`) 
 
-GHG_Emissions <- GHG_Emissions |> rename(name_en = geo,
-                                         sector = src_crf)
-EU27_GHG <- EU27_GHG |> rename(name_en = geo,
-                                         sector = src_crf)
-
-Warm_Households <- Warm_Households |> rename(iso2 = geo)
-EU27_Warming <- EU27_Warming |> rename(iso2 = geo)
+GHG_Emissions <- GHG_Emissions |> rename (sector = src_crf)
+EU27_GHG <- EU27_GHG |> rename (sector = src_crf)
 ```
 
 
@@ -547,13 +542,7 @@ We do this big join to have in only one data set all these variables:
       - household type
       - income group
 
-```{r, echo=FALSE}
-GHG_Emissions <- GHG_Emissions |>
-  left_join(eu_country_key |> select(name_en, iso3), by = "name_en")
-
-Warm_Households <- Warm_Households |>
-  left_join(eu_country_key |> select(iso2, iso3), by = "iso2")
-```
+### Merging all data sets
 
 
 ```{r, echo=FALSE}
@@ -870,7 +859,7 @@ Now we try to evaluate the coefficient between an increase in taxes in the year 
 for (k in 1:5) {
   GHG_Emissions[[paste0("GHG_Emissions_value.lead", k)]] <- ave(
     GHG_Emissions$GHG_Emissions_value, 
-    GHG_Emissions$name_en, GHG_Emissions$sector,
+    GHG_Emissions$iso3, GHG_Emissions$sector,
     FUN = function(x) c(x[(1+k):length(x)], rep(NA, k)))}
 
 # add them in all merged
@@ -1055,12 +1044,9 @@ future <- data.frame(TIME_PERIOD = seq(min(all_merged$TIME_PERIOD),
                                        max(all_merged$TIME_PERIOD), 1))
 predicted_GHG <- predict(model_ghg_year, newdata = future)
 predicted_GHG
-
 ```
 
-##### Comment :
-This is a
-The linear forecast shows a steady increase in greenhouse gas emissions over the projected horizon of roughly 6200 thousand of tons. Starting from about 19,900 units, emissions reach more than 168,000 units by the final step (2050). This upward trend suggests that, under current conditions and model assumptions, emissions are expected to continue growing without signs of stabilization or reversal. In other words, the model anticipates persistent, long-term increases in GHG emissions unless significant policy or structural changes occur.
+
 
 faire le plot
 avant 2023 et apres 2023
