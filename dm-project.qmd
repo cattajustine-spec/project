@@ -1050,11 +1050,37 @@ We use this forecast to try to predict the impact of environmental taxes on diff
 ### 1. Greenhouse Gas emissions by sector
 
 ```{r, echo=FALSE}
+model_ghg_year <- lm(GHG_Emissions_value ~ TIME_PERIOD, data = all_merged)
+future <- data.frame(TIME_PERIOD = seq(min(all_merged$TIME_PERIOD),
+                                       max(all_merged$TIME_PERIOD), 1))
+predicted_GHG <- predict(model_ghg_year, newdata = future)
 predicted_GHG
+
 ```
 
 ##### Comment :
+This is a
+The linear forecast shows a steady increase in greenhouse gas emissions over the projected horizon of roughly 6200 thousand of tons. Starting from about 19,900 units, emissions reach more than 168,000 units by the final step (2050). This upward trend suggests that, under current conditions and model assumptions, emissions are expected to continue growing without signs of stabilization or reversal. In other words, the model anticipates persistent, long-term increases in GHG emissions unless significant policy or structural changes occur.
 
+
+```{r}
+predictions_by_sector <- all_merged |>
+  filter(!is.na(sector) & !is.na(GHG_Emissions_value)) |>
+  group_by(sector, .by = "sector") |>
+  summarise(model = list(lm(GHG_Emissions_value ~ TIME_PERIOD, data = cur_data())),
+    .groups = "drop") |>
+  mutate(future = list(data.frame(TIME_PERIOD = seq(min(all_merged$TIME_PERIOD),
+                                               max(all_merged$TIME_PERIOD) + 5, 1))),
+    predicted = map2(model, future, ~ predict(.x, newdata = .y))) |>
+  select(sector, future, predicted) |>
+  unnest(c(future, predicted))
+
+predictions_by_sector
+
+```
+
+faire le plot
+avant 2023 et apres 2023
 
 ### 2. social inequalities: 
 
