@@ -357,13 +357,6 @@ For the data sets that describe inequality indexes, we compute the European aver
 
 ```{r, echo=FALSE}
 #| message: false
-EU27_GDP <- GDP |>                #computing the average European GDP 
-  group_by(TIME_PERIOD) |>
-  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(REF_AREA = "EU27") |>
-  relocate(REF_AREA)
-GDP <- bind_rows(GDP, EU27_GDP)
-
 EU27_GII <- GII |>  #computing the average European gender inequality index. 
   group_by(TIME_PERIOD) |>
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
@@ -398,6 +391,13 @@ For the economic data sets that are not described per economic sector, we comput
 
 ```{r, echo=FALSE}
 #| message: false
+EU27_GDP <- GDP |>                #computing the total European GDP 
+  group_by(TIME_PERIOD) |>
+  summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) |>
+  mutate(REF_AREA = "EU27") |>
+  relocate(REF_AREA)
+GDP <- bind_rows(GDP, EU27_GDP)
+
 EU27_Tax <- Envt_Tax_Revenues |>   #computing the total European environmental tax revenue
   group_by(TIME_PERIOD) |>
   summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) |>
@@ -622,6 +622,15 @@ kable(summary_stats_coefineq,
 
 ## 2. European GDP 
 
+### Graphical representation
+
+```{r, echo=FALSE}
+p_GDP <- ggplot(EU27_GDP, aes(x = TIME_PERIOD, y = GDP_value)) +
+  geom_line(linewidth = 1, color = "darkgreen") +
+  labs(
+    title = "European GDP",
+    x = "Year",
+    y = "GDP (million USD)"
   ) +
   theme_minimal()
 
