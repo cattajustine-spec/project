@@ -84,8 +84,8 @@ Envt_Tax_Revenues <- vroom(here("data", "OECD_envt_tax.csv"))
 
 ### 2. GDP and Added Value (OECD, 1990-2024)
 
-  This data set provides annual GDP and sectoral gross Value Added figures for EU countries. It follows an output approach : GDP is measured as the sum of gross value added. For the Value Added by sectors, we will keep these ones : "Agriculture,forestry and fishing", "Manufacturing", "Industry (except construction)" and "Wholesale and retail trade; repair of motor vehicles and motorcycles; transportation and storage; accommodation and food service activities". (cf plus tard) All variables are measured in millions of USD, using exchange rate. 
- The data set on GDP and Value Added is available at this [link](https://data-explorer.oecd.org/vis?df%5Bds%5D=dsDisseminateFinalDMZ&df%5Bid%5D=DSD_NAMAIN10%40DF_TABLE1_OUTPUT&df%5Bag%5D=OECD.SDD.NAD&df%5Bvs%5D=&dq=A.BEL%2BAUT%2BCZE%2BDNK%2BEST%2BFIN%2BFRA%2BDEU%2BGRC%2BHUN%2BIRL%2BITA%2BLVA%2BLTU%2BLUX%2BNLD%2BPOL%2BPRT%2BSVK%2BSVN%2BESP%2BSWE%2BBGR%2BHRV%2BCYP%2BMLT%2BROU...B1G%2BB1GQ.._Z%2B_T%2BC%2BA%2BBTE%2BF%2BGTI%2BJ%2BK%2BL%2BM_N%2BOTQ%2BRTU..USD_EXC.V..&to%5BTIME_PERIOD%5D=false&pd=1990%2C2024&vw=tb). 
+  This data set provides annual GDP and sectoral gross Value Added figures for EU countries. It follows an output approach : GDP is measured as the sum of gross value added. For the Value Added by sectors, we will keep these ones : "Agriculture,forestry and fishing", "Manufacturing", "Industry (except construction)" and "Wholesale and retail trade; repair of motor vehicles and motorcycles; transportation and storage; accommodation and food service activities" (cf. [Justification for the Sector Mapping Between ISIC and CRF Classifications](#justificationforsectormapping)). All variables are measured in millions of USD, using exchange rate. 
+ The data set on GDP and Added Value is available at this [link](https://data-explorer.oecd.org/vis?df%5Bds%5D=dsDisseminateFinalDMZ&df%5Bid%5D=DSD_NAMAIN10%40DF_TABLE1_OUTPUT&df%5Bag%5D=OECD.SDD.NAD&df%5Bvs%5D=&dq=A.BEL%2BAUT%2BCZE%2BDNK%2BEST%2BFIN%2BFRA%2BDEU%2BGRC%2BHUN%2BIRL%2BITA%2BLVA%2BLTU%2BLUX%2BNLD%2BPOL%2BPRT%2BSVK%2BSVN%2BESP%2BSWE%2BBGR%2BHRV%2BCYP%2BMLT%2BROU...B1G%2BB1GQ.._Z%2B_T%2BC%2BA%2BBTE%2BF%2BGTI%2BJ%2BK%2BL%2BM_N%2BOTQ%2BRTU..USD_EXC.V..&to%5BTIME_PERIOD%5D=false&pd=1990%2C2024&vw=tb). 
 The data covers the time period 1990 to 2024.
 
 
@@ -629,23 +629,20 @@ Revenues peaked at approximately 809 billion USD, while the long-run average (�
 ### Graphical representation
 
 ```{r, echo=FALSE}
-p_GDP <- ggplot(EU27_GDP, aes(x = TIME_PERIOD, y = GDP_value)) +
+ggplot(EU27_GDP, aes(x = TIME_PERIOD, y = GDP_value)) +
   geom_line(linewidth = 1, color = "darkgreen") +
   labs(
-    title = "European GDP",
+    title = "European GDP (in millions of USD)",
     x = "Year",
     y = "GDP (million USD)"
   ) +
   theme_minimal()
-
-ggplotly(p_GDP)
 ```
 
 ### Descriptive statistics
 
 ```{r, echo=FALSE}
-summary_stats_GDP <- GDP %>%
-  group_by(iso3) %>%                        
+summary_stats_GDP <- EU27_GDP %>%
   summarise(
     Min = min(GDP_value, na.rm = TRUE),
     Max = max(GDP_value, na.rm = TRUE),
@@ -655,16 +652,14 @@ summary_stats_GDP <- GDP %>%
     )
 
 kable(summary_stats_GDP, 
-      caption = "Descriptive statistics of the GDP by country (all years combined)")
+      caption = "Descriptive statistics of the European GDP (all years combined)")
 ```
 
 ##### Comment :
 
-It is quite clear that GDP levels across European countries are generally rising over time. Four major economies lead by a large margin: Germany, France, Italy, and Spain. All of them experienced a noticeable boom around 2002, which may be linked to the consolidation following the introduction of the euro in 1999.
+European GDP has increased a lot since the early 1990s. Starting from roughly 6.3 trillion USD, GDP expanded strongly throughout the 2000s, with a brief slowdown around the early 2010s (due to the subprime crisis), before resuming its upward trajectory. By 2024, it reached nearly 19.4 trillion USD, its historical maximum.
 
-Germany is by far the largest economy, with an average GDP of ≈ 3.1 trillion USD, followed by France (≈ 2.19 trillion USD) and Italy (≈ 1.75 trillion USD). Spain remains lower but still significant, with a mean of ≈ 1.08 trillion USD.
-
-Most other countries remain much smaller, except the Netherlands, which stands out with a mean GDP of ≈ 706 billion USD. Overall, the EU27 average GDP reaches roughly 780 billion USD in 2024, reflecting large disparities across the Union.
+The long-run average GDP (≈ 12.2 trillion USD) and the very large standard deviation (≈ 4.1 trillion USD) reflect substantial economic growth over time as well as cyclical fluctuations. The median (≈ 13.7 trillion USD) suggests that GDP has remained consistently high over the last two decades, despite temporary downturns.
 
 
 ## 3. Added Value per economic sector
