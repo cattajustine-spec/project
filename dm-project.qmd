@@ -592,7 +592,7 @@ Now that we have cleaned our data sets, here are some descriptive analyzes of ou
 ### Graphical representation
 
 ```{r, echo=FALSE}
-p_taxrevenues <- ggplot(EU27_Tax, aes(x = TIME_PERIOD, y = Envt_Tax_Revenues_value)) +
+ggplot(EU27_Tax, aes(x = TIME_PERIOD, y = Envt_Tax_Revenues_value)) +
   geom_line(linewidth = 1, color = "darkgreen") +
   labs(
     title = "Total European environmental tax revenues",
@@ -600,8 +600,6 @@ p_taxrevenues <- ggplot(EU27_Tax, aes(x = TIME_PERIOD, y = Envt_Tax_Revenues_val
     y = "Environmental tax revenues (millions of USD)"
   ) +
   theme_minimal()
-
-ggplotly(p_taxrevenues)
 ```
 
 ### Descriptive statistics
@@ -616,9 +614,15 @@ summary_stats_taxrevenues <- EU27_Tax %>%
     SD = sd(Envt_Tax_Revenues_value, na.rm = TRUE)
     )
 
-kable(summary_stats_coefineq, 
+kable(summary_stats_taxrevenues, 
       caption = "Descriptive statistics of the total European environmental tax revenues (all years combined)")
 ```
+
+##### Comment :
+
+The total European environmental tax revenues amounted to roughly 376 billion USD in the late 1990s. Over the 2000s, these revenues grew steadily and nearly doubled, reaching over 700 billion USD by 2010. Since then, the trend has remained broadly upward, though with noticeable fluctuations from year to year.
+
+Revenues peaked at approximately 809 billion USD, while the long-run average (≈ 622 billion USD) reflects sustained and historically high levels of environmental taxation in the European Union. The standard deviation (≈ 152 billion USD) signals substantial variation over time, consistent with cyclical movements, recent economic crisis, and policy adjustments across the Union.
 
 ## 2. European GDP 
 
