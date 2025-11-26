@@ -353,7 +353,7 @@ coef_ineq <- Soc_Indexes|>
 ### Adding some entities
 
 #### Add European average (across countries)
-For the data sets that are not described per economic sector, we compute the European average across countries:
+For the data sets that describe inequality indexes, we compute the European average across countries:
 
 ```{r, echo=FALSE}
 #| message: false
@@ -363,13 +363,6 @@ EU27_GDP <- GDP |>                #computing the average European GDP
   mutate(REF_AREA = "EU27") |>
   relocate(REF_AREA)
 GDP <- bind_rows(GDP, EU27_GDP)
-
-EU27_Tax <- Envt_Tax_Revenues |>   #computing the average European environmental tax revenue, depending on the tax category. 
-  group_by(TIME_PERIOD) |>
-  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
-  mutate(REF_AREA = "EU27") |>
-  relocate(REF_AREA)
-Envt_Tax_Revenues <- bind_rows(Envt_Tax_Revenues, EU27_Tax)
 
 EU27_GII <- GII |>  #computing the average European gender inequality index. 
   group_by(TIME_PERIOD) |>
@@ -398,6 +391,19 @@ EU27_Warming <- EU27_Warming |> rename(iso2 = geo) |> left_join(eu_country_key |
 Warm_Households <- bind_rows(Warm_Households, EU27_Warming) 
 Warm_Households <- Warm_Households |> select (iso3, TIME_PERIOD, hhtyp, incgrp, OBS_VALUE)
 
+```
+
+#### Add European total
+For the economic data sets that are not described per economic sector, we compute the European total across countries:
+
+```{r, echo=FALSE}
+#| message: false
+EU27_Tax <- Envt_Tax_Revenues |>   #computing the total European environmental tax revenue
+  group_by(TIME_PERIOD) |>
+  summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) |>
+  mutate(REF_AREA = "EU27") |>
+  relocate(REF_AREA)
+Envt_Tax_Revenues <- bind_rows(Envt_Tax_Revenues, EU27_Tax)
 ```
 
 #### Add European total per sector
@@ -581,18 +587,41 @@ all_merged <- Envt_Tax_Revenues |>
 
 Now that we have cleaned our data sets, here are some descriptive analyzes of our main target variables:
 
-## 1. GDP per country
+## 1. European environmental tax revenues 
 
 ### Graphical representation
 
 ```{r, echo=FALSE}
-p_GDP <- ggplot(GDP, aes(x = TIME_PERIOD, y = GDP_value, color = iso3, group = iso3)) +
-  geom_line(linewidth = 1) +
+p_taxrevenues <- ggplot(EU27_Tax, aes(x = TIME_PERIOD, y = Envt_Tax_Revenues_value)) +
+  geom_line(linewidth = 1, color = "darkgreen") +
   labs(
-    title = "GDP per Country (EU27)",
+    title = "Total European environmental tax revenues",
     x = "Year",
-    y = "GDP (million USD)",
-    color = "Country"
+    y = "Environmental tax revenues (millions of USD)"
+  ) +
+  theme_minimal()
+
+ggplotly(p_taxrevenues)
+```
+
+### Descriptive statistics
+
+```{r, echo=FALSE}
+summary_stats_taxrevenues <- EU27_Tax %>%
+  summarise(
+    Min = min(Envt_Tax_Revenues_value, na.rm = TRUE),
+    Max = max(Envt_Tax_Revenues_value, na.rm = TRUE),
+    Mean = mean(Envt_Tax_Revenues_value, na.rm = TRUE),
+    Median = median(Envt_Tax_Revenues_value, na.rm = TRUE),
+    SD = sd(Envt_Tax_Revenues_value, na.rm = TRUE)
+    )
+
+kable(summary_stats_coefineq, 
+      caption = "Descriptive statistics of the total European environmental tax revenues (all years combined)")
+```
+
+## 2. European GDP 
+
   ) +
   theme_minimal()
 
@@ -625,7 +654,7 @@ Germany is by far the largest economy, with an average GDP of ≈ 3.1 trillion U
 Most other countries remain much smaller, except the Netherlands, which stands out with a mean GDP of ≈ 706 billion USD. Overall, the EU27 average GDP reaches roughly 780 billion USD in 2024, reflecting large disparities across the Union.
 
 
-## 2. Added Value per economic sector
+## 3. Added Value per economic sector
 
 ### Graphical representation
 ```{r, echo=FALSE}
@@ -664,7 +693,7 @@ Looking at the EU27 total gross added value by sector, three major sectors domin
 
 Agriculture, by contrast, contributes much less, with a total added value of only ≈ 215 billion USD on average, which is expected given its smaller role in modern European economies. 
 
-## 3. Greenhouse gas emissions per economic sector
+## 4. Greenhouse gas emissions per economic sector
 
 ### Graphical representation
 
@@ -706,7 +735,7 @@ Industrial emissions have declined sharply over the selected time period (from v
 
 Since around 2009–2012, transport emissions have surpassed those of manufacturing, and in 2023 they even exceeded energy industries emissions. 
 
-## 4. Inability to keep home adequately warm per household type
+## 5. Inability to keep home adequately warm per household type
 
 ### Graphical representation
 
@@ -750,7 +779,7 @@ Among all subgroups, the total-population categories show the lowest percentages
 
 Women in low-income single households consistently report slightly higher percentages than men. For instance, low-income women (A1F, B_MD60) have an average inability rate of ≈ 21.1%, compared with ≈ 23.1% for low-income men (A1M, B_MD60), while total-population rates remain much lower at ≈ 10–15% across categories.
 
-## 5. GII per country
+## 6. GII per country
 
 ### Graphical representation
 
@@ -792,7 +821,7 @@ The Gender Inequality Index (GII) shows a clear downward trend across all Europe
 
 By 2024, the countries with the highest GII values are Cyprus, Romania, and Hungary, while the EU27 average has fallen to approximately 0.08, reflecting substantial progress over time. This aligns with the descriptive statistics: Romania has the highest mean GII (≈ 0.36), while Sweden and Denmark are among the lowest, with mean values of ≈ 0.05 and ≈ 0.054, respectively.
 
-## 6. Coefficient of human inequality per country
+## 7. Coefficient of human inequality per country
 
 ### Graphical representation
 
@@ -832,23 +861,6 @@ kable(summary_stats_coefineq,
 The coefficient of human inequality varies widely across Europe. Spain records the highest values overall, with a mean of ≈ 13.48, while Slovenia and the Czech Republic stand out as the countries with the lowest inequality, both with mean values slightly above 5.
 
 The EU27 average sits at ≈ 8.64, but the dispersion across countries is notable. Several Southern and Eastern European countries—such as Portugal (≈ 12.75), Italy (≈ 12.08), and Bulgaria (≈ 11.84)—exhibit consistently high levels of human inequality. In contrast, Nordic and Central European countries such as Denmark (≈ 5.77) and Finland (≈ 5.73) maintain some of the lowest inequality levels across the data set.
-
-## 7. European environmental tax revenues 
-
-### Graphical representation
-
-```{r, echo=FALSE}
-p_taxrevenues <- ggplot(EU27_Tax, aes(x = TIME_PERIOD, y = Envt_Tax_Revenues_value)) +
-  geom_line(linewidth = 1, color = "darkgreen") +
-  labs(
-    title = "Average European environmental tax revenues",
-    x = "Year",
-    y = "Environmental tax revenues (millions of USD)"
-  ) +
-  theme_minimal()
-
-ggplotly(p_taxrevenues)
-```
 
 # Linear Regressions
 
