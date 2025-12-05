@@ -1,7 +1,9 @@
 ---
 title: "dm-project"
 author: "Daphné Perry and Justine Catta"
-format: html
+format: 
+  html: default
+  pdf: default
 ---
 
 # Summary
@@ -157,7 +159,7 @@ Finally, to simplify our analysis, we will merge all our data sets in one data b
 
 ### Country keys {#countrykeys}
 
-Our analysis is on the 27 countries in the European Union, in the following list to be precise : Austria, Belgium, Bulgaria, Croatia, Cyprus, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden
+Our analysis is on the 27 countries in the European Union, in the following list to be precise : Austria, Belgium, Bulgaria, Croatia, Cyprus, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden. 
 
 ```{r, echo=FALSE}
 #| message: false
@@ -172,7 +174,22 @@ eu_country_key <- data.frame(name_en = eu_countries) |>
   bind_rows(tibble(name_en = "EU27", name_fr = "EU27", iso2 = "EU27", iso3 = "EU27"))
 ```
 
+Why we construct country keys and filter to EU-27: 
+
+Our analysis focuses exclusively on the 27 Member States of the European Union. However, each dataset uses different country identifiers: ISO2 codes, ISO3 codes, or full English names. To ensure consistency across datasets and avoid mismatches during merging, we must first harmonize all country identifiers.
+
+The emissions dataset provides a clean list of country names, from which we build a unified “country key” mapping English names to ISO2, ISO3, and French names. This serves as a reference table for filtering every dataset to the same geographical scope and ensures that only EU-27 countries are retained throughout the cleaning process.
+
 ### Removing unwanted variables
+
+The original datasets contain many variables and dimensions that are irrelevant to our research question (such as measurement units, alternative breakdowns, metadata, or categories outside our scope). Keeping these unnecessary variables would complicate the merging process and make the analysis more difficult to interpret. Therefore, for each dataset, we systematically retain only four essential components:
+
+- The geographical identifier (ISO2, ISO3, or name).
+- The reference year.
+- The relevant economic or social variable (e.g., revenues, GDP, emissions, inequality index).
+- The sector information when relevant.
+
+This ensures a clean, comparable structure across datasets before we perform more complex transformations.
 
 ##### 1. Environmental tax revenues (in million of USD)
 
@@ -449,6 +466,8 @@ GHG_Emissions <- GHG_Emissions  |> select (iso3, TIME_PERIOD, src_crf, OBS_VALUE
 
 ### Modifiying the characteristics of the variables
 
+#### Changing the type of some variables
+
 For the variables related to the economic sectors, it will be easier to consider them as *factor*, rather than as *character* variables.
 
 ```{r, echo=FALSE}
@@ -574,6 +593,14 @@ EU27_GHG <- EU27_GHG |> rename (sector = src_crf)
 
 # Merging all data sets on country-year pairs
 
+After cleaning and harmonizing all datasets, we merge them into a single database combining economic, environmental and social indicators. The environmental tax dataset is used as the base for the merge because it contains only country-year information and no sectoral breakdown; we then enrich it with sector-specific variables (value added and emissions) through matching on (iso3, TIME_PERIOD, sector).
+
+For variables defined only at the country-year level (GDP, inequality indices, households unable to heat their home), the join is performed on (iso3, TIME_PERIOD).
+
+All merges use left_join(). This choice ensures that countries or years missing some variables are retained in the dataset rather than dropped — which would happen with inner_join(). Keeping these rows is important for transparency and for allowing later analyses to handle missingness explicitly.
+
+Overall, merging these datasets is meaningful because it allows us to study environmental taxes, emissions, economic structure, and social inequalities jointly within a single analytical framework.
+
 We do this big join to have in only one data set all these variables:
 
 -   Country
@@ -587,8 +614,6 @@ We do this big join to have in only one data set all these variables:
 -   Share of households unable to adequately heat their home, by subgroup :
     -   household type
     -   income group
-
-### Merging all data sets
 
 ```{r, echo=FALSE}
 #| message: false
@@ -1478,7 +1503,6 @@ predicted_Warm
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-
 ```
 
 #### b. Comparing with the forecast if we continue as we do
