@@ -1,7 +1,9 @@
 ---
 title: "dm-project"
 author: "Daphné Perry and Justine Catta"
-format: html
+format:
+  html: default
+  pdf: default
 ---
 
 # Summary
@@ -65,14 +67,6 @@ This data set reports annual environmentally related tax revenues for EU countri
 Envt_Tax_Revenues <- vroom(here("data", "OECD_envt_tax.csv"))
 ```
 
-::: {columns}
-|                   |                             |
-|-------------------|-----------------------------|
-| Name              | `r "Envt_Tax_Revenues"`     |
-| Number of rows    | `r nrow(Envt_Tax_Revenues)` |
-| Number of columns | `r ncol(Envt_Tax_Revenues)` |
-:::
-
 ### 2. GDP and Added Value (OECD, 1990-2024)
 
 This data set provides annual GDP and sectoral gross Value Added figures for EU countries. It follows an output approach : GDP is measured as the sum of gross value added. For the Value Added by sectors, we will keep these ones : "Agriculture,forestry and fishing", "Manufacturing", "Industry (except construction)" and "Wholesale and retail trade; repair of motor vehicles and motorcycles; transportation and storage; accommodation and food service activities" (cf. [Justification for the Sector Mapping Between ISIC and CRF Classifications](#justificationforsectormapping)). All variables are measured in millions of USD, using exchange rate. The data set on GDP and Added Value is available at this [link](https://data-explorer.oecd.org/vis?df%5Bds%5D=dsDisseminateFinalDMZ&df%5Bid%5D=DSD_NAMAIN10%40DF_TABLE1_OUTPUT&df%5Bag%5D=OECD.SDD.NAD&df%5Bvs%5D=&dq=A.BEL%2BAUT%2BCZE%2BDNK%2BEST%2BFIN%2BFRA%2BDEU%2BGRC%2BHUN%2BIRL%2BITA%2BLVA%2BLTU%2BLUX%2BNLD%2BPOL%2BPRT%2BSVK%2BSVN%2BESP%2BSWE%2BBGR%2BHRV%2BCYP%2BMLT%2BROU...B1G%2BB1GQ.._Z%2B_T%2BC%2BA%2BBTE%2BF%2BGTI%2BJ%2BK%2BL%2BM_N%2BOTQ%2BRTU..USD_EXC.V..&to%5BTIME_PERIOD%5D=false&pd=1990%2C2024&vw=tb). The data covers the time period 1990 to 2024.
@@ -81,14 +75,6 @@ This data set provides annual GDP and sectoral gross Value Added figures for EU 
 #| message: false
 GDP_and_AV <- vroom(here("data", "OECD_GDP_and_AV.csv"))
 ```
-
-::: {columns}
-|                   |                      |
-|-------------------|----------------------|
-| Name              | `r "GDP_and_AV"`     |
-| Number of rows    | `r nrow(GDP_and_AV)` |
-| Number of columns | `r ncol(GDP_and_AV)` |
-:::
 
 ### 3. Greenhouse gas emissions by source sector (Eurostat, 1990-2023)
 
@@ -99,13 +85,6 @@ This data set reports total greenhouse gas emissions by source sector for the 27
 GHG_Emissions <- vroom(here("data", "Eurostat_ghg.csv"))
 ```
 
-::: {columns}
-|                   |                         |
-|-------------------|-------------------------|
-| Name              | `r "GHG_Emissions"`     |
-| Number of rows    | `r nrow(GHG_Emissions)` |
-| Number of columns | `r ncol(GHG_Emissions)` |
-:::
 
 ### 4. Inability to keep home adequately warm (Eurostat, 2003-2024)
 
@@ -116,13 +95,6 @@ This data set measures the percentage of households unable to keep their home ad
 Warm_Households <- vroom(here("data","Eurostat_warm.csv"))
 ```
 
-::: {columns}
-|                   |                           |
-|-------------------|---------------------------|
-| Name              | `r "Warm_Households"`     |
-| Number of rows    | `r nrow(Warm_Households)` |
-| Number of columns | `r ncol(Warm_Households)` |
-:::
 
 ### 5. Human index (UNDP HDR, 1990-2023)
 
@@ -135,13 +107,6 @@ Available on this [page](HDR%20index%20https://hdr.undp.org/data-center/document
 Soc_Indexes <- vroom(here("data", "HDR_indexes.csv"))
 ```
 
-::: {columns}
-|                   |                       |
-|-------------------|-----------------------|
-| Name              | `r "Soc_Indexes"`     |
-| Number of rows    | `r nrow(Soc_Indexes)` |
-| Number of columns | `r ncol(Soc_Indexes)` |
-:::
 
 # Modifying the data sets
 
@@ -180,6 +145,15 @@ Envt_Tax_Revenues <- Envt_Tax_Revenues |>
   filter(REF_AREA %in% eu_country_key$iso3)
 ```
 
+::: {columns}
+|                   |                             |
+|-------------------|-----------------------------|
+| Name              | `r "Envt_Tax_Revenues"`     |
+| Number of rows    | `r nrow(Envt_Tax_Revenues)` |
+| Number of columns | `r ncol(Envt_Tax_Revenues)` |
+:::
+
+
 ##### 2. GDP and Value Added per capita annual growth per sector (in million of USD)
 
 In this data set, we have two main variables of interest: the [Gross Domestic Product](#grossdomesticproduct) and the [Gross Added Value](#grossaddedvalue).
@@ -200,6 +174,15 @@ GDP <- GDP_and_AV |>
          REF_AREA %in% eu_country_key$iso3) |>
   select(REF_AREA, TIME_PERIOD, OBS_VALUE)
 ```
+
+::: {columns}
+|                   |               |
+|-------------------|---------------|
+| Name              | `r "GDP"`     |
+| Number of rows    | `r nrow(GDP)` |
+| Number of columns | `r ncol(GDP)` |
+:::
+
 
 ###### Gross Added Value {#grossaddedvalue}
 
@@ -228,6 +211,14 @@ Added_value <- GDP_and_AV |>
          TIME_PERIOD, OBS_VALUE)
 ```
 
+::: {columns}
+|                   |                       |
+|-------------------|-----------------------|
+| Name              | `r "Added_value"`     |
+| Number of rows    | `r nrow(Added_value)` |
+| Number of columns | `r ncol(Added_value)` |
+:::
+
 ##### 3. Greenhouse gas emissions by source sector (in million of ton)
 
 In this data set, we are only interested in the following variables:
@@ -247,6 +238,15 @@ GHG_Emissions <- GHG_Emissions |>
   filter(geo %in% eu_country_key$name_en, 
          src_crf != "Total (excluding memo items)")
 ```
+
+::: {columns}
+|                   |                         |
+|-------------------|-------------------------|
+| Name              | `r "GHG_Emissions"`     |
+| Number of rows    | `r nrow(GHG_Emissions)` |
+| Number of columns | `r ncol(GHG_Emissions)` |
+:::
+
 
 ###### Justification for the Sector Mapping Between ISIC and CRF Classifications {#justificationforsectormapping}
 
@@ -284,6 +284,15 @@ Warm_Households <- Warm_Households |>
          hhtyp %in% c("A1F", "A1M", "TOTAL"))
 ```
 
+::: {columns}
+|                   |                           |
+|-------------------|---------------------------|
+| Name              | `r "Warm_Households"`     |
+| Number of rows    | `r nrow(Warm_Households)` |
+| Number of columns | `r ncol(Warm_Households)` |
+:::
+
+
 ##### 5. HDR index
 
 In this data set, we have two main variables of interest: the [Gender Inequality Index](#genderinequalityindex) and the [Coefficient of Human Inequality](#coefficientofhumaninequality).
@@ -304,6 +313,7 @@ Soc_Indexes <- Soc_Indexes |>
   )
 ```
 
+
 ###### Gender inequality Index {#genderinequalityindex}
 
 In this data set, we are only interested in the following variables:
@@ -319,6 +329,15 @@ GII <- Soc_Indexes|>
   select(iso3, TIME_PERIOD, OBS_VALUE)
 ```
 
+::: {columns}
+|                   |               |
+|-------------------|---------------|
+| Name              | `r "GII"`     |
+| Number of rows    | `r nrow(GII)` |
+| Number of columns | `r ncol(GII)` |
+:::
+
+
 ###### Coefficient of Human inequality {#coefficientofhumaninequality}
 
 In this data set, we are only interested in the following variables:
@@ -333,6 +352,15 @@ coef_ineq <- Soc_Indexes|>
          Indicator == "coef_ineq")|>
   select(iso3, TIME_PERIOD, OBS_VALUE)
 ```
+
+::: {columns}
+|                   |                     |
+|-------------------|---------------------|
+| Name              | `r "coef_ineq"`     |
+| Number of rows    | `r nrow(coef_ineq)` |
+| Number of columns | `r ncol(coef_ineq)` |
+:::
+
 
 ### Adding some entities
 
@@ -886,7 +914,7 @@ Overall, the results suggest that GDP and sectoral composition remain the domina
 
 We do not calculate a log - level regression, because our following analysis and tax proposition will be made accordingly to levels of GHG.
 
-### b. Between taxes (n) and GHG (n+k, given k € [1; 5])
+### b. Between taxes (n) and GHG (n+k, given k € \[1; 5\])
 
 Now we try to evaluate the coefficient between an increase in taxes in the year n and the impact on Greenhouse gases emissions in the following years n+1, to n+5.
 
@@ -923,9 +951,7 @@ Across the five specifications, the coefficient on environmental tax revenues is
 
 All other coefficients are close to the ones saw before (GDP around 0.043, Manufacturing: +15,200 to +16,100 units, Industry (including energy production): +25,000 to +26,900 units, Transport: approximately +16,100 units, and time has coefficients between –902 and –959, all highly significant)
 
-
-##### 10 years lead : 
-
+##### 10 years lead :
 
 ```{r, echo=FALSE}
 # Create leads 1 to 5
@@ -969,16 +995,16 @@ summary(model_gii_tax)
 
 ##### Comment :
 
-  We estimate three regressions to evaluate the association between environmental tax revenues and three social outcomes, in percentage: energy poverty, income inequality, and gender inequality. In all models, we also add GDP and time (years). We chose to not include the Gender Inequality index and the Income inequality coefficient in one each others regression because of collinearity problems. Also, the coefficient of energy poverty is rather a consequence of both than a cause, so we do not include it in each as well. 
+We estimate three regressions to evaluate the association between environmental tax revenues and three social outcomes, in percentage: energy poverty, income inequality, and gender inequality. In all models, we also add GDP and time (years). We chose to not include the Gender Inequality index and the Income inequality coefficient in one each others regression because of collinearity problems. Also, the coefficient of energy poverty is rather a consequence of both than a cause, so we do not include it in each as well.
 
-  In the model explaining energy poverty (log Warm_Households), we include the income-inequality coefficient. The resulting model has strong explanatory power (R² ≈ 0.6). The coefficient on environmental tax revenues remains small, positive, stable (+2.5e-06) and significant. Also, the income-inequality coefficient shows strong positive and significant associations with energy poverty.
+In the model explaining energy poverty (log Warm_Households), we include the income-inequality coefficient. The resulting model has strong explanatory power (R² ≈ 0.6). The coefficient on environmental tax revenues remains small, positive, stable (+2.5e-06) and significant. Also, the income-inequality coefficient shows strong positive and significant associations with energy poverty.
 
-  For income inequality (log coef_ineq), the model remains statistically valid but with limited explanatory power (R² ≈ 0.034), indicating that environmental taxes explain only a small part of the variation in inequality (+2.1e-06) once GDP and time effects are controlled for.
+For income inequality (log coef_ineq), the model remains statistically valid but with limited explanatory power (R² ≈ 0.034), indicating that environmental taxes explain only a small part of the variation in inequality (+2.1e-06) once GDP and time effects are controlled for.
 
-  Similarly, in the gender-inequality model (log GII) again, the inclusion of GDP and time fixed effects strengthens the model substantially (R² ≈ 0.365), and the environmental-tax coefficient remains positive (+4.8e-06) and highly significant.
-
+Similarly, in the gender-inequality model (log GII) again, the inclusion of GDP and time fixed effects strengthens the model substantially (R² ≈ 0.365), and the environmental-tax coefficient remains positive (+4.8e-06) and highly significant.
 
 ## 3. Between tax and economy
+
 We try to answer the following question: "What is the impact of environmental taxes on the economy ?"
 
 ### 3.1. Between taxes and GDP
@@ -991,10 +1017,10 @@ summary(model_gdp_tax)
 ```
 
 ##### Comment :
- 
-  The regression of GDP on environmental tax revenues and year fixed effects shows a strong positive and statistically significant association between the two variables. The coefficient on environmental tax revenues is +8.3e-06, with a p-value < 0.001. This suggests that higher environmental tax revenues are associated with higher GDP levels over time.
 
-  The model has substantial explanatory power (R² ≈ 0.13). The year coefficient is also positive and significant, reflecting general GDP growth over the period. But this relationship is correlational and does not imply causation, it indicates that environmental tax revenues tend to increase alongside GDP, consistent with the idea that wealthier economies can collect more from climate-related taxes.
+The regression of GDP on environmental tax revenues and year fixed effects shows a strong positive and statistically significant association between the two variables. The coefficient on environmental tax revenues is +8.3e-06, with a p-value \< 0.001. This suggests that higher environmental tax revenues are associated with higher GDP levels over time.
+
+The model has substantial explanatory power (R² ≈ 0.13). The year coefficient is also positive and significant, reflecting general GDP growth over the period. But this relationship is correlational and does not imply causation, it indicates that environmental tax revenues tend to increase alongside GDP, consistent with the idea that wealthier economies can collect more from climate-related taxes.
 
 #### Graphical representation
 
@@ -1044,12 +1070,7 @@ lapply(model_AV_tax, summary)
 
 ##### Comment (REDO) :
 
-Summary: Across sectors, higher environmental tax revenues are consistently associated with modestly higher added value. The log-level specification allows interpreting effects in percentage terms.
-Transport: Environmental tax revenues have a positive and highly significant effect on log added value (+5.8e-05, p < 0.001). This implies that higher tax revenues are associated with slightly higher sectoral output.
-Agriculture: We show a positive and significant relationship (+5.4e-05, p < 0.001), with an effect size that is smaller in practical terms, consistent with the sector’s scale.
-Industry (including energy): Positive and highly significant (+6e-05, p < 0.001), there is a stronger sensitivity to tax revenues in this capital-intensive sector.
-Manufacturing: the coefficient is +6.1e-05, highly significant, with a similar magnitude to industry and transport.
-
+Summary: Across sectors, higher environmental tax revenues are consistently associated with modestly higher added value. The log-level specification allows interpreting effects in percentage terms. Transport: Environmental tax revenues have a positive and highly significant effect on log added value (+5.8e-05, p \< 0.001). This implies that higher tax revenues are associated with slightly higher sectoral output. Agriculture: We show a positive and significant relationship (+5.4e-05, p \< 0.001), with an effect size that is smaller in practical terms, consistent with the sector’s scale. Industry (including energy): Positive and highly significant (+6e-05, p \< 0.001), there is a stronger sensitivity to tax revenues in this capital-intensive sector. Manufacturing: the coefficient is +6.1e-05, highly significant, with a similar magnitude to industry and transport.
 
 #### Graphical representation
 
@@ -1095,7 +1116,6 @@ We use this forecast to try to predict the impact of environmental taxes on diff
 
 ### 1. Greenhouse Gas emissions by sector
 
-
 #### a. Time series ARIMA forecast of the total Greenhouse Gas emissions
 
 ```{r, echo=FALSE}
@@ -1109,11 +1129,12 @@ model <- auto.arima(ts_data)
 fc <- forecast(model, h=27)
 fc
 ```
+
 ##### Comment :
+
 This ARIMA-based forecast indicates a steady but slow decline in total greenhouse gas emissions for the EU27 from 2024 to 2050. Emissions fall from roughly 2.45 million units in 2024 to about 1.43 million units by 2050, representing a long-term downward trajectory.
 
-
-However, despite this continuous decrease, the decline is far from the EU’s net-zero objective for 2050. Even in the most optimistic confidence interval, projected emissions in 2050 remain well above 0, suggesting that—under current trends and without major additional interventions—the EU27 is not on track to reach carbon neutrality. 
+However, despite this continuous decrease, the decline is far from the EU’s net-zero objective for 2050. Even in the most optimistic confidence interval, projected emissions in 2050 remain well above 0, suggesting that—under current trends and without major additional interventions—the EU27 is not on track to reach carbon neutrality.
 
 ##### Ploting the forecast
 
@@ -1129,7 +1150,7 @@ forecast_df <- tibble(TIME_PERIOD =
 ```{r, echo=FALSE}
 GHG_all_2050 <- ggplot() +
 
-  geom_line(data=agg_yearly, aes(x = TIME_PERIOD, y = GHG_total, color = "Observations")) +
+  geom_line(data=EUGHG_agg_yearly, aes(x = TIME_PERIOD, y = GHG_total, color = "Observations")) +
   geom_line(data=forecast_df, aes(x = TIME_PERIOD, y = Point_Forecast, color = "Time series forecast")) +
   geom_point(data=forecast_df, aes(x = TIME_PERIOD, y = Lo95, color = "Low 95%")) +
   geom_point(data=forecast_df, aes(x = TIME_PERIOD, y = Hi95, color = "High 95%")) +
@@ -1149,12 +1170,12 @@ GHG_all_2050 <- ggplot() +
 ggplotly(GHG_all_2050)
 ```
 
-
 ```{r}
 autoplot(fc)
 ```
 
 #### b. Time series ARIMA forecast of the total Greenhouse Gas emissions per sector
+
 ```{r, echo=FALSE}
 sector_yearly <- EU27_GHG |>
   filter(!is.na(GHG_Emissions_value), !is.na(sector)) |>
@@ -1183,6 +1204,7 @@ sector_forecasts <- sector_models |>
 
 sector_forecasts
 ```
+
 ```{r}
 plots <- map2(
   sector_models$sector,
@@ -1192,18 +1214,15 @@ plots <- map2(
 plots
 ```
 
-Comments : 
+Comments :
 
-Agriculture : compared to the trend before, the forecast does not move so much, but bigger and bigger error terms
-Industry (including energy) : slope that decreases not sp slowly and error terms not big, and some chance it goes to 0 by 2050
-Manufacturing : also goes down pretty fast, poss to have 0 in 2050
-Transport : stable bc stable on the last years
+Agriculture : compared to the trend before, the forecast does not move so much, but bigger and bigger error terms Industry (including energy) : slope that decreases not sp slowly and error terms not big, and some chance it goes to 0 by 2050 Manufacturing : also goes down pretty fast, poss to have 0 in 2050 Transport : stable bc stable on the last years
 
-==> the sectors that can be more easily deviated to go to 0 ghg in 2050 = industry and manufacturing
+==\> the sectors that can be more easily deviated to go to 0 ghg in 2050 = industry and manufacturing
 
 transport pretty stable and normal bc of today's use. we didn't see a big change in mean of transportation (cars, boats,...)
 
-### 2. social inequalities: 
+### 2. social inequalities:
 
 ```{r, echo=FALSE}
 
@@ -1228,6 +1247,7 @@ predicted_Warm <- predict(model_warm_tax, newdata = data.frame(Envt_Tax_Revenues
   length.out = 27)))
 predicted_Warm
 ```
+
 ```{r}
 predicted_Warm <- predict(model_warm_tax, newdata = data.frame(
   Envt_Tax_Revenues_value = seq(
@@ -1244,8 +1264,6 @@ predicted_Warm <- predict(model_warm_tax, newdata = data.frame(
 ))
 predicted_Warm
 ```
-
-
 
 ##### Comment :
 
@@ -1264,6 +1282,7 @@ In this project, we are trying to look at the level of tax that would be necessa
 ### 1. Deriving a realistic tax path to reach net-zero by 2050
 
 #### a. The forecast model
+
 ```{r, echo=FALSE}
 data_forecast_tax_0net <- EUGHG_agg_yearly |>
   left_join(EU27_Tax, by = "TIME_PERIOD") |>
@@ -1321,12 +1340,13 @@ ggplot(tax_path_LL, aes(x = year)) +
 
 #### b. Comparing with the forecast if we continue as we do
 
-
 ### 2. Levels greenhouse gas emissions to reach
+
 #### a. The forecast model
+
 ```{r}
 ## Predicted sector-by-sector emissions at this tax level ---
-pred_2050 <- predict_total_ghg_given_tax(tax_2050_required, 2050)
+# pred_2050 <- predict_total_ghg_given_tax(tax_2050_required, 2050)
 print(pred_2050)
 ```
 
@@ -1342,7 +1362,9 @@ predicted_GHG
 #### b. Comparing with the forecast if we continue as we do
 
 ### 3. Social inequalities w/this tax
+
 #### a. The forecast model
+
 ```{r, echo=FALSE}
 
 model_gii_tax <- lm(GII_value ~ Envt_Tax_Revenues_value, data = all_merged)
@@ -1365,7 +1387,9 @@ predicted_Warm
 #### b. Comparing with the forecast if we continue as we do
 
 ### 4. Is the model viable ? Its impact on the GDP
+
 #### a. The forecast model
+
 ```{r, echo=FALSE}
 
 ```
