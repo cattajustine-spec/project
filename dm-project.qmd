@@ -1179,8 +1179,15 @@ In this project, we are trying to look at the level of tax that would be necessa
 
 ### 1. Deriving a realistic tax path to reach net-zero by 2050
 
+#### a. The forecast model
+```{r, echo=FALSE}
+data_forecast_tax_0net <- EUGHG_agg_yearly |>
+  left_join(EU27_Tax, by = "TIME_PERIOD") |>
+  filter(
+    !is.na(GHG_total),
+    !is.na(Envt_Tax_Revenues_value)) |>
+  mutate(year = as.numeric(TIME_PERIOD))
 
-```{r}
 # Estimate level-level model
 mod_LL <- lm(GHG_total ~ Envt_Tax_Revenues_value, data = data_forecast_tax_0net)
 summary(mod_LL)
@@ -1218,7 +1225,7 @@ tax_path_LL <- tax_path_LL |>
 library(ggplot2)
 ggplot(tax_path_LL, aes(x = year, y = tax_required_capped)) +
   geom_line(color="darkblue") + theme_minimal() +
-  labs(title="Required tax path (level-level model)", x="Year", y="Tax (same units as dataset)")
+  labs(title="Required tax path (level-level model)", x="Year", y="Tax (millions of USD)")
 
 # Check predicted vs target
 ggplot(tax_path_LL, aes(x = year)) +
@@ -1228,30 +1235,11 @@ ggplot(tax_path_LL, aes(x = year)) +
 
 ```
 
+#### b. Comparing with the forecast if we continue as we do
 
-
-#### e/ Check predicted vs target GHG
-
-```{r}
-tax_path <- tax_path |>
-mutate(
-pred_log = predict(modB, newdata = tibble(Envt_Tax_Revenues_value = tax_required)),
-pred_GHG = pmax(0, exp(pred_log) - 1)
-)
-
-ggplot(tax_path, aes(x = year)) +
-geom_line(aes(y = target_GHG), color = "black", linetype = "dashed", size = 0.8) +
-geom_line(aes(y = pred_GHG), color = "darkred", size = 0.9) +
-labs(
-title = "Target GHG vs predicted GHG under required tax path",
-y = "GHG emissions",
-x = "Year"
-) +
-theme_minimal()
-```
 
 ### 2. Levels greenhouse gas emissions to reach
-
+#### a. The forecast model
 ```{r}
 ## Predicted sector-by-sector emissions at this tax level ---
 pred_2050 <- predict_total_ghg_given_tax(tax_2050_required, 2050)
@@ -1267,10 +1255,10 @@ predicted_GHG <- predict(model_ghg_tax, newdata = future)
 predicted_GHG
 ```
 
-##### Comment :
+#### b. Comparing with the forecast if we continue as we do
 
 ### 3. Social inequalities w/this tax
-
+#### a. The forecast model
 ```{r, echo=FALSE}
 
 model_gii_tax <- lm(GII_value ~ Envt_Tax_Revenues_value, data = all_merged)
@@ -1290,15 +1278,15 @@ predicted_Warm <- predict(model_warm_tax, newdata = data.frame(Envt_Tax_Revenues
 predicted_Warm
 ```
 
-##### Comment :
+#### b. Comparing with the forecast if we continue as we do
 
 ### 4. Is the model viable ? Its impact on the GDP
-
+#### a. The forecast model
 ```{r, echo=FALSE}
 
 ```
 
-##### Comment :
+#### b. Comparing with the forecast if we continue as we do
 
 # Conclusion
 
