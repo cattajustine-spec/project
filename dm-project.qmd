@@ -588,7 +588,7 @@ ggplot(EU27_Tax, aes(x = TIME_PERIOD, y = Envt_Tax_Revenues_value)) +
 ### Descriptive statistics
 
 ```{r, echo=FALSE}
-summary_stats_taxrevenues <- EU27_Tax %>%
+summary_stats_taxrevenues <- EU27_Tax |>
   summarise(
     Min = min(Envt_Tax_Revenues_value, na.rm = TRUE),
     Max = max(Envt_Tax_Revenues_value, na.rm = TRUE),
@@ -625,7 +625,7 @@ ggplot(EU27_GDP, aes(x = TIME_PERIOD, y = GDP_value)) +
 ### Descriptive statistics
 
 ```{r, echo=FALSE}
-summary_stats_GDP <- EU27_GDP %>%
+summary_stats_GDP <- EU27_GDP |>
   summarise(
     Min = min(GDP_value, na.rm = TRUE),
     Max = max(GDP_value, na.rm = TRUE),
@@ -665,8 +665,8 @@ ggplotly(p_va)
 ### Descriptive statistics
 
 ```{r, echo=FALSE}
-summary_stats_AV <- EU27_AV %>%
-  group_by(sector) %>%
+summary_stats_AV <- EU27_AV |>
+  group_by(sector) |>
   summarise(
     Min = min(AV_value, na.rm = TRUE),
     Max = max(AV_value, na.rm = TRUE),
@@ -705,8 +705,8 @@ ggplotly(p_GHG)
 ### Descriptive statistics
 
 ```{r, echo=FALSE}
-summary_stats_GHG <- EU27_GHG %>%
-  group_by(sector) %>%                
+summary_stats_GHG <- EU27_GHG |>
+  group_by(sector) |>                
   summarise(
     Min = min(GHG_Emissions_value, na.rm = TRUE),
     Max = max(GHG_Emissions_value, na.rm = TRUE),
@@ -748,8 +748,8 @@ ggplot(EU27_Warming,
 ### Descriptive statistics
 
 ```{r, echo=FALSE}
-summary_stats_Warm <- EU27_Warming %>%
-  group_by(hhtyp, incgrp) %>%                    
+summary_stats_Warm <- EU27_Warming |>
+  group_by(hhtyp, incgrp) |>                    
   summarise(
     Min = min(Warm_Households_value, na.rm = TRUE),
     Max = max(Warm_Households_value, na.rm = TRUE),
@@ -792,8 +792,8 @@ ggplotly(p_GII)
 ### Descriptive statistics
 
 ```{r, echo=FALSE}
-summary_stats_GII <- GII %>%
-  group_by(iso3) %>%                        
+summary_stats_GII <- GII |>
+  group_by(iso3) |>                        
   summarise(
     Min = min(GII_value, na.rm = TRUE),
     Max = max(GII_value, na.rm = TRUE),
@@ -833,8 +833,8 @@ ggplotly(p_coef)
 ### Descriptive statistics
 
 ```{r, echo=FALSE}
-summary_stats_coefineq <- coef_ineq %>%
-  group_by(iso3) %>%                        
+summary_stats_coefineq <- coef_ineq |>
+  group_by(iso3) |>                        
   summarise(
     Min = min(coef_ineq_value, na.rm = TRUE),
     Max = max(coef_ineq_value, na.rm = TRUE),
@@ -969,7 +969,7 @@ The overall model significance is confirmed by the extremely large F-statistic (
 #### Graphical representation
 
 ```{r, echo=FALSE}
-clean_tax_data <- all_merged %>%
+clean_tax_data <- all_merged |>
   filter(
     !is.na(GDP_value),
     !is.na(Envt_Tax_Revenues_value),
@@ -1002,7 +1002,7 @@ ggplot(clean_tax_data, aes(x = Envt_Tax_Revenues_value, y = GDP_value)) +
 sector <- c("Transport", "Agriculture", "Industry (including energy)", "Manufacturing")
 
 model_AV_tax <- lapply(sector, function(s){
-  data_s <- all_merged %>% filter(sector == s)
+  data_s <- all_merged |> filter(sector == s)
   lm(AV_value ~ Envt_Tax_Revenues_value, data = data_s)
 })
 
@@ -1040,7 +1040,7 @@ Overall, while the results do not imply causality, they reveal a consistent patt
 #### Graphical representation
 
 ```{r, echo=FALSE}
-ggplot(all_merged %>% drop_na(Envt_Tax_Revenues_value, AV_value),
+ggplot(all_merged |> drop_na(Envt_Tax_Revenues_value, AV_value),
        aes(x = Envt_Tax_Revenues_value, y = AV_value)) +
   geom_point(alpha = 0.1, color = "darkgreen") +
   geom_smooth(method = "lm", se = TRUE, color = "darkred") +
@@ -1196,13 +1196,13 @@ if(beta >= 0) stop("Estimated beta >= 0 : raising tax does not reduce GHG in thi
 
 # Build linear target path (absolute decline) as before
 last_year <- max(data_forecast_tax_0net$TIME_PERIOD)
-GHG_last  <- data_forecast_tax_0net %>% filter(TIME_PERIOD == last_year) %>% pull(GHG_total) %>% mean()
+GHG_last  <- data_forecast_tax_0net |> filter(TIME_PERIOD == last_year) |> pull(GHG_total) |> mean()
 years <- seq(last_year, 2050)
 epsilon <- 1e-6
 target_GHG <- approx(c(last_year, 2050), c(GHG_last, epsilon), xout = years)$y
 
 # Invert model: Tax_t = (target - alpha) / beta
-tax_path_LL <- tibble(year = years, target_GHG = target_GHG) %>%
+tax_path_LL <- tibble(year = years, target_GHG = target_GHG) |>
   mutate(
     tax_required = (target_GHG - alpha) / beta,
     # sensible cleaning: negative taxes -> NA, cap huge taxes for plotting
@@ -1211,7 +1211,7 @@ tax_path_LL <- tibble(year = years, target_GHG = target_GHG) %>%
   )
 
 # Predicted GHG under computed taxes (sanity check)
-tax_path_LL <- tax_path_LL %>%
+tax_path_LL <- tax_path_LL |>
   mutate(pred_GHG = predict(mod_LL, newdata = tibble(Envt_Tax_Revenues_value = tax_required)))
 
 # Plot
@@ -1233,7 +1233,7 @@ ggplot(tax_path_LL, aes(x = year)) +
 #### e/ Check predicted vs target GHG
 
 ```{r}
-tax_path <- tax_path %>%
+tax_path <- tax_path |>
 mutate(
 pred_log = predict(modB, newdata = tibble(Envt_Tax_Revenues_value = tax_required)),
 pred_GHG = pmax(0, exp(pred_log) - 1)
