@@ -1,9 +1,7 @@
 ---
 title: "dm-project"
 author: "Daphné Perry and Justine Catta"
-format:
-  html: default
-  pdf: default
+format: html
 ---
 
 # Summary
@@ -917,6 +915,7 @@ p_coef <- ggplot(coef_ineq, aes(x = TIME_PERIOD, y = coef_ineq_value, color = is
     y = "Coefficient of human inequality",
     color = "Country"
   ) +
+  scale_y_continuous(limits = c(0, 20)) + 
   theme_minimal()
 
 ggplotly(p_coef)
@@ -1454,7 +1453,7 @@ ggplot(tax_path_LL, aes(x = year)) +
 #| warning: false
 ## Predicted sector-by-sector emissions at this tax level ---
 # pred_2050 <- predict_total_ghg_given_tax(tax_2050_required, 2050)
-print(pred_2050)
+#print(pred_2050)
 ```
 
 ```{r, echo=FALSE}
