@@ -843,8 +843,7 @@ We try to answer one of our fundamental question : "Do taxes reduce emissions ?"
 First we try to evaluate the coefficient between an increase in taxes in the year n and the impact on Greenhouse gases emissions in the same year n.
 
 ```{r, echo=FALSE}
-model <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value + GDP_value + sector + TIME_PERIOD,
-            data = all_merged)
+model <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value + GDP_value + sector + TIME_PERIOD, data = all_merged)
 
 summary(model)
 ```
@@ -866,6 +865,8 @@ These substantial differences reflect the much higher emission intensities of in
 The coefficient on the time variable is –913, highly significant (p < 0.001), indicating a robust downward trend in emissions over time. This is consistent with what we saw before in the descriptive data.
 
 Overall, the results suggest that GDP and sectoral composition remain the dominant drivers of emissions. Environmental tax revenues show a statistically significant negative association with emissions, but the magnitude of the effect is small. The pronounced negative time trend indicates that greenhouse gas emissions have declined over the period independently of the direct influence of environmental tax revenues.
+
+We do not calculate a log - level regression, because our following analysis and tax proposition will be made accordingly to levels of GHG.
 
 ### b. Between taxes (n) and GHG (n+k, given k € [1; 5])
 
@@ -903,6 +904,33 @@ We estimated a series of linear regressions to examine whether environmental tax
 Across the five specifications, the coefficient on environmental tax revenues is negative, statistically significant, and remarkably stable. It ranges from –0.052 at horizon n + 1 to –0.061 at n + 2 and n + 3, before settling around –0.058 at n + 4 and –0.051 at n + 5. This pattern suggests that higher environmental tax revenues are systematically associated with slightly lower future GHG emissions, although the magnitude of the effect remains small in practical terms. Statistical significance is very strong in all models (p < 0.001).
 
 All other coefficients are close to the ones saw before (GDP around 0.043, Manufacturing: +15,200 to +16,100 units, Industry (including energy production): +25,000 to +26,900 units, Transport: approximately +16,100 units, and time has coefficients between –902 and –959, all highly significant)
+
+
+##### 10 years lead : 
+
+
+```{r, echo=FALSE}
+# Create leads 1 to 5
+for (k in 1:10) {
+  GHG_Emissions[[paste0("GHG_Emissions_value.lead", k)]] <- ave(
+    GHG_Emissions$GHG_Emissions_value, 
+    GHG_Emissions$iso3, GHG_Emissions$sector,
+    FUN = function(x) c(x[(1+k):length(x)], rep(NA, k)))}
+
+# add them in all merged
+all_merged_plus_leads <- merge(all_merged, GHG_Emissions,
+  by = c("iso3", "TIME_PERIOD", "sector", "GHG_Emissions_value"),
+  all.x = TRUE)
+all_merged_plus_leads <- all_merged_plus_leads |>
+    select(iso3, TIME_PERIOD, GDP_value, sector, Envt_Tax_Revenues_value, GHG_Emissions_value, GHG_Emissions_value.lead1, GHG_Emissions_value.lead2, GHG_Emissions_value.lead3, GHG_Emissions_value.lead4, GHG_Emissions_value.lead5, GHG_Emissions_value.lead6, GHG_Emissions_value.lead7, GHG_Emissions_value.lead8, GHG_Emissions_value.lead9, GHG_Emissions_value.lead10 )
+
+reg_results <- lapply(1:10, function(k) {formula_k <- as.formula(
+    paste0("GHG_Emissions_value.lead", k,
+           " ~ Envt_Tax_Revenues_value + GDP_value + sector + TIME_PERIOD"))
+  lm(formula_k, data = all_merged_plus_leads)})
+
+lapply(reg_results, summary)
+```
 
 ## 2. Between taxes and social inequalities
 ```{r, echo=FALSE}
@@ -1039,7 +1067,7 @@ We use this forecast to try to predict the impact of environmental taxes on diff
 
 ### 1. Greenhouse Gas emissions by sector
 
-#### a. Time series forecast of the total Greenhouse Gas emissions
+#### a. Time series ARIMA forecast of the total Greenhouse Gas emissions
 ```{r, echo=FALSE}
 agg_yearly <- EU27_GHG |>
   filter(!is.na(GHG_Emissions_value), !is.na(sector)) |>
@@ -1051,30 +1079,22 @@ model <- auto.arima(ts_data)
 fc <- forecast(model, h=27)
 fc
 ```
+##### Comment :
+This ARIMA-based forecast indicates a steady but slow decline in total greenhouse gas emissions for the EU27 from 2024 to 2050. Emissions fall from roughly 2.45 million units in 2024 to about 1.43 million units by 2050, representing a long-term downward trajectory.
 
+However, despite this continuous decrease, the decline is far from the EU’s net-zero objective for 2050. Even in the most optimistic confidence interval, projected emissions in 2050 remain well above 0, suggesting that—under current trends and without major additional interventions—the EU27 is not on track to reach carbon neutrality. 
 
-#### Ploting the forecast
-
-##### Our values between 1990 and 2023
-```{r}
-EU27_ghg_tot <- EU27_GHG |>  
-  filter(!is.na(GHG_Emissions_value)) |>
-  group_by(TIME_PERIOD) |>
-  summarise(GHG_total = sum(GHG_Emissions_value, na.rm = TRUE)) |>
-  arrange(TIME_PERIOD)
-```
-
-```{r}
+##### Ploting the forecast
+```{r, echo=FALSE}
 # model -> data set -> plot
 forecast_df <- tibble(TIME_PERIOD = 
   (max(agg_yearly$TIME_PERIOD) + 1):(max(agg_yearly$TIME_PERIOD) + 27),
   Point_Forecast = fc$mean, Lo80 = fc$lower[, 1], Hi80 = fc$upper[, 1], Lo95 = fc$lower[, 2], Hi95 = fc$upper[, 2])
 ```
 
-
-```{r}
+```{r, echo=FALSE}
 GHG_all_2050 <- ggplot() +
-  geom_line(data=EU27_ghg_tot, aes(x = TIME_PERIOD, y = GHG_total, color = "Observations")) +
+  geom_line(data=agg_yearly, aes(x = TIME_PERIOD, y = GHG_total, color = "Observations")) +
   geom_line(data=forecast_df, aes(x = TIME_PERIOD, y = Point_Forecast, color = "Time series forecast")) +
   geom_point(data=forecast_df, aes(x = TIME_PERIOD, y = Lo95, color = "Low 95%")) +
   geom_point(data=forecast_df, aes(x = TIME_PERIOD, y = Hi95, color = "High 95%")) +
@@ -1095,25 +1115,60 @@ ggplotly(GHG_all_2050)
 ```
 
 
-
-##### Comment :
-This is a linear forecast showing a decrease in greenhouse gas emissions over the projected horizon (2050) of roughly 400 thousand of tons per year. Starting from about 37800 units, emissions reach around 25100 units by the final step. This downward trend suggests that, under current conditions and model assumptions, emissions are expected to continue slowly decrease without signs of stabilization or reversal. In other words, the model anticipates persistent, long-term decrease in GHG emissions unless significant policy or structural changes occur.
-
 ```{r}
-model_ghg_year <- lm(GHG_Emissions_value ~ TIME_PERIOD, data = all_merged)
-future <- data.frame(TIME_PERIOD = seq(min(all_merged$TIME_PERIOD),
-                                       max(all_merged$TIME_PERIOD), 1))
-predicted_GHG <- predict(model_ghg_year, newdata = future)
-predicted_GHG
+autoplot(fc)
 ```
 
+#### b. Time series ARIMA forecast of the total Greenhouse Gas emissions per sector
+```{r, echo=FALSE}
+sector_yearly <- EU27_GHG |>
+  filter(!is.na(GHG_Emissions_value), !is.na(sector)) |>
+  group_by(sector, TIME_PERIOD) |>
+  summarise(GHG_total = sum(GHG_Emissions_value, na.rm = TRUE), .groups = "drop")
 
+# nest per sector to run the same ARIMA model independently
+sector_models <- sector_yearly |> group_by(sector) |>
+  nest() |> mutate(
+    ts_data = map(data, ~ ts(.x$GHG_total, start = min(.x$TIME_PERIOD))),
+    model = map(ts_data, auto.arima),
+    forecast = map(model, ~ forecast(.x, h = 27)))
 
-faire le plot
-avant 2023 et apres 2023
+# unnest forecast results into a tidy dataframe
+sector_forecasts <- sector_models |>
+  mutate(preds_df = map(forecast, ~ {tibble(
+        TIME_PERIOD = (max(sector_yearly$TIME_PERIOD)+1) :
+                       (max(sector_yearly$TIME_PERIOD) + length(.x$mean)),
+        forecast = as.numeric(.x$mean),
+        lo_80 = as.numeric(.x$lower[,1]),
+        hi_80 = as.numeric(.x$upper[,1]),
+        lo_95 = as.numeric(.x$lower[,2]),
+        hi_95 = as.numeric(.x$upper[,2]))})) |>
+  select(sector, preds_df) |>
+  unnest(preds_df)
+
+sector_forecasts
+```
+```{r}
+plots <- map2(
+  sector_models$sector,
+  sector_models$forecast, 
+  ~ autoplot(.y) + ggtitle(paste("Forecast of",.x) ))
+
+plots
+```
+
+Comments : 
+
+Agriculture : compared to the trend before, the forecast does not move so much, but bigger and bigger error terms
+Industry (including energy) : slope that decreases not sp slowly and error terms not big, and some chance it goes to 0 by 2050
+Manufacturing : also goes down pretty fast, poss to have 0 in 2050
+Transport : stable bc stable on the last years
+
+==> the sectors that can be more easily deviated to go to 0 ghg in 2050 = industry and manufacturing
+
+transport pretty stable and normal bc of today's use. we didn't see a big change in mean of transportation (cars, boats,...)
 
 ### 2. social inequalities: 
-
 
 ```{r, echo=FALSE}
 
@@ -1121,18 +1176,41 @@ model_gii_tax <- lm(GII_value ~ Envt_Tax_Revenues_value, data = all_merged)
 predicted_GII <- predict(model_gii_tax, newdata = data.frame(Envt_Tax_Revenues_value = seq(
   min(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
   max(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
-  length.out = 25)))
+  length.out = 27)))
 predicted_GII
 
-# RAJOUTER COEF INEQ
+model_coefineq_tax <- lm(coef_ineq_value ~ Envt_Tax_Revenues_value, data = all_merged)
+predicted_coefineq <- predict(model_coefineq_tax, newdata = data.frame(Envt_Tax_Revenues_value = seq(
+  min(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
+  max(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
+  length.out = 27)))
+predicted_coefineq
 
 model_warm_tax <- lm(Warm_Households_value ~ Envt_Tax_Revenues_value, data = all_merged)
 predicted_Warm <- predict(model_warm_tax, newdata = data.frame(Envt_Tax_Revenues_value = seq(
   min(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
   max(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
-  length.out = 25)))
+  length.out = 27)))
 predicted_Warm
 ```
+```{r}
+predicted_Warm <- predict(model_warm_tax, newdata = data.frame(
+  Envt_Tax_Revenues_value = seq(
+    min(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
+    max(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
+    length.out = 27
+  ),
+  GII_value = mean(all_merged$GII_value, na.rm = TRUE),
+  coef_ineq_value = mean(all_merged$coef_ineq_value, na.rm = TRUE),
+  hhtyp = "TOTAL",   # pick a level of hhtyp
+  incgrp = "TOTAL",      # pick a level of incgrp
+  GDP_value = mean(all_merged$GDP_value, na.rm = TRUE),
+  TIME_PERIOD = mean(all_merged$TIME_PERIOD, na.rm = TRUE)
+))
+predicted_Warm
+```
+
+
 
 ##### Comment :
 
