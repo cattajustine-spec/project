@@ -1128,9 +1128,8 @@ GHG_all_2050 <- ggplot() +
 ggplotly(GHG_all_2050)
 ```
 
-
-
 ##### Comment :
+
 This is a linear forecast showing a decrease in greenhouse gas emissions over the projected horizon (2050) of roughly 400 thousand of tons per year. Starting from about 37800 units, emissions reach around 25100 units by the final step. This downward trend suggests that, under current conditions and model assumptions, emissions are expected to continue slowly decrease without signs of stabilization or reversal. In other words, the model anticipates persistent, long-term decrease in GHG emissions unless significant policy or structural changes occur.
 
 ```{r, echo=FALSE}
@@ -1141,13 +1140,9 @@ predicted_GHG <- predict(model_ghg_year, newdata = future)
 predicted_GHG
 ```
 
+faire le plot avant 2023 et apres 2023
 
-
-faire le plot
-avant 2023 et apres 2023
-
-### 2. social inequalities: 
-
+### 2. social inequalities:
 
 ```{r, echo=FALSE}
 
@@ -1170,101 +1165,98 @@ predicted_Warm
 
 ##### Comment :
 
-
-
 ### 3. The economy : forecast of the GDP
+
 ```{r, echo=FALSE}
 
 ```
 
 ##### Comment :
 
-
 # Forecasting: if we plan to get to the 0 net emission by 2050
 
-In this project, we are trying to look at the level of tax that would be necessary to reach the 0 net emissions by 2050 required by the European Union. To do so, we should first look at the level of tax that allows for this evolution, and then check the evolution of the GHG emissions per sector induced by this level of tax. Furthermore, we should look at the impact of this level of tax on the social inequalities and on the economy. 
+In this project, we are trying to look at the level of tax that would be necessary to reach the 0 net emissions by 2050 required by the European Union. To do so, we should first look at the level of tax that allows for this evolution, and then check the evolution of the GHG emissions per sector induced by this level of tax. Furthermore, we should look at the impact of this level of tax on the social inequalities and on the economy.
+
+### 1. Deriving a realistic tax path to reach net-zero by 2050
 
 
-### 1. Level of tax to reach the 0 net emissions
+```{r}
+# Estimate level-level model
+mod_LL <- lm(GHG_total ~ Envt_Tax_Revenues_value, data = data_forecast_tax_0net)
+summary(mod_LL)
 
-```{r, echo=FALSE}
-# --- 2) Extract EU27 GHG emissions (per sector, per year) ---
-overall_EU27GHG <- all_merged %>%
-  filter(iso3 == "EU27") %>%
-  group_by(TIME_PERIOD, sector) %>%
-  summarize(ghg = sum(GHG_Emissions_value, na.rm = TRUE), .groups = "drop")
+# Check sign
+coef_LL <- coef(mod_LL)
+alpha <- coef_LL[1]
+beta  <- coef_LL[2]
+message("alpha=", round(alpha,2), "  beta=", round(beta,6))
 
-# --- 3) Merge GHG and TAX data ---
-data_forecast_tax_0net <- overall_EU27GHG %>%
-  left_join(EU27_Tax, by = "TIME_PERIOD") %>%
-  filter(!is.na(ghg), !is.na(Envt_Tax_Revenues_value)) %>%
-  mutate(
-    log_ghg_p1 = log(ghg + 1),
-    log_tax_p1 = log(Envt_Tax_Revenues_value + 1),
-    sector = as.factor(sector),
-    year = as.numeric(TIME_PERIOD)
-  )
+# If beta >= 0, stop (no reduction possible by raising tax)
+if(beta >= 0) stop("Estimated beta >= 0 : raising tax does not reduce GHG in this model.")
 
-# ---- 4) Estimate model ----
-mod <- lm(log_ghg_p1 ~ log_tax_p1 + sector + year, data = data_model)
-summary(mod)
-
-# --- 5) Prediction function ---
-predict_total_ghg_given_tax <- function(Envt_Tax_Revenues_value, year_target = 2050, model = mod) {
-  sectors <- levels(data_model$sector)
-  newdata <- tibble(
-    sector = factor(sectors, levels = levels(data_model$sector)),
-    tax_eu = tax_value,
-    log_tax_p1 = log(tax_value + 1),
-    year = year_target
-  )
-  pred_log <- predict(model, newdata)
-  pred_ghg <- pmax(0, exp(pred_log) - 1)
-  tib <- tibble(sector = sectors, pred_ghg)
-  tib$total_ghg <- sum(pred_ghg)
-  tib
-}
-
-# --- 6) Solve for tax level in 2050 such that total emissions ≈ 0 ---
+# Build linear target path (absolute decline) as before
+last_year <- max(data_forecast_tax_0net$TIME_PERIOD)
+GHG_last  <- data_forecast_tax_0net %>% filter(TIME_PERIOD == last_year) %>% pull(GHG_total) %>% mean()
+years <- seq(last_year, 2050)
 epsilon <- 1e-6
-year_target <- 2050
+target_GHG <- approx(c(last_year, 2050), c(GHG_last, epsilon), xout = years)$y
 
-froot <- function(tax_val) {
-  predict_total_ghg_given_tax(tax_val, year_target)$total_ghg - epsilon
-}
+# Invert model: Tax_t = (target - alpha) / beta
+tax_path_LL <- tibble(year = years, target_GHG = target_GHG) %>%
+  mutate(
+    tax_required = (target_GHG - alpha) / beta,
+    # sensible cleaning: negative taxes -> NA, cap huge taxes for plotting
+    tax_required = ifelse(is.finite(tax_required) & tax_required >= 0, tax_required, NA_real_),
+    tax_required_capped = ifelse(tax_required > 1e12, NA_real_, tax_required)
+  )
 
-# Interval for solving
-tax_latest <- eu_tax_yearly %>% filter(TIME_PERIOD == max(TIME_PERIOD)) %>% pull(tax_eu)
+# Predicted GHG under computed taxes (sanity check)
+tax_path_LL <- tax_path_LL %>%
+  mutate(pred_GHG = predict(mod_LL, newdata = tibble(Envt_Tax_Revenues_value = tax_required)))
 
-lower <- max(0, tax_latest * 0.5)
-upper <- max(tax_latest * 10, 1e6)
+# Plot
+library(ggplot2)
+ggplot(tax_path_LL, aes(x = year, y = tax_required_capped)) +
+  geom_line(color="darkblue") + theme_minimal() +
+  labs(title="Required tax path (level-level model)", x="Year", y="Tax (same units as dataset)")
 
-# Expand upper bound until sign change
-attempt <- 1
-while(attempt <= 20 && froot(lower) * froot(upper) > 0) {
-  upper <- upper * 2
-  attempt <- attempt + 1
-}
-
-if(froot(lower) * froot(upper) <= 0) {
-  sol <- uniroot(froot, lower = lower, upper = upper, tol = 1e-10)
-  tax_2050_required <- sol$root
-} else {
-  warning("Could not find root — emissions cannot reach near-zero under this model.")
-  tax_2050_required <- NA
-}
-
-tax_2050_required
-
-# --- 7) Predicted sector-by-sector emissions at this tax level ---
-pred_2050 <- predict_total_ghg_given_tax(tax_2050_required, 2050)
-print(pred_2050)
+# Check predicted vs target
+ggplot(tax_path_LL, aes(x = year)) +
+  geom_line(aes(y = target_GHG), linetype="dashed") +
+  geom_line(aes(y = pred_GHG), color="darkblue") +
+  labs(title="Target GHG vs predicted (level-level)", y="GHG", x="Year") + theme_minimal()
 
 ```
 
 
-### 2. Levels greenhouse gas emissions to reach 
 
+#### e/ Check predicted vs target GHG
+
+```{r}
+tax_path <- tax_path %>%
+mutate(
+pred_log = predict(modB, newdata = tibble(Envt_Tax_Revenues_value = tax_required)),
+pred_GHG = pmax(0, exp(pred_log) - 1)
+)
+
+ggplot(tax_path, aes(x = year)) +
+geom_line(aes(y = target_GHG), color = "black", linetype = "dashed", size = 0.8) +
+geom_line(aes(y = pred_GHG), color = "darkred", size = 0.9) +
+labs(
+title = "Target GHG vs predicted GHG under required tax path",
+y = "GHG emissions",
+x = "Year"
+) +
+theme_minimal()
+```
+
+### 2. Levels greenhouse gas emissions to reach
+
+```{r}
+## Predicted sector-by-sector emissions at this tax level ---
+pred_2050 <- predict_total_ghg_given_tax(tax_2050_required, 2050)
+print(pred_2050)
+```
 
 ```{r, echo=FALSE}
 model_ghg_tax <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value, data = all_merged)
@@ -1274,7 +1266,9 @@ future <- data.frame(Envt_Tax_Revenues_value = seq(min(all_merged$Envt_Tax_Reven
 predicted_GHG <- predict(model_ghg_tax, newdata = future)
 predicted_GHG
 ```
+
 ##### Comment :
+
 ### 3. Social inequalities w/this tax
 
 ```{r, echo=FALSE}
@@ -1295,22 +1289,19 @@ predicted_Warm <- predict(model_warm_tax, newdata = data.frame(Envt_Tax_Revenues
   length.out = 25)))
 predicted_Warm
 ```
+
 ##### Comment :
 
-
-### 4. Is the model viable ? Its impact on the GDP 
+### 4. Is the model viable ? Its impact on the GDP
 
 ```{r, echo=FALSE}
 
 ```
+
 ##### Comment :
 
- 
-# Conclusion 
+# Conclusion
 
 ## Ouverture
-Si une telle les 3 types de taxes ne sont pas compatibles / impact trop grand sur les inégalités et/ou sur l'économie / impact trop faible sur les GHG, quelles alternatives (en plus de la taxe / à la place de la taxe) ? 
- - subvention : à la recherche ? 
- - changement modes de consommation, institutions : sobriété éco ? décroissance
- - autre ? 
 
+Si une telle les 3 types de taxes ne sont pas compatibles / impact trop grand sur les inégalités et/ou sur l'économie / impact trop faible sur les GHG, quelles alternatives (en plus de la taxe / à la place de la taxe) ? - subvention : à la recherche ? - changement modes de consommation, institutions : sobriété éco ? décroissance - autre ?
