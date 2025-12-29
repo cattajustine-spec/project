@@ -1403,6 +1403,8 @@ ggplot(tax_path_LL, aes(x = year)) +
 
 #### b. Comparing with the forecast if we continue as we do
 
+##### GHG emissions : targeted vs predicted
+
 ```{r}
 fc_df <- data.frame(
   year = as.numeric(time(fc$mean)),
@@ -1446,7 +1448,7 @@ ggplot(tax_path_LL, aes(x = year)) +
       "80% confidence interval" = "grey50",
       "95% confidence interval" = "grey70")) +
   labs(
-    title = "GHG Emissions: Target Path and ARIMA Forecast (2023–2050)",
+    title = "GHG Emissions: Target Path vs ARIMA Forecast (2023–2050)",
     x = "Year",
     y = "GHG Emissions") +
   theme_minimal() +
@@ -1456,7 +1458,13 @@ ggplot(tax_path_LL, aes(x = year)) +
   )
 ```
 
-##### Comment
+###### Comment
+As shown in the figure, achieving the targeted GHG emissions trajectory would require a substantial change in current taxing practices. The target path consistently lies at the lower bound of the forecast confidence intervals for emissions, and from around 2035 onwards it even falls outside the 95% confidence interval. This suggests that, under the continuation of current trends captured by the ARIMA forecast, the probability of reaching the targeted emissions level is low, highlighting the need for stronger or additional policy interventions.
+
+##### Tax policy : targeted vs predicted
+
+###### Comment 
+
 
 ### 2. Levels greenhouse gas emissions to reach
 #### a. The forecast model
