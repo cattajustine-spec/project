@@ -1553,7 +1553,56 @@ Overall, the sector-level analysis reveals heterogeneous challenges. While indus
 
 ##### Tax policy : targeted vs predicted
 ```{r}
+tax_ts <- ts(
+  data_forecast_tax_0net$Envt_Tax_Revenues_value, 
+  start = min(data_forecast_tax_0net$TIME_PERIOD)
+)
 
+tax_model <- auto.arima(tax_ts)
+tax_fc <- forecast(tax_model, h = length(years))  # forecast up to 2050
+
+tax_fc_df <- data.frame(
+  year = years,
+  mean = as.numeric(tax_fc$mean),
+  lower80 = as.numeric(tax_fc$lower[,1]),
+  upper80 = as.numeric(tax_fc$upper[,1]),
+  lower95 = as.numeric(tax_fc$lower[,2]),
+  upper95 = as.numeric(tax_fc$upper[,2])
+)
+
+tax_path_comparison <- tax_path_LL %>%
+  select(year, tax_required_capped) %>%
+  rename(target_tax = tax_required_capped)
+
+ggplot(tax_fc_df, aes(x = year)) +
+  geom_ribbon(aes(ymin = lower95, ymax = upper95, fill = "95% CI"), alpha = 0.35) +
+  geom_ribbon(aes(ymin = lower80, ymax = upper80, fill = "80% CI"), alpha = 0.5) +
+  geom_line(aes(y = mean, color = "Forecasted Tax"), linewidth = 1) +
+  geom_line(data = tax_path_comparison, aes(y = target_tax, color = "Target Tax Path"), linewidth = 1) +
+  scale_color_manual(
+    name = "Lines",
+    values = c(
+      "Forecasted Tax" = "red",
+      "Target Tax Path" = "darkblue"
+    )
+  ) +
+  scale_fill_manual(
+    name = "Confidence Intervals",
+    values = c(
+      "80% CI" = "grey50",
+      "95% CI" = "grey70"
+    )
+  ) +
+  labs(
+    title = "Forecasted vs Target Tax Path to Achieve Net-Zero GHG",
+    x = "Year",
+    y = "Environmental Tax Revenues (millions USD)"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    legend.title = element_text(face = "bold")
+  )
 ```
 
 ###### Comment 
