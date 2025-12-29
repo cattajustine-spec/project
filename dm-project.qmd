@@ -903,6 +903,7 @@ The EU27 average sits at ≈ 8.64, but the dispersion across countries is notabl
 We try to answer one of our fundamental question : "Do taxes reduce emissions ?".
 
 ### a. Between taxes (n) and GHG (n)
+*** A REFAIRE *** : ça va à l'encontre de nos conclusions ! Possible solution : use GHG TOTAL instead of GHG value ! 
 
 First we try to evaluate the coefficient between an increase in taxes in the year n and the impact on Greenhouse gases emissions in the same year n.
 
