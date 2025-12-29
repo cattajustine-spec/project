@@ -43,6 +43,7 @@ library(tidyverse)
 library(broom)
 library(forecast)
 library(purrr)
+library(gridExtra)
 ```
 
 ```{r, echo=FALSE}
@@ -1261,9 +1262,10 @@ sector_forecasts
 plots <- map2(
   sector_models$sector,
   sector_models$forecast, 
-  ~ autoplot(.y) + ggtitle(paste("Forecast of",.x) ))
+  ~ autoplot(.y) + ggtitle(paste("Forecast of", .x))
+)
 
-plots
+do.call(grid.arrange, c(plots, ncol = 2))
 ```
 
 Comments : 
@@ -1383,17 +1385,11 @@ tax_path_LL <- tibble(year = years, target_GHG = target_GHG) |>
     tax_required_capped = ifelse(tax_required > 1e12, NA_real_, tax_required)
   )
 
-# Predicted GHG under computed taxes (sanity check)
 tax_path_LL <- tax_path_LL |>
   mutate(pred_GHG = predict(mod_LL, newdata = tibble(Envt_Tax_Revenues_value = tax_required)))
-
-# Plot
-library(ggplot2)
 ggplot(tax_path_LL, aes(x = year, y = tax_required_capped)) +
   geom_line(color="darkblue") + theme_minimal() +
   labs(title="Required tax path (level-level model)", x="Year", y="Tax (millions of USD)")
-
-# Check predicted vs target
 ggplot(tax_path_LL, aes(x = year)) +
   geom_line(aes(y = target_GHG), linetype="dashed") +
   geom_line(aes(y = pred_GHG), color="darkblue") +
