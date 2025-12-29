@@ -1328,6 +1328,45 @@ plot(gdp_fc, main = "Forecast of GDP")
 
 ##### Comment :
 
+### 4. The economy : forecast of the environmental taxes
+
+
+```{r}
+# Linear trend model
+tax_lm <- lm(Envt_Tax_Revenues_value ~ TIME_PERIOD, data = EU27_Tax)
+summary(tax_lm)
+
+# Forecast
+future_years <- tibble(
+  TIME_PERIOD = (max(EU27_Tax$TIME_PERIOD)+1):(max(EU27_Tax$TIME_PERIOD)+27)
+)
+
+tax_pred <- predict(
+  tax_lm,
+  newdata = future_years,
+  interval = "confidence", 
+  level = 0.95
+)
+
+tax_fc_lm <- bind_cols(future_years, as.data.frame(tax_pred))
+
+
+
+ggplot(tax_fc_lm, aes(x = TIME_PERIOD, y = fit)) +
+  geom_line(color = "darkblue") +
+  geom_ribbon(aes(ymin = lwr, ymax = upr), alpha = 0.2) +
+  theme_minimal() +
+  labs(
+    title = "Forecast of Environmental Tax Revenues (95% CI)",
+    x = "Year",
+    y = "Tax revenues"
+  )
+```
+
+
+##### Comment :
+this is an extrapolation from current tred
+
 
 # Forecasting: if we plan to get to the 0 net emission by 2050
 
@@ -1339,61 +1378,85 @@ In this project, we are trying to look at the level of tax that would be necessa
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-data_forecast_tax_0net <- EUGHG_agg_yearly |>
-  left_join(EU27_Tax, by = "TIME_PERIOD") |>
-  filter(
-    !is.na(GHG_total),
-    !is.na(Envt_Tax_Revenues_value)) |>
+data_forecast_tax_0net <- EUGHG_agg_yearly %>%
+  left_join(EU27_Tax, by = "TIME_PERIOD") %>%
+  filter(!is.na(GHG_total), !is.na(Envt_Tax_Revenues_value)) %>%
   mutate(year = as.numeric(TIME_PERIOD))
 
-# Estimate level-level model
+# Estimate level-level model 
 mod_LL <- lm(GHG_total ~ Envt_Tax_Revenues_value, data = data_forecast_tax_0net)
 summary(mod_LL)
 
-# Check sign
-coef_LL <- coef(mod_LL)
-alpha <- coef_LL[1]
-beta  <- coef_LL[2]
-message("alpha=", round(alpha,2), "  beta=", round(beta,6))
-
 # If beta >= 0, stop (no reduction possible by raising tax)
-if(beta >= 0) stop("Estimated beta >= 0 : raising tax does not reduce GHG in this model.")
+if(coef(mod_LL)[2] >= 0) stop("Model does not indicate that raising tax reduces GHG.")
 
 # Build linear target path (absolute decline) as before
-last_year <- max(data_forecast_tax_0net$TIME_PERIOD)
-GHG_last  <- data_forecast_tax_0net |> filter(TIME_PERIOD == last_year) |> pull(GHG_total) |> mean()
-years <- seq(last_year, 2050)
-epsilon <- 1e-6
-target_GHG <- approx(c(last_year, 2050), c(GHG_last, epsilon), xout = years)$y
+years <- seq(max(data_forecast_tax_0net$year), 2050)
+GHG_last <- tail(data_forecast_tax_0net$GHG_total, 1)
+target_GHG <- seq(GHG_last, 1e-6, length.out = length(years))
 
 # Invert model: Tax_t = (target - alpha) / beta
-tax_path_LL <- tibble(year = years, target_GHG = target_GHG) |>
-  mutate(
-    tax_required = (target_GHG - alpha) / beta,
-    # sensible cleaning: negative taxes -> NA, cap huge taxes for plotting
-    tax_required = ifelse(is.finite(tax_required) & tax_required >= 0, tax_required, NA_real_),
-    tax_required_capped = ifelse(tax_required > 1e12, NA_real_, tax_required)
-  )
+tax_required <- (target_GHG - coef(mod_LL)[1]) / coef(mod_LL)[2]
+tax_required <- ifelse(tax_required < 0 | tax_required > 1e12, NA_real_, tax_required)
 
-# Predicted GHG under computed taxes (sanity check)
-tax_path_LL <- tax_path_LL |>
+tax_path <- tibble(
+  year = years,
+  target_GHG = target_GHG,
+  tax_required = tax_required,
+  pred_GHG = predict(mod_LL, newdata = tibble(Envt_Tax_Revenues_value = tax_required))
+)
+
+# check
+tax_path <- tax_path |>
   mutate(pred_GHG = predict(mod_LL, newdata = tibble(Envt_Tax_Revenues_value = tax_required)))
 
 # Plot
-library(ggplot2)
-ggplot(tax_path_LL, aes(x = year, y = tax_required_capped)) +
-  geom_line(color="darkblue") + theme_minimal() +
-  labs(title="Required tax path (level-level model)", x="Year", y="Tax (millions of USD)")
+ggplot(tax_path, aes(x = year)) +
+  geom_line(aes(y = tax_required), color = "darkblue") +
+  labs(title="Required Environmental Tax Path", y="Tax (millions USD)", x="Year") +
+  theme_minimal()
 
 # Check predicted vs target
-ggplot(tax_path_LL, aes(x = year)) +
-  geom_line(aes(y = target_GHG), linetype="dashed") +
-  geom_line(aes(y = pred_GHG), color="darkblue") +
-  labs(title="Target GHG vs predicted (level-level)", y="GHG", x="Year") + theme_minimal()
+ggplot(tax_path, aes(x = year)) +
+  geom_line(aes(y = target_GHG), linetype = "dashed", color = "red") +
+  geom_line(aes(y = pred_GHG), color = "darkblue") +
+  labs(title="Target vs Predicted GHG", y="GHG", x="Year") +
+  theme_minimal()
 
 ```
 
 #### b. Comparing with the forecast if we continue as we do
+
+
+```{r}
+tax_fc_df <- tax_fc_lm |>
+  rename(
+    year = TIME_PERIOD,
+    tax_forecast = fit,
+    lo_95 = lwr,
+    hi_95 = upr
+  )
+
+tax_plot_df <- tax_fc_df |>
+  left_join(tax_path |> select(year, tax_required),
+    by = "year") |>
+  mutate(
+    tax_diff = tax_required - tax_forecast
+  )
+
+ggplot(tax_plot_df, aes(x = year)) +
+  geom_ribbon(aes(ymin = lo_95, ymax = hi_95), fill = "lightblue", alpha = 0.3) +
+  geom_line(aes(y = tax_forecast), color = "blue", linewidth = 1) +
+  geom_line(aes(y = tax_required), color = "red", linetype = "dashed", linewidth = 1) +
+  labs(
+    title = "Environmental Tax: Trend Forecast vs Climate-Required Path",
+    y = "Tax revenues (millions USD)",
+    x = "Year"
+  ) +
+  theme_minimal()
+
+```
+
 
 
 ### 2. Levels greenhouse gas emissions to reach
@@ -1418,6 +1481,9 @@ predicted_GHG
 ```
 
 #### b. Comparing with the forecast if we continue as we do
+
+
+
 
 ### 3. Social inequalities w/this tax
 #### a. The forecast model
