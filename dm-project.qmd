@@ -1435,7 +1435,7 @@ ggplot(sector_target, aes(x = year, y = target_sector_GHG, color = sector)) +
 #### b. Comparing with the forecast if we continue as we do
 
 ##### GHG emissions : targeted vs predicted
-
+###### Total emissions 
 ```{r}
 fc_df <- data.frame(
   year = as.numeric(time(fc$mean)),
@@ -1489,10 +1489,60 @@ ggplot(tax_path_LL, aes(x = year)) +
   )
 ```
 
-###### Comment
+####### Comment
 As shown in the figure, achieving the targeted GHG emissions trajectory would require a substantial change in current taxing practices. The target path consistently lies at the lower bound of the forecast confidence intervals for emissions, and from around 2035 onwards it even falls outside the 95% confidence interval. This suggests that, under the continuation of current trends captured by the ARIMA forecast, the probability of reaching the targeted emissions level is low, highlighting the need for stronger or additional policy interventions.
 
+###### Per sector emissions
+```{r}
+plots <- map2(
+  sector_models$sector,
+  sector_models$forecast,
+  ~ {
+    fc <- .y
+    sector_name <- .x
+    fc_df <- data.frame(
+      year = as.numeric(time(fc$mean)),
+      mean = as.numeric(fc$mean),
+      lower80 = as.numeric(fc$lower[,1]),
+      upper80 = as.numeric(fc$upper[,1]),
+      lower95 = as.numeric(fc$lower[,2]),
+      upper95 = as.numeric(fc$upper[,2])
+    )
+    target_df <- sector_target %>%
+      filter(sector == sector_name) %>%
+      select(year, target_sector_GHG)
+    ggplot(target_df, aes(x = year)) +
+      geom_ribbon(data = fc_df, aes(
+        x = year, ymin = lower95, ymax = upper95, fill = "95% CI"
+      ), inherit.aes = FALSE, alpha = 0.35) +
+      geom_ribbon(data = fc_df, aes(
+        x = year, ymin = lower80, ymax = upper80, fill = "80% CI"
+      ), inherit.aes = FALSE, alpha = 0.5) +
+      geom_line(data = fc_df, aes(x = year, y = mean, color = "Forecast"), linewidth = 1) +
+      geom_line(aes(y = target_sector_GHG, color = "Target"), linewidth = 1) +
+      scale_color_manual(
+        name = "Lines",
+        values = c("Target" = "darkblue", "Forecast" = "red")
+      ) +
+      scale_fill_manual(
+        name = "Confidence intervals",
+        values = c("80% CI" = "grey50", "95% CI" = "grey70")
+      ) +
+      labs(
+        title = paste("Sector:", sector_name),
+        x = "Year",
+        y = "GHG Emissions"
+      ) +
+      theme_minimal() +
+      theme(legend.position = "right",
+            legend.title = element_text(face = "bold"))
+  }
+)
 
+do.call(grid.arrange, c(plots, ncol = 2))
+```
+
+####### Comment
 ##### Tax policy : targeted vs predicted
 
 ###### Comment 
