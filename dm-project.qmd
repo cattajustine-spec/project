@@ -664,8 +664,6 @@ Revenues peaked at approximately 809 billion USD, while the long-run average (�
 
 ## 2. European GDP
 
-### Graphical representation
-
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -678,8 +676,6 @@ ggplot(EU27_GDP, aes(x = TIME_PERIOD, y = GDP_value)) +
   ) +
   theme_minimal()
 ```
-
-### Descriptive statistics
 
 ```{r, echo=FALSE}
 #| message: false
@@ -697,15 +693,11 @@ kable(summary_stats_GDP,
       caption = "Descriptive statistics of the European GDP (all years combined)")
 ```
 
-##### Comment :
-
 European GDP has increased a lot since the early 1990s. Starting from roughly 6.3 trillion USD, GDP expanded strongly throughout the 2000s, with a brief slowdown around the early 2010s (due to the subprime crisis), before resuming its upward trajectory. By 2024, it reached nearly 19.4 trillion USD, its historical maximum.
 
 The long-run average GDP (≈ 12.2 trillion USD) and the very large standard deviation (≈ 4.1 trillion USD) reflect substantial economic growth over time as well as cyclical fluctuations. The median (≈ 13.7 trillion USD) suggests that GDP has remained consistently high over the last two decades, despite temporary downturns.
 
 ## 3. Added Value per economic sector
-
-### Graphical representation
 
 ```{r, echo=FALSE}
 #| message: false
@@ -723,8 +715,6 @@ p_va <- ggplot(EU27_AV, aes(x = TIME_PERIOD, y = AV_value, color = sector, group
 ggplotly(p_va)
 ```
 
-### Descriptive statistics
-
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -741,15 +731,11 @@ summary_stats_AV <- EU27_AV |>
 kable(summary_stats_AV, caption = "Descriptive statistics of EU total gross added value by sector (all years combined)")
 ```
 
-##### Comment :
-
 Looking at the EU27 total gross added value by sector, three major sectors dominate and remain close in magnitude: manufacturing, transport, and industry (with energy related industries such as public electricity and heat production). Each of these sectors shows total added values between 610 and 3,410 billion USD, making them the core of the European economy. They all increased quite linearly accross the selected time period (1990 - 2024), with a slightly lower growth rate between 1995 and 2005.
 
 Agriculture, by contrast, contributes much less, with a total added value of only ≈ 215 billion USD on average, which is expected given its smaller role in modern European economies.
 
 ## 4. Greenhouse gas emissions per economic sector
-
-### Graphical representation
 
 ```{r, echo=FALSE}
 #| message: false
@@ -767,8 +753,6 @@ p_GHG <- ggplot(EU27_GHG, aes(x = TIME_PERIOD, y = GHG_Emissions_value, color = 
 ggplotly(p_GHG)
 ```
 
-### Descriptive statistics
-
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -785,8 +769,6 @@ summary_stats_GHG <- EU27_GHG |>
 kable(summary_stats_GHG, caption = "Descriptive statistics of EU total greenhouse gases emissions by sector (all years combined)")
 ```
 
-##### Comment :
-
 The EU27 total data show greenhouse gas emissions across four sectors: agriculture, manufacturing, energy industries, and transport. All sectors display a downward trend except transport, which starts rising again after 2010. With the exception of agriculture, all sectors experienced a marked drop in 2020 due to the COVID-19 shock, followed by a partial rebound.
 
 Industrial emissions have declined sharply over the selected time period (from values reaching over 1,441,000 thousand tons of CO₂-eqin 1990 to ≈ 699,000 in 2023). Manufacturing emissions also decreased, though at a more moderate pace, with a mean of ≈ 902,000 thousand tons.
@@ -794,8 +776,6 @@ Industrial emissions have declined sharply over the selected time period (from v
 Since around 2009–2012, transport emissions have surpassed those of manufacturing, and in 2023 they even exceeded energy industries emissions.
 
 ## 5. Inability to keep home adequately warm per household type
-
-### Graphical representation
 
 ```{r, echo=FALSE}
 #| message: false
@@ -814,8 +794,6 @@ ggplot(EU27_Warming,
   theme_minimal()
 ```
 
-### Descriptive statistics
-
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -833,8 +811,6 @@ summary_stats_Warm <- EU27_Warming |>
 kable(summary_stats_Warm, caption = "Descriptive statistics of the inability to keep house adequately warm, by household type (all years combined)")
 ```
 
-##### Comment :
-
 For the EU27 average, six curves represent different subgroups defined by sex and income. The values correspond to the percentage of each subgroup unable to keep their home adequately warm. All groups follow roughly the same pattern: a sharp increase between 2003 and 2005, a gradual decline afterward, and two significant shocks: a drop in 2008–2009 and a spike in 2022–2023, which can be linked to rising energy prices following the Russia–EU energy crisis.
 
 Among all subgroups, the total-population categories show the lowest percentages, remaining below 10% since 2015. Conversely, households with incomes below 60% of the national median (below the poverty threshold) consistently show the highest rates, around 20% on average.
@@ -842,8 +818,6 @@ Among all subgroups, the total-population categories show the lowest percentages
 Women in low-income single households consistently report slightly higher percentages than men. For instance, low-income women (A1F, B_MD60) have an average inability rate of ≈ 21.1%, compared with ≈ 23.1% for low-income men (A1M, B_MD60), while total-population rates remain much lower at ≈ 10–15% across categories.
 
 ## 6. GII per country
-
-### Graphical representation
 
 ```{r, echo=FALSE}
 #| message: false
@@ -862,8 +836,6 @@ p_GII <- ggplot(GII, aes(x = TIME_PERIOD, y = GII_value, color = iso3, group = i
 ggplotly(p_GII)
 ```
 
-### Descriptive statistics
-
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -881,15 +853,11 @@ kable(summary_stats_GII,
       caption = "Descriptive statistics of the GII by country (all years combined)")
 ```
 
-##### Comment :
-
 The Gender Inequality Index (GII) shows a clear downward trend across all European countries between 1990 and 2024. At the beginning of the period, Romania exhibited by far the highest level of inequality, followed by Cyprus and Estonia, while the EU27 average stood around 0.25. In contrast, the lowest GII levels were found in Sweden, Denmark, Finland, and the Netherlands, a pattern that still holds in 2024.
 
 By 2024, the countries with the highest GII values are Cyprus, Romania, and Hungary, while the EU27 average has fallen to approximately 0.08, reflecting substantial progress over time. This aligns with the descriptive statistics: Romania has the highest mean GII (≈ 0.36), while Sweden and Denmark are among the lowest, with mean values of ≈ 0.05 and ≈ 0.054, respectively.
 
 ## 7. Coefficient of human inequality per country
-
-### Graphical representation
 
 ```{r, echo=FALSE}
 #| message: false
@@ -907,8 +875,6 @@ p_coef <- ggplot(coef_ineq, aes(x = TIME_PERIOD, y = coef_ineq_value, color = is
 ggplotly(p_coef)
 ```
 
-### Descriptive statistics
-
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -925,8 +891,6 @@ summary_stats_coefineq <- coef_ineq |>
 kable(summary_stats_coefineq, 
       caption = "Descriptive statistics of the coefficient of human inequality by country (all years combined)")
 ```
-
-##### Comment :
 
 The coefficient of human inequality varies widely across Europe. Spain records the highest values overall, with a mean of ≈ 13.48, while Slovenia and the Czech Republic stand out as the countries with the lowest inequality, both with mean values slightly above 5.
 
