@@ -1543,7 +1543,19 @@ do.call(grid.arrange, c(plots, ncol = 2))
 ```
 
 ####### Comment
+Across all four sectors, the forecasted GHG emissions (red line) and the target paths (blue line) start relatively close to each other in the early years, but diverge significantly over time. The forecast confidence intervals (80% and 95%) highlight the uncertainty in future emissions if current trends continue.
+
+- Agriculture: The target path declines steadily toward zero by 2050. The forecast, however, remains relatively flat, lying mostly above the target and even outside the lower bounds of the confidence interval after 2035. This indicates that, without major interventions, agriculture will likely overshoot the required reduction to meet net-zero goals.
+- Industry (including energy): The sector forecast is initially above the target but gradually converges toward it. The target generally lies within the 80% confidence interval, suggesting that modest additional measures could be sufficient to align industry emissions with the net-zero objective.
+- Manufacturing: Forecasted emissions decline over time but remain consistently above the target path. By the mid-2040s, the target falls at the bottom of the 80% confidence interval, indicating that stronger mitigation policies will be necessary for manufacturing to meet net-zero by 2050.
+- Transport: This sector shows the largest divergence. The target path requires a steep decline to zero, whereas the forecast remains almost constant. The target path lies entirely outside the forecast confidence intervals from around 2030 onward, emphasizing the need for urgent and significant interventions in transport emissions.
+
+Overall, the sector-level analysis reveals heterogeneous challenges. While industry may be able to meet net-zero with moderate adjustments, agriculture, manufacturing, and especially transport require substantial and immediate action to reduce emissions. The comparison highlights that the total net-zero target is heavily dependent on successful mitigation in these high-emission sectors, and that relying solely on current trends will not be sufficient.
+
 ##### Tax policy : targeted vs predicted
+```{r}
+
+```
 
 ###### Comment 
 
