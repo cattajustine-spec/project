@@ -1395,7 +1395,6 @@ ggplot(tax_path_LL, aes(x = year)) +
   geom_line(aes(y = target_GHG), linetype="dashed") +
   geom_line(aes(y = pred_GHG), color="darkblue") +
   labs(title="Targeted GHG (level-level)", y="GHG", x="Year") + theme_minimal()
-
 ```
 ##### GHG emissions per sector targeted evolution
 ```{r}
