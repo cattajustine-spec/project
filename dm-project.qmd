@@ -1397,12 +1397,66 @@ ggplot(tax_path_LL, aes(x = year, y = tax_required_capped)) +
 ggplot(tax_path_LL, aes(x = year)) +
   geom_line(aes(y = target_GHG), linetype="dashed") +
   geom_line(aes(y = pred_GHG), color="darkblue") +
-  labs(title="Target GHG vs predicted (level-level)", y="GHG", x="Year") + theme_minimal()
+  labs(title="Targeted GHG (level-level)", y="GHG", x="Year") + theme_minimal()
 
 ```
 
 #### b. Comparing with the forecast if we continue as we do
 
+```{r}
+fc_df <- data.frame(
+  year = as.numeric(time(fc$mean)),
+  mean = as.numeric(fc$mean),
+  lower80 = as.numeric(fc$lower[, 1]),
+  upper80 = as.numeric(fc$upper[, 1]),
+  lower95 = as.numeric(fc$lower[, 2]),
+  upper95 = as.numeric(fc$upper[, 2])
+)
+
+ggplot(tax_path_LL, aes(x = year)) +
+  geom_ribbon(data = fc_df, aes(
+      x = year,
+      ymin = lower95,
+      ymax = upper95,
+      fill = "95% confidence interval"),
+    inherit.aes = FALSE,
+    alpha = 0.35) +
+  geom_ribbon(data = fc_df, aes(
+      x = year,
+      ymin = lower80,
+      ymax = upper80,
+      fill = "80% confidence interval"),
+    inherit.aes = FALSE,
+    alpha = 0.5) +
+  geom_line(data = fc_df, aes(
+    x = year, y = mean, color = "ARIMA forecast (if we continue as we do)"),
+    inherit.aes = FALSE,
+    linewidth = 1) +
+  geom_line(
+    aes(y = target_GHG, color = "Targeted GHG (if we plan to get zero net emissions)"),
+    linewidth = 1) +
+  scale_color_manual(
+    name = "Lines",
+    values = c(
+      "Targeted GHG (if we plan to get zero net emissions)" = "darkblue",
+      "ARIMA forecast (if we continue as we do)" = "red")) +
+  scale_fill_manual(
+    name = "Confidence intervals",
+    values = c(
+      "80% confidence interval" = "grey50",
+      "95% confidence interval" = "grey70")) +
+  labs(
+    title = "GHG Emissions: Target Path and ARIMA Forecast (2023–2050)",
+    x = "Year",
+    y = "GHG Emissions") +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    legend.title = element_text(face = "bold")
+  )
+```
+
+##### Comment
 
 ### 2. Levels greenhouse gas emissions to reach
 #### a. The forecast model
