@@ -629,8 +629,6 @@ Now that we have cleaned our data sets, here are some descriptive analyzes of ou
 
 ## 1. European environmental tax revenues
 
-### Graphical representation
-
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -643,8 +641,6 @@ ggplot(EU27_Tax, aes(x = TIME_PERIOD, y = Envt_Tax_Revenues_value)) +
   ) +
   theme_minimal()
 ```
-
-### Descriptive statistics
 
 ```{r, echo=FALSE}
 #| message: false
@@ -661,8 +657,6 @@ summary_stats_taxrevenues <- EU27_Tax |>
 kable(summary_stats_taxrevenues, 
       caption = "Descriptive statistics of the total European environmental tax revenues (all years combined)")
 ```
-
-##### Comment :
 
 The total European environmental tax revenues amounted to roughly 376 billion USD in the late 1990s. Over the 2000s, these revenues grew steadily and nearly doubled, reaching over 700 billion USD by 2010. Since then, the trend has remained broadly upward, though with noticeable fluctuations from year to year.
 
