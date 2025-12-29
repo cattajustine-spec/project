@@ -1346,6 +1346,7 @@ In this project, we are trying to look at the level of tax that would be necessa
 ### 1. Deriving a realistic tax path to reach net-zero by 2050
 
 #### a. The forecast model
+##### Total GHG emissions targeted evolution
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -1396,6 +1397,40 @@ ggplot(tax_path_LL, aes(x = year)) +
   labs(title="Targeted GHG (level-level)", y="GHG", x="Year") + theme_minimal()
 
 ```
+##### GHG emissions per sector targeted evolution
+```{r}
+# Latest observed GHG per sector
+latest_year <- max(sector_yearly$TIME_PERIOD)
+sector_last <- sector_yearly %>%
+  filter(TIME_PERIOD == latest_year) %>%
+  select(sector, GHG_total) %>%
+  rename(current_GHG = GHG_total)
+
+# Total GHG in latest year
+total_last <- sum(sector_last$current_GHG)
+
+# Compute sector shares
+sector_last <- sector_last %>%
+  mutate(share = current_GHG / total_last)
+
+# Compute sector-level targets proportionally
+sector_target <- tax_path_LL %>%
+  select(year, target_GHG) %>%
+  crossing(sector_last) %>%
+  mutate(target_sector_GHG = target_GHG * share)
+
+# Plot all sectors in one graph
+ggplot(sector_target, aes(x = year, y = target_sector_GHG, color = sector)) +
+  geom_line(linewidth = 1.1) +
+  labs(
+    title = "Sector-level GHG Emission Paths to Reach Net Zero by 2050",
+    x = "Year",
+    y = "GHG Emissions",
+    color = "Sector"
+  ) +
+  theme_minimal()
+```
+
 
 #### b. Comparing with the forecast if we continue as we do
 
@@ -1456,6 +1491,7 @@ ggplot(tax_path_LL, aes(x = year)) +
 
 ###### Comment
 As shown in the figure, achieving the targeted GHG emissions trajectory would require a substantial change in current taxing practices. The target path consistently lies at the lower bound of the forecast confidence intervals for emissions, and from around 2035 onwards it even falls outside the 95% confidence interval. This suggests that, under the continuation of current trends captured by the ARIMA forecast, the probability of reaching the targeted emissions level is low, highlighting the need for stronger or additional policy interventions.
+
 
 ##### Tax policy : targeted vs predicted
 
