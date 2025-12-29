@@ -151,7 +151,7 @@ Because the data sets we chose are quite huge, we first need to remove all the v
 
 Finally, to simplify our analysis, we will merge all our data sets in one data base.
 
-### Country keys {#countrykeys}
+## Country keys {#countrykeys}
 
 Our analysis is on the 27 countries in the European Union, in the following list to be precise : Austria, Belgium, Bulgaria, Croatia, Cyprus, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden. 
 
@@ -174,7 +174,7 @@ Our analysis focuses exclusively on the 27 Member States of the European Union. 
 
 The emissions dataset provides a clean list of country names, from which we build a unified “country key” mapping English names to ISO2, ISO3, and French names. This serves as a reference table for filtering every dataset to the same geographical scope and ensures that only EU-27 countries are retained throughout the cleaning process.
 
-### Removing unwanted variables
+## Removing unwanted variables
 
 The original datasets contain many variables and dimensions that are irrelevant to our research question (such as measurement units, alternative breakdowns, metadata, or categories outside our scope). Keeping these unnecessary variables would complicate the merging process and make the analysis more difficult to interpret. Therefore, for each dataset, we systematically retain only four essential components:
 
@@ -185,7 +185,7 @@ The original datasets contain many variables and dimensions that are irrelevant 
 
 This ensures a clean, comparable structure across datasets before we perform more complex transformations.
 
-##### 1. Environmental tax revenues (in million of USD)
+### 1. Environmental tax revenues (in million of USD)
 
 In this data set, we are only interested in the following variables:
 
@@ -201,13 +201,13 @@ Envt_Tax_Revenues <- Envt_Tax_Revenues |>
   filter(REF_AREA %in% eu_country_key$iso3)
 ```
 
-##### 2. GDP and Value Added per capita annual growth per sector (in million of USD)
+### 2. GDP and Value Added per capita annual growth per sector (in million of USD)
 
 In this data set, we have two main variables of interest: the [Gross Domestic Product](#grossdomesticproduct) and the [Gross Added Value](#grossaddedvalue).
 
 They are described by the **Transaction** variable, therefore, we need to create two independent data sets, one for each variable of interest.
 
-###### Gross Domestic product {#grossdomesticproduct}
+#### Gross Domestic product {#grossdomesticproduct}
 
 In this data set, we are only interested in the following variables:
 
@@ -224,7 +224,7 @@ GDP <- GDP_and_AV |>
   select(REF_AREA, TIME_PERIOD, OBS_VALUE)
 ```
 
-###### Gross Added Value {#grossaddedvalue}
+#### Gross Added Value {#grossaddedvalue}
 
 In this data set, we are only interested in the following variables:
 
@@ -253,7 +253,7 @@ Added_value <- GDP_and_AV |>
          TIME_PERIOD, OBS_VALUE)
 ```
 
-##### 3. Greenhouse gas emissions by source sector (in million of ton)
+### 3. Greenhouse gas emissions by source sector (in million of ton)
 
 In this data set, we are only interested in the following variables:
 
@@ -275,7 +275,7 @@ GHG_Emissions <- GHG_Emissions |>
          src_crf != "Total (excluding memo items)")
 ```
 
-###### Justification for the Sector Mapping Between ISIC and CRF Classifications {#justificationforsectormapping}
+#### Justification for the Sector Mapping Between ISIC and CRF Classifications {#justificationforsectormapping}
 
 The reconciliation of sectors across the ISIC-based data set and the CRF (Common Reporting Format) classification relies on aligning economic activities with their dominant emission sources. Although the two systems are not structurally identical—ISIC being an economic activity classification and CRF being an emissions reporting framework—several robust correspondences can be established.
 
@@ -289,7 +289,7 @@ Finally, Transportation and storage (ISIC H)—included in a broader aggregated 
 
 Overall, the mapping follows a principle of dominant emission source equivalence, ensuring that each ISIC activity is linked to the CRF category representing the primary origin of its greenhouse gas emissions. This approach allows the two data sets—despite structural differences—to be compared and integrated in a coherent and meaningful way for our analysis.
 
-##### 4. Inability to keep home adequately warm
+### 4. Inability to keep home adequately warm
 
 In this data set, we are only interested in the following variables:
 
@@ -313,7 +313,7 @@ Warm_Households <- Warm_Households |>
          hhtyp %in% c("A1F", "A1M", "TOTAL"))
 ```
 
-##### 5. HDR index
+### 5. HDR index
 
 In this data set, we have two main variables of interest: the [Gender Inequality Index](#genderinequalityindex) and the [Coefficient of Human Inequality](#coefficientofhumaninequality).
 
@@ -335,7 +335,7 @@ Soc_Indexes <- Soc_Indexes |>
   )
 ```
 
-###### Gender inequality Index {#genderinequalityindex}
+#### Gender inequality Index {#genderinequalityindex}
 
 In this data set, we are only interested in the following variables:
 
@@ -352,7 +352,7 @@ GII <- Soc_Indexes|>
   select(iso3, TIME_PERIOD, OBS_VALUE)
 ```
 
-###### Coefficient of Human inequality {#coefficientofhumaninequality}
+#### Coefficient of Human inequality {#coefficientofhumaninequality}
 
 In this data set, we are only interested in the following variables:
 
@@ -369,9 +369,9 @@ coef_ineq <- Soc_Indexes|>
   select(iso3, TIME_PERIOD, OBS_VALUE)
 ```
 
-### Adding some entities
+## Adding some entities
 
-#### Add European average (across countries)
+### Add European average (across countries)
 
 For the data sets that describe inequality indexes, we compute the European average across countries:
 
@@ -407,7 +407,7 @@ Warm_Households <- Warm_Households |> select (iso3, TIME_PERIOD, hhtyp, incgrp, 
 
 ```
 
-#### Add European total
+### Add European total
 
 For the economic data sets that are not described per economic sector, we compute the European total across countries:
 
@@ -429,7 +429,7 @@ EU27_Tax <- Envt_Tax_Revenues |>   #computing the total European environmental t
 Envt_Tax_Revenues <- bind_rows(Envt_Tax_Revenues, EU27_Tax)
 ```
 
-#### Add European total per sector
+### Add European total per sector
 
 For the data sets that are described per economic sector, we have to compute the European total sum per sectors:
 
@@ -458,9 +458,9 @@ GHG_Emissions <- GHG_Emissions  |> select (iso3, TIME_PERIOD, src_crf, OBS_VALUE
 
 ```
 
-### Modifiying the characteristics of the variables
+## Modifiying the characteristics of the variables
 
-#### Changing the type of some variables
+### Changing the type of some variables
 
 For the variables related to the economic sectors, it will be easier to consider them as *factor*, rather than as *character* variables.
 
@@ -484,7 +484,7 @@ Warm_Households$incgrp <- factor(Warm_Households$incgrp)
 EU27_Warming$incgrp <- factor(EU27_Warming$incgrp)
 ```
 
-#### Renaming some variables {#renamingsomevariables}
+### Renaming some variables {#renamingsomevariables}
 
 To be able to merge our data sets in a data base, we need to modify the name of the variable **OBS_VALUE** that is in every data set to be able to identify which OBS_VALUE is associated to which data set.
 
