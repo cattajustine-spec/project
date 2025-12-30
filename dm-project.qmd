@@ -1397,6 +1397,48 @@ ggplot(tax_path, aes(x = year)) +
 ```
 
 
+##### GHG emissions per sector targeted evolution
+```{r}
+# Latest observed GHG per sector
+latest_year <- max(sector_yearly$TIME_PERIOD)
+sector_last <- sector_yearly |>
+  filter(TIME_PERIOD == latest_year) |>
+  mutate(share = GHG_total / sum(GHG_total)) |>  
+  select(sector, current_GHG = GHG_total, share)
+
+# Compute sector-level targets proportionally
+sector_target <- tax_path %>%
+  select(year, target_GHG) %>%
+  crossing(sector_last) %>%
+  mutate(target_sector_GHG = target_GHG * share)
+
+# Plot all sectors in one graph
+ghg_sector_2050 <- bind_rows(
+  EU27_GHG %>% 
+    mutate(data_type = "Historical") %>%
+    rename(TIME_PERIOD = TIME_PERIOD, GHG_Emissions_value = GHG_Emissions_value),
+  sector_target %>%
+    mutate(data_type = "Target") %>%
+    rename(TIME_PERIOD = year, GHG_Emissions_value = target_sector_GHG)
+)
+
+p_ghg_sector_2050 <- ggplot(
+  ghg_sector_2050, aes(x = TIME_PERIOD, y = GHG_Emissions_value, color = sector, linetype = data_type, 
+  group = interaction(sector, data_type))) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "EU27 GHG Emissions: Historical Data and Net Zero Targets by 2050",
+    x = "Year",
+    y = "GHG Emissions (thousands of tons of CO2)",
+    color = "Sector",
+    linetype = "Data Type"
+  ) +
+  theme_minimal()
+
+ggplotly(p_ghg_sector_2050)
+```
+
+
 
 
 
