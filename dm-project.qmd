@@ -1461,14 +1461,15 @@ ggplot(tax_plot, aes(x = year)) +
 
 ```
 
-
-
 ```{r}
+#calcul de combien on doit augmenter la tax each year 
 tax_path <- tax_path |>
   mutate(tax_increment = tax_required - dplyr::lag(tax_required))
 ```
 
+We compute the environmental tax path required to reach net-zero emissions by 2050 by inverting the estimated tax–GHG relationship. This gives us a constant annual increase of about 65,500 units in environmental tax revenues each year from 2024.
 
+Comparing this required path to the forecast based on past trends shows a large and growing gap. Already in 2024, forecasted revenues (≈ 851 k) fall short of the required level (≈ 1,242 k). By 2050, the gap widens to roughly 1.71 M. This shows that current tax dynamics imply structural under-taxation: the shortfall starts immediately and grows over time, indicating that meeting net-zero objectives would require a substantial policy break from historical trend
 
 ### 2. Levels greenhouse gas emissions to reach
 #### a. The forecast model
