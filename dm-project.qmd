@@ -1111,7 +1111,7 @@ sector <- c("Transport", "Agriculture", "Industry (including energy)", "Manufact
 model_AV_tax <- lapply(sector, function(s){
 
   data_s <- all_merged %>% filter(sector == s)
-  lm(log(AV_value) ~ Envt_Tax_Revenues_value + TIME_PERIOD, data = data_s)
+  lm(log(AV_value) ~ Envt_Tax_Revenues_value + TIME_PERIOD, data = data_s, subset = iso3 != "EU27")
 })
 
 names(model_AV_tax) <- sector
@@ -1350,18 +1350,26 @@ tax_pred <- predict(
 
 tax_fc_lm <- bind_cols(future_years, as.data.frame(tax_pred))
 
-
-
-ggplot(tax_fc_lm, aes(x = TIME_PERIOD, y = fit)) +
-  geom_line(color = "darkblue") +
-  geom_ribbon(aes(ymin = lwr, ymax = upr), alpha = 0.2) +
+tax_all_2050 <- ggplot() +
+  geom_line(data=EU27_Tax, aes(x = TIME_PERIOD, y = Envt_Tax_Revenues_value, color = "Observations")) +
+  geom_line(data=tax_fc_lm, aes(x = TIME_PERIOD, y = fit, color = "Forecast")) +
+  geom_point(data=tax_fc_lm, aes(x = TIME_PERIOD, y = lwr, color = "Low 95%")) +
+  geom_point(data=tax_fc_lm, aes(x = TIME_PERIOD, y = upr, color = "High 95%")) +
+  scale_color_manual(name = "Legend",
+                     values = c("Observations" = "steelblue", 
+                               "Forecast" = "darkblue", 
+                               "Low 95%" = "salmon1", 
+                               "High 95%" = "salmon1")) +
   theme_minimal() +
   labs(
     title = "Forecast of Environmental Tax Revenues (95% CI)",
     x = "Year",
     y = "Tax revenues"
   )
+
+ggplotly(tax_all_2050)
 ```
+
 
 
 ##### Comment :
@@ -1429,22 +1437,8 @@ ggplot(tax_path, aes(x = year)) +
 
 
 ```{r}
-tax_fc_df <- tax_fc_lm |>
-  rename(
-    year = TIME_PERIOD,
-    tax_forecast = fit,
-    lo_95 = lwr,
-    hi_95 = upr
-  )
 
-tax_plot_df <- tax_fc_df |>
-  left_join(tax_path |> select(year, tax_required),
-    by = "year") |>
-  mutate(
-    tax_diff = tax_required - tax_forecast
-  )
-
-ggplot(tax_plot_df, aes(x = year)) +
+ggplot(tax_plot_df, aes(x = TIME_PERIOD)) +
   geom_ribbon(aes(ymin = lo_95, ymax = hi_95), fill = "lightblue", alpha = 0.3) +
   geom_line(aes(y = tax_forecast), color = "blue", linewidth = 1) +
   geom_line(aes(y = tax_required), color = "red", linetype = "dashed", linewidth = 1) +
@@ -1456,6 +1450,13 @@ ggplot(tax_plot_df, aes(x = year)) +
   theme_minimal()
 
 ```
+```{r}
+tax_plot_df <- tax_fc_df |>
+  left_join(tax_path |> select(year, tax_required)) |>
+  mutate(tax_diff = tax_required - tax_forecast)
+```
+
+
 
 
 
