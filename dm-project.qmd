@@ -4,10 +4,6 @@ author: "Daphné Perry and Justine Catta"
 format: html
 ---
 
-# Summary
-
-Introduction Modifying the data sets Merging the data sets Descriptive analyses Linear Regressions Forecasts : if we don't change anything / if we try to reach zero net emissions by 2050 Conclusion
-
 # Introduction
 
 ## Description of our research question
@@ -47,6 +43,7 @@ library(tidyverse)
 library(broom)
 library(forecast)
 library(purrr)
+library(gridExtra)
 ```
 
 ```{r, echo=FALSE}
@@ -155,7 +152,7 @@ Because the data sets we chose are quite huge, we first need to remove all the v
 
 Finally, to simplify our analysis, we will merge all our data sets in one data base.
 
-### Country keys {#countrykeys}
+## Country keys {#countrykeys}
 
 Our analysis is on the 27 countries in the European Union, in the following list to be precise : Austria, Belgium, Bulgaria, Croatia, Cyprus, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden. 
 
@@ -178,7 +175,7 @@ Our analysis focuses exclusively on the 27 Member States of the European Union. 
 
 The emissions dataset provides a clean list of country names, from which we build a unified “country key” mapping English names to ISO2, ISO3, and French names. This serves as a reference table for filtering every dataset to the same geographical scope and ensures that only EU-27 countries are retained throughout the cleaning process.
 
-### Removing unwanted variables
+## Removing unwanted variables
 
 The original datasets contain many variables and dimensions that are irrelevant to our research question (such as measurement units, alternative breakdowns, metadata, or categories outside our scope). Keeping these unnecessary variables would complicate the merging process and make the analysis more difficult to interpret. Therefore, for each dataset, we systematically retain only four essential components:
 
@@ -189,7 +186,7 @@ The original datasets contain many variables and dimensions that are irrelevant 
 
 This ensures a clean, comparable structure across datasets before we perform more complex transformations.
 
-##### 1. Environmental tax revenues (in million of USD)
+### 1. Environmental tax revenues (in million of USD)
 
 In this data set, we are only interested in the following variables:
 
@@ -205,13 +202,13 @@ Envt_Tax_Revenues <- Envt_Tax_Revenues |>
   filter(REF_AREA %in% eu_country_key$iso3)
 ```
 
-##### 2. GDP and Value Added per capita annual growth per sector (in million of USD)
+### 2. GDP and Value Added per capita annual growth per sector (in million of USD)
 
 In this data set, we have two main variables of interest: the [Gross Domestic Product](#grossdomesticproduct) and the [Gross Added Value](#grossaddedvalue).
 
 They are described by the **Transaction** variable, therefore, we need to create two independent data sets, one for each variable of interest.
 
-###### Gross Domestic product {#grossdomesticproduct}
+#### Gross Domestic product {#grossdomesticproduct}
 
 In this data set, we are only interested in the following variables:
 
@@ -228,7 +225,7 @@ GDP <- GDP_and_AV |>
   select(REF_AREA, TIME_PERIOD, OBS_VALUE)
 ```
 
-###### Gross Added Value {#grossaddedvalue}
+#### Gross Added Value {#grossaddedvalue}
 
 In this data set, we are only interested in the following variables:
 
@@ -257,7 +254,7 @@ Added_value <- GDP_and_AV |>
          TIME_PERIOD, OBS_VALUE)
 ```
 
-##### 3. Greenhouse gas emissions by source sector (in million of ton)
+### 3. Greenhouse gas emissions by source sector (in million of ton)
 
 In this data set, we are only interested in the following variables:
 
@@ -279,7 +276,7 @@ GHG_Emissions <- GHG_Emissions |>
          src_crf != "Total (excluding memo items)")
 ```
 
-###### Justification for the Sector Mapping Between ISIC and CRF Classifications {#justificationforsectormapping}
+#### Justification for the Sector Mapping Between ISIC and CRF Classifications {#justificationforsectormapping}
 
 The reconciliation of sectors across the ISIC-based data set and the CRF (Common Reporting Format) classification relies on aligning economic activities with their dominant emission sources. Although the two systems are not structurally identical—ISIC being an economic activity classification and CRF being an emissions reporting framework—several robust correspondences can be established.
 
@@ -293,7 +290,7 @@ Finally, Transportation and storage (ISIC H)—included in a broader aggregated 
 
 Overall, the mapping follows a principle of dominant emission source equivalence, ensuring that each ISIC activity is linked to the CRF category representing the primary origin of its greenhouse gas emissions. This approach allows the two data sets—despite structural differences—to be compared and integrated in a coherent and meaningful way for our analysis.
 
-##### 4. Inability to keep home adequately warm
+### 4. Inability to keep home adequately warm
 
 In this data set, we are only interested in the following variables:
 
@@ -317,7 +314,7 @@ Warm_Households <- Warm_Households |>
          hhtyp %in% c("A1F", "A1M", "TOTAL"))
 ```
 
-##### 5. HDR index
+### 5. HDR index
 
 In this data set, we have two main variables of interest: the [Gender Inequality Index](#genderinequalityindex) and the [Coefficient of Human Inequality](#coefficientofhumaninequality).
 
@@ -339,7 +336,7 @@ Soc_Indexes <- Soc_Indexes |>
   )
 ```
 
-###### Gender inequality Index {#genderinequalityindex}
+#### Gender inequality Index {#genderinequalityindex}
 
 In this data set, we are only interested in the following variables:
 
@@ -356,7 +353,7 @@ GII <- Soc_Indexes|>
   select(iso3, TIME_PERIOD, OBS_VALUE)
 ```
 
-###### Coefficient of Human inequality {#coefficientofhumaninequality}
+#### Coefficient of Human inequality {#coefficientofhumaninequality}
 
 In this data set, we are only interested in the following variables:
 
@@ -373,9 +370,9 @@ coef_ineq <- Soc_Indexes|>
   select(iso3, TIME_PERIOD, OBS_VALUE)
 ```
 
-### Adding some entities
+## Adding some entities
 
-#### Add European average (across countries)
+### Add European average (across countries)
 
 For the data sets that describe inequality indexes, we compute the European average across countries:
 
@@ -411,7 +408,7 @@ Warm_Households <- Warm_Households |> select (iso3, TIME_PERIOD, hhtyp, incgrp, 
 
 ```
 
-#### Add European total
+### Add European total
 
 For the economic data sets that are not described per economic sector, we compute the European total across countries:
 
@@ -433,7 +430,7 @@ EU27_Tax <- Envt_Tax_Revenues |>   #computing the total European environmental t
 Envt_Tax_Revenues <- bind_rows(Envt_Tax_Revenues, EU27_Tax)
 ```
 
-#### Add European total per sector
+### Add European total per sector
 
 For the data sets that are described per economic sector, we have to compute the European total sum per sectors:
 
@@ -462,9 +459,9 @@ GHG_Emissions <- GHG_Emissions  |> select (iso3, TIME_PERIOD, src_crf, OBS_VALUE
 
 ```
 
-### Modifiying the characteristics of the variables
+## Modifiying the characteristics of the variables
 
-#### Changing the type of some variables
+### Changing the type of some variables
 
 For the variables related to the economic sectors, it will be easier to consider them as *factor*, rather than as *character* variables.
 
@@ -488,7 +485,7 @@ Warm_Households$incgrp <- factor(Warm_Households$incgrp)
 EU27_Warming$incgrp <- factor(EU27_Warming$incgrp)
 ```
 
-#### Renaming some variables {#renamingsomevariables}
+### Renaming some variables {#renamingsomevariables}
 
 To be able to merge our data sets in a data base, we need to modify the name of the variable **OBS_VALUE** that is in every data set to be able to identify which OBS_VALUE is associated to which data set.
 
@@ -634,8 +631,6 @@ Now that we have cleaned our data sets, here are some descriptive analyzes of ou
 
 ## 1. European environmental tax revenues
 
-### Graphical representation
-
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -648,8 +643,6 @@ ggplot(EU27_Tax, aes(x = TIME_PERIOD, y = Envt_Tax_Revenues_value)) +
   ) +
   theme_minimal()
 ```
-
-### Descriptive statistics
 
 ```{r, echo=FALSE}
 #| message: false
@@ -667,15 +660,12 @@ kable(summary_stats_taxrevenues,
       caption = "Descriptive statistics of the total European environmental tax revenues (all years combined)")
 ```
 
-##### Comment :
 
-The total European environmental tax revenues amounted to roughly 375 billion USD in the late 1990s. Over the 2000s, these revenues grew steadily and nearly doubled, reaching over 750 billion USD by 2010. Since then, the trend has remained broadly upward, though with noticeable fluctuations from year to year.
+The total European environmental tax revenues amounted to roughly 376 billion USD in the late 1990s. Over the 2000s, these revenues grew steadily and nearly doubled, reaching over 700 billion USD by 2010. Since then, the trend has remained broadly upward, though with noticeable fluctuations from year to year.
 
 Revenues peaked at approximately 809 billion USD, while the long-run average (≈ 622 billion USD) reflects sustained and historically high levels of environmental taxation in the European Union. The standard deviation (≈ 152 billion USD) signals substantial variation over time, consistent with cyclical movements, recent economic crisis, and policy adjustments across the Union.
 
 ## 2. European GDP
-
-### Graphical representation
 
 ```{r, echo=FALSE}
 #| message: false
@@ -689,8 +679,6 @@ ggplot(EU27_GDP, aes(x = TIME_PERIOD, y = GDP_value)) +
   ) +
   theme_minimal()
 ```
-
-### Descriptive statistics
 
 ```{r, echo=FALSE}
 #| message: false
@@ -708,15 +696,11 @@ kable(summary_stats_GDP,
       caption = "Descriptive statistics of the European GDP (all years combined)")
 ```
 
-##### Comment :
-
 European GDP has increased a lot since the early 1990s. Starting from roughly 6.3 trillion USD, GDP expanded strongly throughout the 2000s, with a brief slowdown around the early 2010s (due to the subprime crisis), before resuming its upward trajectory. By 2024, it reached nearly 19.4 trillion USD, its historical maximum.
 
 The long-run average GDP (≈ 12.2 trillion USD) and the very large standard deviation (≈ 4.1 trillion USD) reflect substantial economic growth over time as well as cyclical fluctuations. The median (≈ 13.7 trillion USD) suggests that GDP has remained consistently high over the last two decades, despite temporary downturns.
 
 ## 3. Added Value per economic sector
-
-### Graphical representation
 
 ```{r, echo=FALSE}
 #| message: false
@@ -734,8 +718,6 @@ p_va <- ggplot(EU27_AV, aes(x = TIME_PERIOD, y = AV_value, color = sector, group
 ggplotly(p_va)
 ```
 
-### Descriptive statistics
-
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -752,15 +734,11 @@ summary_stats_AV <- EU27_AV |>
 kable(summary_stats_AV, caption = "Descriptive statistics of EU total gross added value by sector (all years combined)")
 ```
 
-##### Comment :
-
 Looking at the EU27 total gross added value by sector, three major sectors dominate and remain close in magnitude: manufacturing, transport, and industry (with energy related industries such as public electricity and heat production). Each of these sectors shows total added values between 610 and 3,410 billion USD, making them the core of the European economy. They all increased quite linearly accross the selected time period (1990 - 2024), with a slightly lower growth rate between 1995 and 2005.
 
 Agriculture, by contrast, contributes much less, with a total added value of only ≈ 215 billion USD on average, which is expected given its smaller role in modern European economies.
 
 ## 4. Greenhouse gas emissions per economic sector
-
-### Graphical representation
 
 ```{r, echo=FALSE}
 #| message: false
@@ -778,8 +756,6 @@ p_GHG <- ggplot(EU27_GHG, aes(x = TIME_PERIOD, y = GHG_Emissions_value, color = 
 ggplotly(p_GHG)
 ```
 
-### Descriptive statistics
-
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -796,8 +772,6 @@ summary_stats_GHG <- EU27_GHG |>
 kable(summary_stats_GHG, caption = "Descriptive statistics of EU total greenhouse gases emissions by sector (all years combined)")
 ```
 
-##### Comment :
-
 The EU27 total data show greenhouse gas emissions across four sectors: agriculture, manufacturing, energy industries, and transport. All sectors display a downward trend except transport, which starts rising again after 2010. With the exception of agriculture, all sectors experienced a marked drop in 2020 due to the COVID-19 shock, followed by a partial rebound.
 
 Industrial emissions have declined sharply over the selected time period (from values reaching over 1,441,000 thousand tons of CO₂-eqin 1990 to ≈ 699,000 in 2023). Manufacturing emissions also decreased, though at a more moderate pace, with a mean of ≈ 902,000 thousand tons.
@@ -805,8 +779,6 @@ Industrial emissions have declined sharply over the selected time period (from v
 Since around 2009–2012, transport emissions have surpassed those of manufacturing, and in 2023 they even exceeded energy industries emissions.
 
 ## 5. Inability to keep home adequately warm per household type
-
-### Graphical representation
 
 ```{r, echo=FALSE}
 #| message: false
@@ -825,8 +797,6 @@ ggplot(EU27_Warming,
   theme_minimal()
 ```
 
-### Descriptive statistics
-
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -844,8 +814,6 @@ summary_stats_Warm <- EU27_Warming |>
 kable(summary_stats_Warm, caption = "Descriptive statistics of the inability to keep house adequately warm, by household type (all years combined)")
 ```
 
-##### Comment :
-
 For the EU27 average, six curves represent different subgroups defined by sex and income. The values correspond to the percentage of each subgroup unable to keep their home adequately warm. All groups follow roughly the same pattern: a sharp increase between 2003 and 2005, a gradual decline afterward, and two significant shocks: a drop in 2008–2009 and a spike in 2022–2023, which can be linked to rising energy prices following the Russia–EU energy crisis.
 
 Among all subgroups, the total-population categories show the lowest percentages, remaining below 10% since 2015. Conversely, households with incomes below 60% of the national median (below the poverty threshold) consistently show the highest rates, around 20% on average.
@@ -853,8 +821,6 @@ Among all subgroups, the total-population categories show the lowest percentages
 Women in low-income single households consistently report slightly higher percentages than men. For instance, low-income women (A1F, B_MD60) have an average inability rate of ≈ 21.1%, compared with ≈ 23.1% for low-income men (A1M, B_MD60), while total-population rates remain much lower at ≈ 10% across categories.
 
 ## 6. GII per country
-
-### Graphical representation
 
 ```{r, echo=FALSE}
 #| message: false
@@ -873,8 +839,6 @@ p_GII <- ggplot(GII, aes(x = TIME_PERIOD, y = GII_value, color = iso3, group = i
 ggplotly(p_GII)
 ```
 
-### Descriptive statistics
-
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -892,15 +856,11 @@ kable(summary_stats_GII,
       caption = "Descriptive statistics of the GII by country (all years combined)")
 ```
 
-##### Comment :
-
 The Gender Inequality Index (GII) shows a clear downward trend across all European countries between 1990 and 2024. At the beginning of the period, Romania exhibited by far the highest level of inequality, followed by Cyprus and Estonia, while the EU27 average stood around 0.25. In contrast, the lowest GII levels were found in Sweden, Denmark, Finland, and the Netherlands, a pattern that still holds in 2024.
 
 By 2024, the countries with the highest GII values are Cyprus, Romania, and Hungary, while the EU27 average has fallen to approximately 0.08, reflecting substantial progress over time. This aligns with the descriptive statistics: Romania has the highest mean GII (≈ 0.36), while Sweden and Denmark are among the lowest, with mean values of ≈ 0.05 and ≈ 0.054, respectively.
 
 ## 7. Coefficient of human inequality per country
-
-### Graphical representation
 
 ```{r, echo=FALSE}
 #| message: false
@@ -917,8 +877,6 @@ p_coef <- ggplot(coef_ineq, aes(x = TIME_PERIOD, y = coef_ineq_value, color = is
 
 ggplotly(p_coef)
 ```
-
-### Descriptive statistics
 
 ```{r, echo=FALSE}
 #| message: false
@@ -937,8 +895,6 @@ kable(summary_stats_coefineq,
       caption = "Descriptive statistics of the coefficient of human inequality by country (all years combined)")
 ```
 
-##### Comment :
-
 The coefficient of human inequality varies widely across Europe. Spain records the highest values overall, with a mean of ≈ 13.48, while Slovenia and the Czech Republic stand out as the countries with the lowest inequality, both with mean values slightly above 5.
 
 The EU27 average sits at ≈ 8.64, but the dispersion across countries is notable. Several Southern and Eastern European countries—such as Portugal (≈ 12.75), Italy (≈ 12.08), and Bulgaria (≈ 11.84)—exhibit consistently high levels of human inequality. In contrast, Nordic and Central European countries such as Denmark (≈ 5.77) and Finland (≈ 5.73) maintain some of the lowest inequality levels across the data set.
@@ -949,7 +905,9 @@ The EU27 average sits at ≈ 8.64, but the dispersion across countries is notabl
 
 We try to answer one of our fundamental question : "Do taxes reduce emissions ?".
 
-### a. Between taxes (in year n) and GHG (in year n)
+
+### a. Between taxes (n) and GHG (n)
+*** A REFAIRE *** : ça va à l'encontre de nos conclusions ! Possible solution : use GHG TOTAL instead of GHG value ! 
 
 First we try to evaluate the coefficient between an increase in taxes in the year n and the impact on Greenhouse gases emissions in the same year n.
 
@@ -965,13 +923,13 @@ summary(model)
 
 We estimated a linear regression to examine the relationship between environmental tax revenues and greenhouse gas emissions, while controlling for GDP, emission sector, and year. The model explains about 65% of the variation in emissions (R-squared = 0.6542).
 
-The coefficient on environmental tax revenues is -0.043, and it is highly statistically significant (p \< 0.001). This suggests that, holding GDP, sector, and time constant, higher environmental tax revenues are associated with slightly lower greenhouse gas emissions. However, the magnitude of the effect remains very small, implying a limited practical impact.
+The coefficient on environmental tax revenues is -0.043, and it is highly statistically significant (p < 0.001). This suggests that, holding GDP, sector, and time constant, higher environmental tax revenues are associated with slightly lower greenhouse gas emissions. However, the magnitude of the effect remains very small, implying a limited practical impact.
 
-GDP has a positive and very large significant effect on emissions, with a coefficient of 0.043 (p \< 0.001). This indicates that countries with higher economic output tend to emit more, consistent with scale effects: larger economies produce more goods and services, and thus more emissions.
+GDP has a positive and very large significant effect on emissions, with a coefficient of 0.043 (p < 0.001). This indicates that countries with higher economic output tend to emit more, consistent with scale effects: larger economies produce more goods and services, and thus more emissions.
 
 Sectoral effects are strong and highly significant. Relative to the baseline category (Agriculture), estimated additional emissions are: - Manufacturing: +16,440 units - Energy industry: +27,370 units - Transport: +16,150 units These substantial differences reflect the much higher emission intensities of industrial, energy, and transport activities compared with agriculture.
 
-The coefficient on the time variable is –913, highly significant (p \< 0.001), indicating a robust downward trend in emissions over time. This is consistent with what we saw before in the descriptive data.
+The coefficient on the time variable is –913, highly significant (p < 0.001), indicating a robust downward trend in emissions over time. This is consistent with what we saw before in the descriptive data.
 
 Overall, the results suggest that GDP and sectoral composition remain the dominant drivers of emissions. Environmental tax revenues show a statistically significant negative association with emissions, but the magnitude of the effect is small. The pronounced negative time trend indicates that greenhouse gas emissions have declined over the period independently of the direct influence of environmental tax revenues.
 
@@ -1258,9 +1216,10 @@ sector_forecasts
 plots <- map2(
   sector_models$sector,
   sector_models$forecast, 
-  ~ autoplot(.y) + ggtitle(paste("Forecast of",.x) ))
+  ~ autoplot(.y) + ggtitle(paste("Forecast of", .x))
+)
 
-plots
+do.call(grid.arrange, c(plots, ncol = 2))
 ```
 
 Comments : 
@@ -1377,7 +1336,7 @@ ggplotly(tax_all_2050)
 
 
 ##### Comment :
-this is an extrapolation from current tred
+this is an extrapolation from current trend
 
 
 # Forecasting: if we plan to get to the 0 net emission by 2050
@@ -1387,6 +1346,7 @@ In this project, we are trying to look at the level of tax that would be necessa
 ### 1. Deriving a realistic tax path to reach net-zero by 2050
 
 #### a. The forecast model
+##### Total GHG emissions targeted evolution
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -1425,18 +1385,145 @@ tax_path <- tax_path |>
 # Plot
 ggplot(tax_path, aes(x = year)) +
   geom_line(aes(y = tax_required), color = "darkblue") +
-  labs(title="Required Environmental Tax Path", y="Tax (millions USD)", x="Year") +
+  labs(title="Required tax path (level-level model)", y="Tax (millions USD)", x="Year") +
   theme_minimal()
 
 # Check predicted
 ggplot(tax_path, aes(x = year)) +
   geom_line(aes(y = pred_GHG), color = "darkblue") +
-  labs(title="Target GHG", y="GHG", x="Year") +
+  labs(title="Targeted GHG (level-level)", y="GHG", x="Year") +
   theme_minimal()
 
 ```
 
+
+
+
+
+
+
 #### b. Comparing with the forecast if we continue as we do
+
+
+##### GHG emissions : targeted vs predicted
+ 
+```{r}
+fc_df <- data.frame(
+  year = as.numeric(time(fc$mean)),
+  mean = as.numeric(fc$mean),
+  lower80 = as.numeric(fc$lower[, 1]),
+  upper80 = as.numeric(fc$upper[, 1]),
+  lower95 = as.numeric(fc$lower[, 2]),
+  upper95 = as.numeric(fc$upper[, 2])
+)
+
+ggplot(tax_path, aes(x = year)) +
+  geom_ribbon(data = fc_df, aes(
+      x = year,
+      ymin = lower95,
+      ymax = upper95,
+      fill = "95% confidence interval"),
+    inherit.aes = FALSE,
+    alpha = 0.35) +
+  geom_ribbon(data = fc_df, aes(
+      x = year,
+      ymin = lower80,
+      ymax = upper80,
+      fill = "80% confidence interval"),
+    inherit.aes = FALSE,
+    alpha = 0.5) +
+  geom_line(data = fc_df, aes(
+    x = year, y = mean, color = "ARIMA forecast (if we continue as we do)"),
+    inherit.aes = FALSE,
+    linewidth = 1) +
+  geom_line(
+    aes(y = target_GHG, color = "Targeted GHG (if we plan to get zero net emissions)"),
+    linewidth = 1) +
+  scale_color_manual(
+    name = "Lines",
+    values = c(
+      "Targeted GHG (if we plan to get zero net emissions)" = "darkblue",
+      "ARIMA forecast (if we continue as we do)" = "red")) +
+  scale_fill_manual(
+    name = "Confidence intervals",
+    values = c(
+      "80% confidence interval" = "grey50",
+      "95% confidence interval" = "grey70")) +
+  labs(
+    title = "GHG Emissions: Target Path vs ARIMA Forecast (2023–2050)",
+    x = "Year",
+    y = "GHG Emissions") +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    legend.title = element_text(face = "bold")
+  )
+```
+
+####### Comment
+As shown in the figure, achieving the targeted GHG emissions trajectory would require a substantial change in current taxing practices. The target path consistently lies at the lower bound of the forecast confidence intervals for emissions, and from around 2035 onwards it even falls outside the 95% confidence interval. This suggests that, under the continuation of current trends captured by the ARIMA forecast, the probability of reaching the targeted emissions level is low, highlighting the need for stronger or additional policy interventions.
+
+###### Per sector emissions
+```{r}
+plots <- map2(
+  sector_models$sector,
+  sector_models$forecast,
+  ~ {
+    fc <- .y
+    sector_name <- .x
+    fc_df <- data.frame(
+      year = as.numeric(time(fc$mean)),
+      mean = as.numeric(fc$mean),
+      lower80 = as.numeric(fc$lower[,1]),
+      upper80 = as.numeric(fc$upper[,1]),
+      lower95 = as.numeric(fc$lower[,2]),
+      upper95 = as.numeric(fc$upper[,2])
+    )
+    target_df <- sector_target %>%
+      filter(sector == sector_name) %>%
+      select(year, target_sector_GHG)
+    ggplot(target_df, aes(x = year)) +
+      geom_ribbon(data = fc_df, aes(
+        x = year, ymin = lower95, ymax = upper95, fill = "95% CI"
+      ), inherit.aes = FALSE, alpha = 0.35) +
+      geom_ribbon(data = fc_df, aes(
+        x = year, ymin = lower80, ymax = upper80, fill = "80% CI"
+      ), inherit.aes = FALSE, alpha = 0.5) +
+      geom_line(data = fc_df, aes(x = year, y = mean, color = "Forecast"), linewidth = 1) +
+      geom_line(aes(y = target_sector_GHG, color = "Target"), linewidth = 1) +
+      scale_color_manual(
+        name = "Lines",
+        values = c("Target" = "darkblue", "Forecast" = "red")
+      ) +
+      scale_fill_manual(
+        name = "Confidence intervals",
+        values = c("80% CI" = "grey50", "95% CI" = "grey70")
+      ) +
+      labs(
+        title = paste("Sector:", sector_name),
+        x = "Year",
+        y = "GHG Emissions"
+      ) +
+      theme_minimal() +
+      theme(legend.position = "right",
+            legend.title = element_text(face = "bold"))
+  }
+)
+
+do.call(grid.arrange, c(plots, ncol = 2))
+```
+
+####### Comment
+Across all four sectors, the forecasted GHG emissions (red line) and the target paths (blue line) start relatively close to each other in the early years, but diverge significantly over time. The forecast confidence intervals (80% and 95%) highlight the uncertainty in future emissions if current trends continue.
+
+- Agriculture: The target path declines steadily toward zero by 2050. The forecast, however, remains relatively flat, lying mostly above the target and even outside the lower bounds of the confidence interval after 2035. This indicates that, without major interventions, agriculture will likely overshoot the required reduction to meet net-zero goals.
+- Industry (including energy): The sector forecast is initially above the target but gradually converges toward it. The target generally lies within the 80% confidence interval, suggesting that modest additional measures could be sufficient to align industry emissions with the net-zero objective.
+- Manufacturing: Forecasted emissions decline over time but remain consistently above the target path. By the mid-2040s, the target falls at the bottom of the 80% confidence interval, indicating that stronger mitigation policies will be necessary for manufacturing to meet net-zero by 2050.
+- Transport: This sector shows the largest divergence. The target path requires a steep decline to zero, whereas the forecast remains almost constant. The target path lies entirely outside the forecast confidence intervals from around 2030 onward, emphasizing the need for urgent and significant interventions in transport emissions.
+
+Overall, the sector-level analysis reveals heterogeneous challenges. While industry may be able to meet net-zero with moderate adjustments, agriculture, manufacturing, and especially transport require substantial and immediate action to reduce emissions. The comparison highlights that the total net-zero target is heavily dependent on successful mitigation in these high-emission sectors, and that relying solely on current trends will not be sufficient.
+
+##### Tax policy : targeted vs predicted
 
 ```{r}
 tax_plot <- tax_fc_lm |>
@@ -1472,6 +1559,7 @@ We compute the environmental tax path required to reach net-zero emissions by 20
 Comparing this required path to the forecast based on past trends shows a large and growing gap. Already in 2024, forecasted revenues (≈ 851 k) fall short of the required level (≈ 1,242 k). By 2050, the gap widens to roughly 1.71 M. This shows that current tax dynamics imply structural under-taxation: the shortfall starts immediately and grows over time, indicating that meeting net-zero objectives would require a substantial policy break from historical trend
 
 ### 2. Levels greenhouse gas emissions to reach
+
 #### a. The forecast model
 ```{r, echo=FALSE}
 #| message: false
@@ -1519,7 +1607,7 @@ predicted_Warm <- predict(model_warm_tax, newdata = data.frame(Envt_Tax_Revenues
 predicted_Warm
 
 
-proposed ::::
+####proposed 
 future_taxes <- data.frame(Envt_Tax_Revenues_value = seq(
   from = max(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
   length.out = 27,
