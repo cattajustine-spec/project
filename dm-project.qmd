@@ -1349,7 +1349,10 @@ tax_pred <- predict(
 )
 
 tax_fc_lm <- bind_cols(future_years, as.data.frame(tax_pred))
+```
 
+
+```{r}
 tax_all_2050 <- ggplot() +
   geom_line(data=EU27_Tax, aes(x = TIME_PERIOD, y = Envt_Tax_Revenues_value, color = "Observations")) +
   geom_line(data=tax_fc_lm, aes(x = TIME_PERIOD, y = fit, color = "Forecast")) +
@@ -1357,7 +1360,7 @@ tax_all_2050 <- ggplot() +
   geom_point(data=tax_fc_lm, aes(x = TIME_PERIOD, y = upr, color = "High 95%")) +
   scale_color_manual(name = "Legend",
                      values = c("Observations" = "steelblue", 
-                               "Forecast" = "darkblue", 
+                               "Forecast" = "orangered3", 
                                "Low 95%" = "salmon1", 
                                "High 95%" = "salmon1")) +
   theme_minimal() +
@@ -1365,7 +1368,8 @@ tax_all_2050 <- ggplot() +
     title = "Forecast of Environmental Tax Revenues (95% CI)",
     x = "Year",
     y = "Tax revenues"
-  )
+  )+
+  scale_y_continuous(limits = c(0, 1.5e+06)) 
 
 ggplotly(tax_all_2050)
 ```
@@ -1424,39 +1428,45 @@ ggplot(tax_path, aes(x = year)) +
   labs(title="Required Environmental Tax Path", y="Tax (millions USD)", x="Year") +
   theme_minimal()
 
-# Check predicted vs target
+# Check predicted
 ggplot(tax_path, aes(x = year)) +
-  geom_line(aes(y = target_GHG), linetype = "dashed", color = "red") +
   geom_line(aes(y = pred_GHG), color = "darkblue") +
-  labs(title="Target vs Predicted GHG", y="GHG", x="Year") +
+  labs(title="Target GHG", y="GHG", x="Year") +
   theme_minimal()
 
 ```
 
 #### b. Comparing with the forecast if we continue as we do
 
+```{r}
+tax_plot <- tax_fc_lm |>
+  rename(year = TIME_PERIOD, tax_forecast = fit) |>
+  left_join(tax_path |> select(year, tax_required), by = join_by(year)) |>
+  mutate(tax_diff_fc = tax_required - tax_forecast)
+```
 
 ```{r}
-
-ggplot(tax_plot_df, aes(x = TIME_PERIOD)) +
-  geom_ribbon(aes(ymin = lo_95, ymax = hi_95), fill = "lightblue", alpha = 0.3) +
+ggplot(tax_plot, aes(x = year)) +
+  geom_ribbon(aes(ymin = lwr, ymax = upr), fill = "lightblue", alpha = 0.3) +
   geom_line(aes(y = tax_forecast), color = "blue", linewidth = 1) +
   geom_line(aes(y = tax_required), color = "red", linetype = "dashed", linewidth = 1) +
+    geom_line(aes(y = tax_diff_fc), color = "darkolivegreen2", linewidth = 1) +
   labs(
     title = "Environmental Tax: Trend Forecast vs Climate-Required Path",
     y = "Tax revenues (millions USD)",
     x = "Year"
   ) +
+  scale_y_continuous(limits = c(0, 3e+06)) +  
   theme_minimal()
 
 ```
+
+
+
 ```{r}
-tax_plot_df <- tax_fc_df |>
-  left_join(tax_path |> select(year, tax_required)) |>
-  mutate(tax_diff = tax_required - tax_forecast)
+tax_path <- tax_path |>
+  mutate(tax_increment = tax_required - dplyr::lag(tax_required))
 ```
-
-
 
 
 
