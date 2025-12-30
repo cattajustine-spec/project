@@ -1600,34 +1600,8 @@ We compute the environmental tax path required to reach net-zero emissions by 20
 
 Comparing this required path to the forecast based on past trends shows a large and growing gap. Already in 2024, forecasted revenues (≈ 851 k) fall short of the required level (≈ 1,242 k). By 2050, the gap widens to roughly 1.71 M. This shows that current tax dynamics imply structural under-taxation: the shortfall starts immediately and grows over time, indicating that meeting net-zero objectives would require a substantial policy break from historical trend
 
-### 2. Levels greenhouse gas emissions to reach
 
-#### a. The forecast model
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-## Predicted sector-by-sector emissions at this tax level ---
-pred_2050 <- predict_total_ghg_given_tax(tax_2050_required, 2050)
-print(pred_2050)
-```
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-model_ghg_tax <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value, data = all_merged)
-future <- data.frame(Envt_Tax_Revenues_value = seq(min(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
-                                      max(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
-                                      length.out = 25))
-predicted_GHG <- predict(model_ghg_tax, newdata = future)
-predicted_GHG
-```
-
-#### b. Comparing with the forecast if we continue as we do
-
-
-
-
-### 3. Social inequalities w/this tax
+### 2. Social inequalities w/this tax
 #### a. The forecast model
 ```{r, echo=FALSE}
 #| message: false
