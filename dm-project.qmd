@@ -1572,7 +1572,13 @@ tax_plot <- tax_fc_lm |>
   rename(year = TIME_PERIOD, tax_forecast = fit) |>
   left_join(tax_path |> select(year, tax_required), by = join_by(year)) |>
   mutate(tax_diff_fc = tax_required - tax_forecast)
+
+#calcul de combien on doit augmenter la tax each year 
+tax_path <- tax_path |>
+  mutate(tax_increment_required = tax_required - dplyr::lag(tax_required))
 ```
+
+
 
 ```{r}
 ggplot(tax_plot, aes(x = year)) +
@@ -1590,11 +1596,6 @@ ggplot(tax_plot, aes(x = year)) +
 
 ```
 
-```{r}
-#calcul de combien on doit augmenter la tax each year 
-tax_path <- tax_path |>
-  mutate(tax_increment = tax_required - dplyr::lag(tax_required))
-```
 
 We compute the environmental tax path required to reach net-zero emissions by 2050 by inverting the estimated tax–GHG relationship. This gives us a constant annual increase of about 65,500 units in environmental tax revenues each year from 2024.
 
@@ -1603,40 +1604,20 @@ Comparing this required path to the forecast based on past trends shows a large 
 
 ### 2. Social inequalities w/this tax
 #### a. The forecast model
+
+
 ```{r, echo=FALSE}
-#| message: false
-#| warning: false
-model_gii_tax <- lm(GII_value ~ Envt_Tax_Revenues_value, data = all_merged)
-predicted_GII <- predict(model_gii_tax, newdata = data.frame(Envt_Tax_Revenues_value = seq(
-  min(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
-  max(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
-  length.out = 25)))
-predicted_GII
 
-## Rajouter coef ineq
+future_taxes <- tax_path |>
+  select(Envt_Tax_Revenues_value = tax_required) |> slice(2:28)
 
-model_warm_tax <- lm(Warm_Households_value ~ Envt_Tax_Revenues_value, data = all_merged)
-predicted_Warm <- predict(model_warm_tax, newdata = data.frame(Envt_Tax_Revenues_value = seq(
-  min(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
-  max(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
-  length.out = 25)))
-predicted_Warm
-
-
-####proposed 
-future_taxes <- data.frame(Envt_Tax_Revenues_value = seq(
-  from = max(all_merged$Envt_Tax_Revenues_value, na.rm = TRUE),
-  length.out = 27,
-  by = 5000  # or any assumed increase per year
-))
-
-# add other control variables if needed (constant or scenario)
+# add other control variables 
 future_controls <- data.frame(
   GII_value = mean(all_merged$GII_value, na.rm = TRUE),
   coef_ineq_value = mean(all_merged$coef_ineq_value, na.rm = TRUE),
-  hhtyp = "baseline",
-  incgrp = "baseline",
-  log_GDP_value = mean(log(all_merged$GDP_value), na.rm = TRUE),
+  hhtyp = factor(levels(all_merged$hhtyp)[1], levels = levels(all_merged$hhtyp)), 
+  incgrp = factor(levels(all_merged$incgrp)[1], levels = levels(all_merged$incgrp)), 
+  GDP_value = exp(mean(log(all_merged$GDP_value), na.rm = TRUE)),  # raw GDP : need exp bc we take log
   TIME_PERIOD = max(all_merged$TIME_PERIOD) + 1:27
 )
 
@@ -1646,7 +1627,23 @@ predicted_Warm <- predict(model_warm_tax, newdata = future_data, type = "respons
 predicted_coefineq <- predict(model_ineq_tax, newdata = future_data, type = "response")
 predicted_GII <- predict(model_gii_tax, newdata = future_data, type = "response")
 
+future_predictions_w_wontrols <- future_data |> 
+  mutate(
+    Pred_Warm = predicted_Warm,
+    Pred_CoefIneq = predicted_coefineq,
+    Pred_GII = predicted_GII
+  )
+
+predictions_df <- data.frame(
+  TIME_PERIOD = future_controls$TIME_PERIOD,
+  Envt_Tax_Revenues = future_taxes$Envt_Tax_Revenues_value,
+  Predicted_Warming = predicted_Warm,
+  Predicted_Inequality = predicted_coefineq,
+  Predicted_GII = predicted_GII
+)
+
 ```
+
 
 #### b. Comparing with the forecast if we continue as we do
 
