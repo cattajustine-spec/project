@@ -1606,43 +1606,93 @@ Comparing this required path to the forecast based on past trends shows a large 
 #### a. The forecast model
 
 
-```{r, echo=FALSE}
-
-future_taxes <- tax_path |>
-  select(Envt_Tax_Revenues_value = tax_required) |> slice(2:28)
-
-# add other control variables 
-future_controls <- data.frame(
-  GII_value = mean(all_merged$GII_value, na.rm = TRUE),
-  coef_ineq_value = mean(all_merged$coef_ineq_value, na.rm = TRUE),
-  hhtyp = factor(levels(all_merged$hhtyp)[1], levels = levels(all_merged$hhtyp)), 
-  incgrp = factor(levels(all_merged$incgrp)[1], levels = levels(all_merged$incgrp)), 
-  GDP_value = exp(mean(log(all_merged$GDP_value), na.rm = TRUE)),  # raw GDP : need exp bc we take log
-  TIME_PERIOD = max(all_merged$TIME_PERIOD) + 1:27
-)
-
-future_data <- cbind(future_taxes, future_controls)
-
-predicted_Warm <- predict(model_warm_tax, newdata = future_data, type = "response")
-predicted_coefineq <- predict(model_ineq_tax, newdata = future_data, type = "response")
-predicted_GII <- predict(model_gii_tax, newdata = future_data, type = "response")
-
-future_predictions_w_wontrols <- future_data |> 
-  mutate(
-    Pred_Warm = predicted_Warm,
-    Pred_CoefIneq = predicted_coefineq,
-    Pred_GII = predicted_GII
+```{r}
+last_obs <- EU27_GII %>%
+  filter(TIME_PERIOD == max(TIME_PERIOD)) %>%
+  select(TIME_PERIOD, GII_value) %>%
+  left_join(
+    EU27_Coefineq %>%
+      filter(TIME_PERIOD == max(TIME_PERIOD)) %>%
+      select(TIME_PERIOD, coef_ineq_value),
+    by = "TIME_PERIOD"
+  ) %>%
+  left_join(
+    EU27_Warming_agg %>%
+      filter(TIME_PERIOD == max(TIME_PERIOD)) %>%
+      select(TIME_PERIOD, Warm_Households_value = Warm_avg),
+    by = "TIME_PERIOD"
   )
 
-predictions_df <- data.frame(
-  TIME_PERIOD = future_controls$TIME_PERIOD,
-  Envt_Tax_Revenues = future_taxes$Envt_Tax_Revenues_value,
-  Predicted_Warming = predicted_Warm,
-  Predicted_Inequality = predicted_coefineq,
-  Predicted_GII = predicted_GII
+# Get coefficients from models
+coef_warm <- coef(model_warm_tax)["Envt_Tax_Revenues_value"]
+coef_ineq <- coef(model_ineq_tax)["Envt_Tax_Revenues_value"]
+coef_gii  <- coef(model_gii_tax)["Envt_Tax_Revenues_value"]
+
+# Initialize future predictions with last observed values
+future_predictions <- data.frame(
+  TIME_PERIOD = max(all_merged$TIME_PERIOD) + 1:27,
+  Envt_Tax_Revenues = tax_path$tax_required[2:28],
+  Predicted_Warming = last_obs$Warm_Households_value,
+  Predicted_Inequality = last_obs$coef_ineq_value,
+  Predicted_GII = last_obs$GII_value
 )
 
+# Update predictions using tax increments
+for (i in 2:nrow(future_predictions)) {
+  future_predictions$Predicted_Warming[i] <-
+    future_predictions$Predicted_Warming[i-1] + coef_warm * tax_path$tax_increment_required[i+1]
+  future_predictions$Predicted_Inequality[i] <-
+    future_predictions$Predicted_Inequality[i-1] + coef_ineq * tax_path$tax_increment_required[i+1]
+  future_predictions$Predicted_GII[i] <-
+    future_predictions$Predicted_GII[i-1] + coef_gii * tax_path$tax_increment_required[i+1]
+}
+
+future_predictions$Predicted_GII <- pmax(0, pmin(1, future_predictions$Predicted_GII))
+
 ```
+
+```{r}
+EU27_Warming_agg <- EU27_Warming_agg %>% slice(1:(n() - 1))
+EU27_GII$type <- "Historical"
+EU27_Warming_agg$type <- "Historical"
+EU27_Coefineq$type <- "Historical"
+future_predictions$type <- "Predicted"
+
+p1 <- ggplot() +
+  geom_line(data = EU27_GII, aes(x = TIME_PERIOD, y = GII_value, color = type), linewidth = 1) +
+  geom_line(data = future_predictions, aes(x = TIME_PERIOD, y = Predicted_GII, color = type), linewidth = 1) +
+  geom_point(data = EU27_GII, aes(x = TIME_PERIOD, y = GII_value), color = "blue", size = 2) +
+  geom_point(data = future_predictions, aes(x = TIME_PERIOD, y = Predicted_GII), color = "red", size = 2) +
+  labs(title = "GII: Valeurs historiques et prédites", x = "Année", y = "Valeur GII", color = "Type de données") +
+  scale_color_manual(values = c("Historical" = "blue", "Predicted" = "red")) +
+  theme_minimal() +
+  geom_vline(xintercept = 2023.5, linetype = "dashed", color = "grey50")
+
+p2 <- ggplot() +
+  geom_line(data = EU27_Warming_agg, aes(x = TIME_PERIOD, y = Warm_avg, color = type), linewidth = 1) +
+  geom_line(data = future_predictions, aes(x = TIME_PERIOD, y = Predicted_Warming, color = type), linewidth = 1) +
+  geom_point(data = EU27_Warming_agg, aes(x = TIME_PERIOD, y = Warm_avg), color = "blue", size = 2) +
+  geom_point(data = future_predictions, aes(x = TIME_PERIOD, y = Predicted_Warming), color = "red", size = 2) +
+  labs(title = "Warm Households: Valeurs historiques et prédites", x = "Année", y = "Valeur Warm Households", color = "Type de données") +
+  scale_color_manual(values = c("Historical" = "blue", "Predicted" = "red")) +
+  theme_minimal() +
+  geom_vline(xintercept = 2023.5, linetype = "dashed", color = "grey50")
+
+p3 <- ggplot() +
+  geom_line(data = EU27_Coefineq, aes(x = TIME_PERIOD, y = coef_ineq_value, color = type), linewidth = 1) +
+  geom_line(data = future_predictions, aes(x = TIME_PERIOD, y = Predicted_Inequality, color = type), linewidth = 1) +
+  geom_point(data = EU27_Coefineq, aes(x = TIME_PERIOD, y = coef_ineq_value), color = "blue", size = 2) +
+  geom_point(data = future_predictions, aes(x = TIME_PERIOD, y = Predicted_Inequality), color = "red", size = 2) +
+  labs(title = "Coefficient d'inégalité: Valeurs historiques et prédites", x = "Année", y = "Valeur Coefficient d'inégalité", color = "Type de données") +
+  scale_color_manual(values = c("Historical" = "blue", "Predicted" = "red")) +
+  theme_minimal() +
+  geom_vline(xintercept = 2023.5, linetype = "dashed", color = "grey50")
+
+# Arrange plots 
+gridExtra::grid.arrange(p1, p2, p3, ncol = 1)
+```
+
+
 
 
 #### b. Comparing with the forecast if we continue as we do
