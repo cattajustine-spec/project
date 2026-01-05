@@ -981,15 +981,15 @@ All other coefficients are close to the ones saw before (GDP around 0.043, Manuf
 #| message: false
 #| warning: false
 # taxes on inability to warm house (economic inequalities)
-model_warm_tax <- lm(log(Warm_Households_value) ~ Envt_Tax_Revenues_value +  GII_value + coef_ineq_value + hhtyp + incgrp + log(GDP_value) + TIME_PERIOD, data = all_merged)
+model_warm_tax <- lm(Warm_Households_value ~ Envt_Tax_Revenues_value +  GII_value + coef_ineq_value + hhtyp + incgrp + log(GDP_value) + TIME_PERIOD, data = all_merged)
 summary(model_warm_tax)
 
 # taxes on the coefficient of inequalities
-model_ineq_tax <- lm(log(coef_ineq_value) ~ Envt_Tax_Revenues_value + hhtyp + incgrp + log(GDP_value) + TIME_PERIOD, data = all_merged)
+model_ineq_tax <- lm(coef_ineq_value ~ Envt_Tax_Revenues_value + hhtyp + incgrp + log(GDP_value) + TIME_PERIOD, data = all_merged)
 summary(model_ineq_tax)
 
 # taxes on the gender inequality index
-model_gii_tax <- lm(log(GII_value) ~ Envt_Tax_Revenues_value + hhtyp + incgrp + log(GDP_value) + TIME_PERIOD, data = all_merged)
+model_gii_tax <- lm(GII_value ~ Envt_Tax_Revenues_value + hhtyp + incgrp + log(GDP_value) + TIME_PERIOD, data = all_merged)
 summary(model_gii_tax)
 
 ```
@@ -1639,6 +1639,52 @@ Overall, the sector-level analysis reveals heterogeneous challenges. While indus
 
 #### a. The forecast model
 
+###### ma proposition
+```{r}
+# Average yearly tax increase
+avg_tax_increment <- (last(tax_path$tax_required) -
+                      first(tax_path$tax_required)) /
+                      (nrow(tax_path) - 1)
+
+# Last observed levels
+last_obs <- tibble(
+  Warm = tail(EU27_Warming_agg$Warm_avg, 1),
+  Ineq = tail(EU27_Coefineq$coef_ineq_value, 1),
+  GII  = tail(EU27_GII$GII_value, 1)
+)
+
+future_years <- length(tax_path$year)
+
+# Extract coefficients
+b_warm_tax  <- coef(model_warm_tax)["Envt_Tax_Revenues_value"]
+b_warm_time <- coef(model_warm_tax)["TIME_PERIOD"]
+
+b_ineq_tax  <- coef(model_ineq_tax)["Envt_Tax_Revenues_value"]
+b_ineq_time <- coef(model_ineq_tax)["TIME_PERIOD"]
+
+b_gii_tax   <- coef(model_gii_tax)["Envt_Tax_Revenues_value"]
+b_gii_time  <- coef(model_gii_tax)["TIME_PERIOD"]
+
+# Build paths
+future_predictions <- tibble(
+  year = tax_path$year,
+
+  Predicted_Warming =
+    last_obs$Warm +
+    cumsum(rep(b_warm_tax * avg_tax_increment + b_warm_time, future_years)),
+
+  Predicted_Inequality =
+    last_obs$Ineq +
+    cumsum(rep(b_ineq_tax * avg_tax_increment + b_ineq_time, future_years)),
+
+  Predicted_GII =
+    pmax(0, pmin(1,last_obs$GII +
+        cumsum(rep(b_gii_tax * avg_tax_increment + b_gii_time, future_years))
+      )))
+
+```
+
+
 ```{r}
 # Estimate historical relationships between environmental tax and social indicators
 
@@ -1677,8 +1723,8 @@ future_predictions <- tibble(
   Predicted_Inequality = last_obs$Predicted_Inequality + cumsum(rep(coef(model_ineq_tax)["Envt_Tax_Revenues_value"] * avg_tax_increment, length(future_years))),
   Predicted_GII = pmax(0, pmin(1, last_obs$Predicted_GII + cumsum(rep(coef(model_gii_tax)["Envt_Tax_Revenues_value"] * avg_tax_increment, length(future_years)))))
 )
-```
 
+```
 
 ```{r}
 # Plot 1: Warming ability
@@ -1702,6 +1748,7 @@ p_gii <- ggplot(future_predictions, aes(x = year, y = Predicted_GII)) +
 # Stack vertically using grid.arrange
 grid.arrange(p_warming, p_inequality, p_gii, ncol = 1)
 ```
+
 
 #### b. Comparing with the forecast if we continue as we do
 
