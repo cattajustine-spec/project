@@ -1287,7 +1287,7 @@ plot(gdp_fc, main = "Forecast of GDP")
 
 ##### Comment :
 
-### 4. The economy : forecast of the environmental taxes
+### 4. The economy : forecast of the environmental taxes {#forecastofenvttax}
 
 
 ```{r}
@@ -1402,6 +1402,88 @@ The estimated regression reveals a statistically significant negative relationsh
 
 #### b. Comparing with the forecast if we continue as we do
 
+To assess the adequacy of current environmental tax trends, we now compare the forecasted path of total EU-27 environmental tax revenues, based on historical trends (the “forecast model” from the section: [The economy : forecast of the environmental taxes] (#forecastofenvttax)), with the tax path required to reach net-zero emissions by 2050. This comparison highlights the gap between the continuation of past tax policies and the ambitious fiscal effort necessary to achieve the EU’s climate target. The code below generates the forecasted confidence intervals and overlays them with the required tax path.
+
+##### Tax policy : targeted vs predicted
+
+```{r}
+tax_pred_95 <- predict(
+  tax_lm,
+  newdata = future_years,
+  interval = "confidence",
+  level = 0.95
+)
+tax_pred_80 <- predict(
+  tax_lm,
+  newdata = future_years,
+  interval = "confidence",
+  level = 0.80
+)
+tax_fc_lm_ci <- future_years |>
+  mutate(
+    mean = tax_pred_95[, "fit"],
+    lower95 = tax_pred_95[, "lwr"],
+    upper95 = tax_pred_95[, "upr"],
+    lower80 = tax_pred_80[, "lwr"],
+    upper80 = tax_pred_80[, "upr"]
+  ) |>
+  rename(year = TIME_PERIOD)
+tax_plot_df <- tax_fc_lm_ci |>
+  left_join(
+    tax_path |> select(year, tax_required),
+    by = "year"
+  )
+
+ggplot(tax_plot_df, aes(x = year)) +
+  geom_ribbon(
+    aes(ymin = lower95, ymax = upper95, fill = "95% confidence interval"),
+    alpha = 0.35
+  ) +
+  geom_ribbon(
+    aes(ymin = lower80, ymax = upper80, fill = "80% confidence interval"),
+    alpha = 0.5
+  ) +
+  geom_line(
+    aes(y = mean, color = "Forecasted tax revenues (trend continuation)"),
+    linewidth = 1
+  ) +
+  geom_line(
+    aes(y = tax_required, color = "Tax path required for net-zero by 2050"),
+    linewidth = 1,
+    linetype = "dashed"
+  ) +
+  scale_color_manual(
+    name = "Lines",
+    values = c(
+      "Forecasted tax revenues (trend continuation)" = "red",
+      "Tax path required for net-zero by 2050" = "darkblue"
+    )
+  ) +
+  scale_fill_manual(
+    name = "Confidence intervals",
+    values = c(
+      "80% confidence interval" = "grey50",
+      "95% confidence interval" = "grey70"
+    )
+  ) +
+  labs(
+    title = "Environmental Tax Revenues: Trend Forecast vs Climate-Required Path",
+    x = "Year",
+    y = "Tax revenues (millions USD)"
+  ) +
+  scale_y_continuous(limits = c(0, 3e6)) +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    legend.title = element_text(face = "bold")
+  )
+```
+
+
+
+We compute the environmental tax path required to reach net-zero emissions by 2050 by inverting the estimated tax–GHG relationship. This gives us a constant annual increase of about 65,500 units in environmental tax revenues each year from 2024.
+
+Comparing this required path to the forecast based on past trends shows a large and growing gap. Already in 2024, forecasted revenues (≈ 851 k) fall short of the required level (≈ 1,242 k). By 2050, the gap widens to roughly 1.71 M. This shows that current tax dynamics imply structural under-taxation: the shortfall starts immediately and grows over time, indicating that meeting net-zero objectives would require a substantial policy break from historical trend
 
 ##### GHG emissions : targeted vs predicted
  
@@ -1563,89 +1645,8 @@ Across all four sectors, the forecasted GHG emissions (red line) and the target 
 
 Overall, the sector-level analysis reveals heterogeneous challenges. While industry may be able to meet net-zero with moderate adjustments, agriculture, manufacturing, and especially transport require substantial and immediate action to reduce emissions. The comparison highlights that the total net-zero target is heavily dependent on successful mitigation in these high-emission sectors, and that relying solely on current trends will not be sufficient.
 
-##### Tax policy : targeted vs predicted
 
-```{r}
-tax_pred_95 <- predict(
-  tax_lm,
-  newdata = future_years,
-  interval = "confidence",
-  level = 0.95
-)
-tax_pred_80 <- predict(
-  tax_lm,
-  newdata = future_years,
-  interval = "confidence",
-  level = 0.80
-)
-tax_fc_lm_ci <- future_years |>
-  mutate(
-    mean = tax_pred_95[, "fit"],
-    lower95 = tax_pred_95[, "lwr"],
-    upper95 = tax_pred_95[, "upr"],
-    lower80 = tax_pred_80[, "lwr"],
-    upper80 = tax_pred_80[, "upr"]
-  ) |>
-  rename(year = TIME_PERIOD)
-tax_plot_df <- tax_fc_lm_ci |>
-  left_join(
-    tax_path |> select(year, tax_required),
-    by = "year"
-  )
-
-ggplot(tax_plot_df, aes(x = year)) +
-  geom_ribbon(
-    aes(ymin = lower95, ymax = upper95, fill = "95% confidence interval"),
-    alpha = 0.35
-  ) +
-  geom_ribbon(
-    aes(ymin = lower80, ymax = upper80, fill = "80% confidence interval"),
-    alpha = 0.5
-  ) +
-  geom_line(
-    aes(y = mean, color = "Forecasted tax revenues (trend continuation)"),
-    linewidth = 1
-  ) +
-  geom_line(
-    aes(y = tax_required, color = "Tax path required for net-zero by 2050"),
-    linewidth = 1,
-    linetype = "dashed"
-  ) +
-  scale_color_manual(
-    name = "Lines",
-    values = c(
-      "Forecasted tax revenues (trend continuation)" = "red",
-      "Tax path required for net-zero by 2050" = "darkblue"
-    )
-  ) +
-  scale_fill_manual(
-    name = "Confidence intervals",
-    values = c(
-      "80% confidence interval" = "grey50",
-      "95% confidence interval" = "grey70"
-    )
-  ) +
-  labs(
-    title = "Environmental Tax Revenues: Trend Forecast vs Climate-Required Path",
-    x = "Year",
-    y = "Tax revenues (millions USD)"
-  ) +
-  scale_y_continuous(limits = c(0, 3e6)) +
-  theme_minimal() +
-  theme(
-    legend.position = "right",
-    legend.title = element_text(face = "bold")
-  )
-```
-
-
-
-We compute the environmental tax path required to reach net-zero emissions by 2050 by inverting the estimated tax–GHG relationship. This gives us a constant annual increase of about 65,500 units in environmental tax revenues each year from 2024.
-
-Comparing this required path to the forecast based on past trends shows a large and growing gap. Already in 2024, forecasted revenues (≈ 851 k) fall short of the required level (≈ 1,242 k). By 2050, the gap widens to roughly 1.71 M. This shows that current tax dynamics imply structural under-taxation: the shortfall starts immediately and grows over time, indicating that meeting net-zero objectives would require a substantial policy break from historical trend
-
-
-### 2. Social inequalities w/this tax
+### 2. Impact on social inequalities
 #### a. The forecast model
 
 
