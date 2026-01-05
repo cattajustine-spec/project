@@ -1322,6 +1322,7 @@ ggplotly(tax_all_2050)
 
 this is an extrapolation from current trend
 
+### 5. The economic impact: on added value (per sector) 
 # Forecasting: if we plan to get to the 0 net emission by 2050
 
 In this project, we are trying to look at the level of tax that would be necessary to reach the 0 net emissions by 2050 required by the European Union. To do so, we should first look at the level of tax that allows for this evolution, and then check the evolution of the GHG emissions per sector induced by this level of tax. Furthermore, we should look at the impact of this level of tax on the social inequalities and on the economy.
@@ -1878,16 +1879,40 @@ ggplot() +
 ```
 
 
-### 4. Is the model viable ? Its impact on the GDP
+### 3. Is the model viable ? Its impact on the GDP & on added value
 
-#### a. The forecast model
+#### a. Aggregate GDP : forecast & comparison
 
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
+model_gdp_tax <- lm(
+  GDP_value ~ Envt_Tax_Revenues_value,
+  data = EU27_GDP |> inner_join(EU27_Tax, by = "TIME_PERIOD")
+)
+
+coef_gdp <- coef(model_gdp_tax)["Envt_Tax_Revenues_value"]
+
+last_gdp <- tail(EU27_GDP$GDP_value, 1)
+
+future_gdp_predictions <- tibble(
+  year = tax_path$year,
+  Predicted_GDP = last_gdp +
+    cumsum(
+      rep(coef_gdp * avg_tax_increment, length(tax_path$year))
+    )
+)
+
+ggplot(future_gdp_predictions, aes(x = year)) +
+  geom_line(aes(y = Predicted_GDP), color = "darkblue") +
+  labs(title="Forecasted impact on Aggregate GDP", y="European GDP", x="Year") +
+  theme_minimal()
+
 ```
 
-#### b. Comparing with the forecast if we continue as we do
+#### b. GDP per country: forecast & comparison
+
+#### c. Per sector Added Value: forecast & comparison
 
 # Conclusion
 
