@@ -1999,16 +1999,9 @@ viability_data <- tax_path |>
 
 viability_data <- viability_data |>
   mutate(
-    tax_gdp_ratio = (tax_required / GDP_forecast) * 100,
-    # Viability classification
-    viability_status = case_when(
-      tax_gdp_ratio < 1 ~ "Very Feasible",
-      tax_gdp_ratio >= 1 & tax_gdp_ratio < 3 ~ "Feasible",
-      tax_gdp_ratio >= 3 & tax_gdp_ratio < 5 ~ "High Tension",
-      tax_gdp_ratio >= 5 ~ "Very Difficult",
-      TRUE ~ NA_character_
+    tax_gdp_ratio = (tax_required / GDP_forecast) * 100
     )
-  )
+
 
 p1 <- ggplot(viability_data, aes(x = year, y = tax_gdp_ratio)) +
   # zones
