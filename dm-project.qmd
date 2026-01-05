@@ -1065,8 +1065,7 @@ ggplot(clean_tax_data, aes(x = Envt_Tax_Revenues_value, y = GDP_value)) +
 sector <- c("Transport", "Agriculture", "Industry (including energy)", "Manufacturing")
 
 model_AV_tax <- lapply(sector, function(s){
-
-  data_s <- all_merged %>% filter(sector == s)
+  data_s <- all_merged |> filter(sector == s)
   lm(log(AV_value) ~ Envt_Tax_Revenues_value + TIME_PERIOD, data = data_s, subset = iso3 != "EU27")
 })
 
@@ -1237,11 +1236,10 @@ coefineq_ts <- ts(EU27_Coefineq$coef_ineq_value, start = min(EU27_Coefineq$TIME_
 coefineq_model <- auto.arima(coefineq_ts)
 coefineq_fc <- forecast(coefineq_model, h = 27)
 
-EU27_Warming_agg <- EU27_Warming %>%
-  filter(!is.na(Warm_Households_value),
-         hhtyp == "TOTAL",
-         incgrp == "TOTAL") %>%
-  group_by(TIME_PERIOD) 
+EU27_Warming_agg <- EU27_Warming |> 
+  filter(!is.na(Warm_Households_value)) |> 
+  group_by(TIME_PERIOD) |> 
+  summarise(Warm_avg = mean(Warm_Households_value, na.rm = TRUE))
 
 warm_ts <- ts(EU27_Warming_agg$Warm_Households_value, start = min(EU27_Warming_agg$TIME_PERIOD))
 warm_model <- auto.arima(warm_ts)
@@ -1336,9 +1334,9 @@ To identify a tax trajectory consistent with the European Union’s objective of
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-data_forecast_tax_0net <- EUGHG_agg_yearly %>%
-  left_join(EU27_Tax, by = "TIME_PERIOD") %>%
-  filter(!is.na(GHG_total), !is.na(Envt_Tax_Revenues_value)) %>%
+data_forecast_tax_0net <- EUGHG_agg_yearly |>
+  left_join(EU27_Tax, by = "TIME_PERIOD") |>
+  filter(!is.na(GHG_total), !is.na(Envt_Tax_Revenues_value)) |>
   mutate(year = as.numeric(TIME_PERIOD))
 
 # Estimate level-level model 
@@ -1544,17 +1542,17 @@ sector_last <- sector_yearly |>
   select(sector, current_GHG = GHG_total, share)
 
 # Compute sector-level targets proportionally
-sector_target <- tax_path %>%
-  select(year, target_GHG) %>%
-  crossing(sector_last) %>%
+sector_target <- tax_path |>
+  select(year, target_GHG) |>
+  crossing(sector_last) |>
   mutate(target_sector_GHG = target_GHG * share)
 
 ghg_sector_2050 <- bind_rows(
-  EU27_GHG %>% 
-    mutate(data_type = "Historical") %>%
+  EU27_GHG |> 
+    mutate(data_type = "Historical") |>
     rename(TIME_PERIOD = TIME_PERIOD, GHG_Emissions_value = GHG_Emissions_value),
-  sector_target %>%
-    mutate(data_type = "Target") %>%
+  sector_target |>
+    mutate(data_type = "Target") |>
     rename(TIME_PERIOD = year, GHG_Emissions_value = target_sector_GHG)
 )
 
@@ -1592,8 +1590,8 @@ plots <- map2(
       lower95 = as.numeric(fc$lower[,2]),
       upper95 = as.numeric(fc$upper[,2])
     )
-    target_df <- sector_target %>%
-      filter(sector == sector_name) %>%
+    target_df <- sector_target |>
+      filter(sector == sector_name) |>
       select(year, target_sector_GHG)
     ggplot(target_df, aes(x = year)) +
       geom_ribbon(data = fc_df, aes(
@@ -1644,17 +1642,17 @@ Overall, the sector-level analysis reveals heterogeneous challenges. While indus
 
 ## Warming ability
 model_warm_tax <- lm(Warm_avg ~ Envt_Tax_Revenues_value, data = 
-                       EU27_Warming_agg %>% inner_join(EU27_Tax, by = "TIME_PERIOD"))
+                       EU27_Warming_agg |> inner_join(EU27_Tax, by = "TIME_PERIOD"))
 coef_warm <- coef(model_warm_tax)["Envt_Tax_Revenues_value"]
 
 ## Income inequality
 model_ineq_tax <- lm(coef_ineq_value ~ Envt_Tax_Revenues_value, data = 
-                       EU27_Coefineq %>% inner_join(EU27_Tax, by = "TIME_PERIOD"))
+                       EU27_Coefineq |> inner_join(EU27_Tax, by = "TIME_PERIOD"))
 coef_ineq <- coef(model_ineq_tax)["Envt_Tax_Revenues_value"]
 
 ## Gender Inequality Index
 model_gii_tax <- lm(GII_value ~ Envt_Tax_Revenues_value, data = 
-                      EU27_GII %>% inner_join(EU27_Tax, by = "TIME_PERIOD"))
+                      EU27_GII |> inner_join(EU27_Tax, by = "TIME_PERIOD"))
 coef_gii <- coef(model_gii_tax)["Envt_Tax_Revenues_value"]
 
 # Compute the average annual increase in the targeted tax path
@@ -1703,36 +1701,36 @@ p_gii <- ggplot(future_predictions, aes(x = year, y = Predicted_GII)) +
 grid.arrange(p_warming, p_inequality, p_gii, ncol = 1)
 ```
 ```{r}
-warming_data <- EU27_Warming_agg %>%
-  select(TIME_PERIOD, Warm_avg) %>%
-  rename(year = TIME_PERIOD, value = Warm_avg) %>%
-  mutate(type = "Historical") %>%
+warming_data <- EU27_Warming_agg |>
+  select(TIME_PERIOD, Warm_avg) |>
+  rename(year = TIME_PERIOD, value = Warm_avg) |>
+  mutate(type = "Historical") |>
   bind_rows(
-    future_predictions %>%
-      select(year, Predicted_Warming) %>%
-      rename(value = Predicted_Warming) %>%
+    future_predictions |>
+      select(year, Predicted_Warming) |>
+      rename(value = Predicted_Warming) |>
       mutate(type = "Forecast")
   )
 
-ineq_data <- EU27_Coefineq %>%
-  select(TIME_PERIOD, coef_ineq_value) %>%
-  rename(year = TIME_PERIOD, value = coef_ineq_value) %>%
-  mutate(type = "Historical") %>%
+ineq_data <- EU27_Coefineq |>
+  select(TIME_PERIOD, coef_ineq_value) |>
+  rename(year = TIME_PERIOD, value = coef_ineq_value) |>
+  mutate(type = "Historical") |>
   bind_rows(
-    future_predictions %>%
-      select(year, Predicted_Inequality) %>%
-      rename(value = Predicted_Inequality) %>%
+    future_predictions |>
+      select(year, Predicted_Inequality) |>
+      rename(value = Predicted_Inequality) |>
       mutate(type = "Forecast")
   )
 
-gii_data <- EU27_GII %>%
-  select(TIME_PERIOD, GII_value) %>%
-  rename(year = TIME_PERIOD, value = GII_value) %>%
-  mutate(type = "Historical") %>%
+gii_data <- EU27_GII |>
+  select(TIME_PERIOD, GII_value) |>
+  rename(year = TIME_PERIOD, value = GII_value) |>
+  mutate(type = "Historical") |>
   bind_rows(
-    future_predictions %>%
-      select(year, Predicted_GII) %>%
-      rename(value = Predicted_GII) %>%
+    future_predictions |>
+      select(year, Predicted_GII) |>
+      rename(value = Predicted_GII) |>
       mutate(type = "Forecast")
   )
 
