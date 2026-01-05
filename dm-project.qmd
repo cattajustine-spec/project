@@ -1791,7 +1791,7 @@ ggplot() +
   ) +
   geom_line(
     data = future_predictions,
-    aes(x = year, y = Predicted_GII, color = "Targeted tax path"),
+    aes(x = year, y = Predicted_GII, color = "Forecasted impact on the GII"),
     linewidth = 1
   ) +
   scale_color_manual(
