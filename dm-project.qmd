@@ -1241,7 +1241,7 @@ EU27_Warming_agg <- EU27_Warming |>
   group_by(TIME_PERIOD) |> 
   summarise(Warm_avg = mean(Warm_Households_value, na.rm = TRUE))
 
-warm_ts <- ts(EU27_Warming_agg$Warm_Households_value, start = min(EU27_Warming_agg$TIME_PERIOD))
+warm_ts <- ts(EU27_Warming_agg$Warm_avg, start = min(EU27_Warming_agg$TIME_PERIOD))
 warm_model <- auto.arima(warm_ts)
 warm_fc <- forecast(warm_model, h = 26)
 
@@ -1250,6 +1250,7 @@ gii_fc
 coefineq_fc
 warm_fc
 ```
+
 
 ```{r}
 plot(gii_fc, main = "Forecast of GII")
