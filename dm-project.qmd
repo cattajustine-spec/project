@@ -1639,7 +1639,6 @@ Overall, the sector-level analysis reveals heterogeneous challenges. While indus
 
 #### a. The forecast model
 
-###### ma proposition
 ```{r}
 # Average yearly tax increase
 avg_tax_increment <- (last(tax_path$tax_required) -
@@ -1681,48 +1680,6 @@ future_predictions <- tibble(
     pmax(0, pmin(1,last_obs$GII +
         cumsum(rep(b_gii_tax * avg_tax_increment + b_gii_time, future_years))
       )))
-
-```
-
-
-```{r}
-# Estimate historical relationships between environmental tax and social indicators
-
-## Warming ability
-model_warm_tax <- lm(Warm_avg ~ Envt_Tax_Revenues_value, data = 
-                       EU27_Warming_agg |> inner_join(EU27_Tax, by = "TIME_PERIOD"))
-coef_warm <- coef(model_warm_tax)["Envt_Tax_Revenues_value"]
-
-## Income inequality
-model_ineq_tax <- lm(coef_ineq_value ~ Envt_Tax_Revenues_value, data = 
-                       EU27_Coefineq |> inner_join(EU27_Tax, by = "TIME_PERIOD"))
-coef_ineq <- coef(model_ineq_tax)["Envt_Tax_Revenues_value"]
-
-## Gender Inequality Index
-model_gii_tax <- lm(GII_value ~ Envt_Tax_Revenues_value, data = 
-                      EU27_GII |> inner_join(EU27_Tax, by = "TIME_PERIOD"))
-coef_gii <- coef(model_gii_tax)["Envt_Tax_Revenues_value"]
-
-# Compute the average annual increase in the targeted tax path
-avg_tax_increment <- (last(tax_path$tax_required) - first(tax_path$tax_required)) / (nrow(tax_path) - 1)
-
-# Last observed values for the social indicators
-last_obs <- tibble(
-  Predicted_Warming = tail(EU27_Warming_agg$Warm_avg, 1),
-  Predicted_Inequality = tail(EU27_Coefineq$coef_ineq_value, 1),
-  Predicted_GII = tail(EU27_GII$GII_value, 1)
-)
-
-# Years of the forecast
-future_years <- tax_path$year
-
-# Compute predicted evolution using historical coefficients and the average tax increment
-future_predictions <- tibble(
-  year = future_years,
-  Predicted_Warming = last_obs$Predicted_Warming + cumsum(rep(coef(model_warm_tax)["Envt_Tax_Revenues_value"] * avg_tax_increment, length(future_years))),
-  Predicted_Inequality = last_obs$Predicted_Inequality + cumsum(rep(coef(model_ineq_tax)["Envt_Tax_Revenues_value"] * avg_tax_increment, length(future_years))),
-  Predicted_GII = pmax(0, pmin(1, last_obs$Predicted_GII + cumsum(rep(coef(model_gii_tax)["Envt_Tax_Revenues_value"] * avg_tax_increment, length(future_years)))))
-)
 
 ```
 
