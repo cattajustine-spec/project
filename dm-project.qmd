@@ -1346,7 +1346,6 @@ In this project, we are trying to look at the level of tax that would be necessa
 ### 1. Deriving a realistic tax path to reach net-zero by 2050
 
 #### a. The forecast model
-##### Total GHG emissions targeted evolution
 
 To identify a tax trajectory consistent with the European Union’s objective of achieving net-zero greenhouse gas emissions by 2050, we first model the historical relationship between aggregate GHG emissions and environmental tax revenues at the EU-27 level. We estimate a reduced-form, level-level linear regression in which total GHG emissions are explained by environmental tax revenues. This empirical relationship is then used as a policy mapping tool. Assuming a linear absolute reduction in emissions from the last observed level to zero by 2050, we invert the estimated model to derive the level of environmental tax revenues required each year to generate such an emissions trajectory. This approach allows us to construct a stylized tax path under the strong assumption that environmental taxation is the sole policy instrument used to drive emissions reductions.
 
@@ -1399,53 +1398,7 @@ ggplot(tax_path, aes(x = year)) +
 
 ```
 
-
-##### GHG emissions per sector targeted evolution
-```{r}
-# Latest observed GHG per sector
-latest_year <- max(sector_yearly$TIME_PERIOD)
-sector_last <- sector_yearly |>
-  filter(TIME_PERIOD == latest_year) |>
-  mutate(share = GHG_total / sum(GHG_total)) |>  
-  select(sector, current_GHG = GHG_total, share)
-
-# Compute sector-level targets proportionally
-sector_target <- tax_path %>%
-  select(year, target_GHG) %>%
-  crossing(sector_last) %>%
-  mutate(target_sector_GHG = target_GHG * share)
-
-# Plot all sectors in one graph
-ghg_sector_2050 <- bind_rows(
-  EU27_GHG %>% 
-    mutate(data_type = "Historical") %>%
-    rename(TIME_PERIOD = TIME_PERIOD, GHG_Emissions_value = GHG_Emissions_value),
-  sector_target %>%
-    mutate(data_type = "Target") %>%
-    rename(TIME_PERIOD = year, GHG_Emissions_value = target_sector_GHG)
-)
-
-p_ghg_sector_2050 <- ggplot(
-  ghg_sector_2050, aes(x = TIME_PERIOD, y = GHG_Emissions_value, color = sector, linetype = data_type, 
-  group = interaction(sector, data_type))) +
-  geom_line(linewidth = 1) +
-  labs(
-    title = "EU27 GHG Emissions: Historical Data and Net Zero Targets by 2050",
-    x = "Year",
-    y = "GHG Emissions (thousands of tons of CO2)",
-    color = "Sector",
-    linetype = "Data Type"
-  ) +
-  theme_minimal()
-
-ggplotly(p_ghg_sector_2050)
-```
-
-
-
-
-
-
+The estimated regression reveals a statistically significant negative relationship between environmental tax revenues and total GHG emissions. The coefficient on environmental tax revenues is −1.406 (p-value < 0.001), indicating that, historically, an increase of one million of USD in environmental tax revenues is associated with a reduction of approximately 1.4 thousand tonnes of CO₂-equivalent of aggregate emissions. The intercept suggests a baseline emissions level of about 4.14 billion thousand tonnes of CO₂-equivalent in the absence of environmental taxation. While the model is intentionally parsimonious, it explains a meaningful share of the observed variation in emissions, with an $R^2$ of 0.39. Using this estimated relationship, we construct a counterfactual emissions trajectory featuring a linear absolute decline from approximately 2.49 million units in 2023 to net-zero emissions in 2050. Inverting the estimated model yields the environmental tax revenues required to sustain this trajectory. As illustrated in the tax path graph, achieving this emissions reduction would require environmental tax revenues to increase steadily from about 1,177,245 million USD in 2023 to approximately 2,945,633 million USD by 2050, corresponding to an average annual increase of roughly 65,5 million USD per year. This steadily rising tax path produces the targeted emissions trajectory shown in the GHG emissions path graph, where predicted emissions decline smoothly to zero by construction. These results highlight both the scale of the fiscal effort required and the limitations of relying on environmental taxation alone, given the modest explanatory power of the reduced-form relationship.
 
 #### b. Comparing with the forecast if we continue as we do
 
@@ -1509,6 +1462,48 @@ ggplot(tax_path, aes(x = year)) +
 As shown in the figure, achieving the targeted GHG emissions trajectory would require a substantial change in current taxing practices. The target path consistently lies at the lower bound of the forecast confidence intervals for emissions, and from around 2035 onwards it even falls outside the 95% confidence interval. This suggests that, under the continuation of current trends captured by the ARIMA forecast, the probability of reaching the targeted emissions level is low, highlighting the need for stronger or additional policy interventions.
 
 ###### Per sector emissions
+##### GHG emissions per sector targeted evolution
+```{r}
+# Latest observed GHG per sector
+latest_year <- max(sector_yearly$TIME_PERIOD)
+sector_last <- sector_yearly |>
+  filter(TIME_PERIOD == latest_year) |>
+  mutate(share = GHG_total / sum(GHG_total)) |>  
+  select(sector, current_GHG = GHG_total, share)
+
+# Compute sector-level targets proportionally
+sector_target <- tax_path %>%
+  select(year, target_GHG) %>%
+  crossing(sector_last) %>%
+  mutate(target_sector_GHG = target_GHG * share)
+
+# Plot all sectors in one graph
+ghg_sector_2050 <- bind_rows(
+  EU27_GHG %>% 
+    mutate(data_type = "Historical") %>%
+    rename(TIME_PERIOD = TIME_PERIOD, GHG_Emissions_value = GHG_Emissions_value),
+  sector_target %>%
+    mutate(data_type = "Target") %>%
+    rename(TIME_PERIOD = year, GHG_Emissions_value = target_sector_GHG)
+)
+
+p_ghg_sector_2050 <- ggplot(
+  ghg_sector_2050, aes(x = TIME_PERIOD, y = GHG_Emissions_value, color = sector, linetype = data_type, 
+  group = interaction(sector, data_type))) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "EU27 GHG Emissions: Historical Data and Net Zero Targets by 2050",
+    x = "Year",
+    y = "GHG Emissions (thousands of tons of CO2)",
+    color = "Sector",
+    linetype = "Data Type"
+  ) +
+  theme_minimal()
+
+ggplotly(p_ghg_sector_2050)
+```
+
+comparison with prediction
 ```{r}
 plots <- map2(
   sector_models$sector,
