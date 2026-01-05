@@ -154,7 +154,7 @@ Finally, to simplify our analysis, we will merge all our data sets in one data b
 
 ## Country keys {#countrykeys}
 
-Our analysis is on the 27 countries in the European Union, in the following list to be precise : Austria, Belgium, Bulgaria, Croatia, Cyprus, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden. 
+Our analysis is on the 27 countries in the European Union, in the following list to be precise : Austria, Belgium, Bulgaria, Croatia, Cyprus, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -169,7 +169,7 @@ eu_country_key <- data.frame(name_en = eu_countries) |>
   bind_rows(tibble(name_en = "EU27", name_fr = "EU27", iso2 = "EU27", iso3 = "EU27"))
 ```
 
-Why we construct country keys and filter to EU-27: 
+Why we construct country keys and filter to EU-27:
 
 Our analysis focuses exclusively on the 27 Member States of the European Union. However, each dataset uses different country identifiers: ISO2 codes, ISO3 codes, or full English names. To ensure consistency across datasets and avoid mismatches during merging, we must first harmonize all country identifiers.
 
@@ -179,10 +179,10 @@ The emissions dataset provides a clean list of country names, from which we buil
 
 The original datasets contain many variables and dimensions that are irrelevant to our research question (such as measurement units, alternative breakdowns, metadata, or categories outside our scope). Keeping these unnecessary variables would complicate the merging process and make the analysis more difficult to interpret. Therefore, for each dataset, we systematically retain only four essential components:
 
-- The geographical identifier (ISO2, ISO3, or name).
-- The reference year.
-- The relevant economic or social variable (e.g., revenues, GDP, emissions, inequality index).
-- The sector information when relevant.
+-   The geographical identifier (ISO2, ISO3, or name).
+-   The reference year.
+-   The relevant economic or social variable (e.g., revenues, GDP, emissions, inequality index).
+-   The sector information when relevant.
 
 This ensures a clean, comparable structure across datasets before we perform more complex transformations.
 
@@ -660,7 +660,6 @@ kable(summary_stats_taxrevenues,
       caption = "Descriptive statistics of the total European environmental tax revenues (all years combined)")
 ```
 
-
 The total European environmental tax revenues amounted to roughly 376 billion USD in the late 1990s. Over the 2000s, these revenues grew steadily and nearly doubled, reaching over 700 billion USD by 2010. Since then, the trend has remained broadly upward, though with noticeable fluctuations from year to year.
 
 Revenues peaked at approximately 809 billion USD, while the long-run average (≈ 622 billion USD) reflects sustained and historically high levels of environmental taxation in the European Union. The standard deviation (≈ 152 billion USD) signals substantial variation over time, consistent with cyclical movements, recent economic crisis, and policy adjustments across the Union.
@@ -905,9 +904,9 @@ The EU27 average sits at ≈ 8.64, but the dispersion across countries is notabl
 
 We try to answer one of our fundamental question : "Do taxes reduce emissions ?".
 
-
 ### a. Between taxes (n) and GHG (n)
-*** A REFAIRE *** : ça va à l'encontre de nos conclusions ! Possible solution : use GHG TOTAL instead of GHG value ! 
+
+\*\*\* A REFAIRE \*\*\* : ça va à l'encontre de nos conclusions ! Possible solution : use GHG TOTAL instead of GHG value !
 
 First we try to evaluate the coefficient between an increase in taxes in the year n and the impact on Greenhouse gases emissions in the same year n.
 
@@ -923,19 +922,19 @@ summary(model)
 
 We estimated a linear regression to examine the relationship between environmental tax revenues and greenhouse gas emissions, while controlling for GDP, emission sector, and year. The model explains about 65% of the variation in emissions (R-squared = 0.6542).
 
-The coefficient on environmental tax revenues is -0.043, and it is highly statistically significant (p < 0.001). This suggests that, holding GDP, sector, and time constant, higher environmental tax revenues are associated with slightly lower greenhouse gas emissions. However, the magnitude of the effect remains very small, implying a limited practical impact.
+The coefficient on environmental tax revenues is -0.043, and it is highly statistically significant (p \< 0.001). This suggests that, holding GDP, sector, and time constant, higher environmental tax revenues are associated with slightly lower greenhouse gas emissions. However, the magnitude of the effect remains very small, implying a limited practical impact.
 
-GDP has a positive and very large significant effect on emissions, with a coefficient of 0.043 (p < 0.001). This indicates that countries with higher economic output tend to emit more, consistent with scale effects: larger economies produce more goods and services, and thus more emissions.
+GDP has a positive and very large significant effect on emissions, with a coefficient of 0.043 (p \< 0.001). This indicates that countries with higher economic output tend to emit more, consistent with scale effects: larger economies produce more goods and services, and thus more emissions.
 
 Sectoral effects are strong and highly significant. Relative to the baseline category (Agriculture), estimated additional emissions are: - Manufacturing: +16,440 units - Energy industry: +27,370 units - Transport: +16,150 units These substantial differences reflect the much higher emission intensities of industrial, energy, and transport activities compared with agriculture.
 
-The coefficient on the time variable is –913, highly significant (p < 0.001), indicating a robust downward trend in emissions over time. This is consistent with what we saw before in the descriptive data.
+The coefficient on the time variable is –913, highly significant (p \< 0.001), indicating a robust downward trend in emissions over time. This is consistent with what we saw before in the descriptive data.
 
 Overall, the results suggest that GDP and sectoral composition remain the dominant drivers of emissions. Environmental tax revenues show a statistically significant negative association with emissions, but the magnitude of the effect is small. The pronounced negative time trend indicates that greenhouse gas emissions have declined over the period independently of the direct influence of environmental tax revenues.
 
 We do not calculate a log - level regression, because our following analysis and tax proposition will be made accordingly to levels of GHG.
 
-### b. Between taxes (n) and GHG (n+k, given k € [1; 5])
+### b. Between taxes (n) and GHG (n+k, given k € \[1; 5\])
 
 Now we try to evaluate the coefficient between an increase in taxes in the year n and the impact on Greenhouse gases emissions in the following years n+1, to n+5.
 
@@ -972,10 +971,9 @@ lapply(reg_results, summary)
 
 We estimated a series of linear regressions to examine whether environmental tax revenues in year n have an effect on greenhouse gas emissions in subsequent years, from n+1 to n+5. Across the five models, the number of observations decreases gradually as the lead increases, because later lead variables contain more missing data. Despite this reduction in sample size, all models explain roughly 65% of the variation in emissions (R-squared between 0.650 and 0.654), which is highly consistent across specifications.
 
-Across the five specifications, the coefficient on environmental tax revenues is negative, statistically significant, and remarkably stable. It ranges from –0.052 at horizon n+1 to –0.061 at n+2, before settling around –0.058 at n+3  and n+4 and –0.051 at n + 5. This pattern suggests that higher environmental tax revenues are systematically associated with slightly lower future GHG emissions, although the magnitude of the effect remains small in practical terms. Statistical significance is very strong in all models (p \< 0.001).
+Across the five specifications, the coefficient on environmental tax revenues is negative, statistically significant, and remarkably stable. It ranges from –0.052 at horizon n+1 to –0.061 at n+2, before settling around –0.058 at n+3 and n+4 and –0.051 at n + 5. This pattern suggests that higher environmental tax revenues are systematically associated with slightly lower future GHG emissions, although the magnitude of the effect remains small in practical terms. Statistical significance is very strong in all models (p \< 0.001).
 
 All other coefficients are close to the ones saw before (GDP around 0.043, Manufacturing: +15,200 to +16,100 units, Industry (including energy production): +25,000 to +26,900 units, Transport: approximately +16,100 units, and time has coefficients between –902 and –959, all highly significant)
-
 
 ## 2. Between taxes and social inequalities
 
@@ -998,16 +996,16 @@ summary(model_gii_tax)
 
 ##### Comment :
 
-  We estimate three regressions to evaluate the association between environmental tax revenues and three social outcomes, in percentage: energy poverty, income inequality, and gender inequality. In all models, we also add GDP and time (years). We chose to not include the Gender Inequality index and the Income inequality coefficient in one each others regression because of collinearity problems. Also, the coefficient of energy poverty is rather a consequence of both than a cause, so we do not include it in each as well. 
+We estimate three regressions to evaluate the association between environmental tax revenues and three social outcomes, in percentage: energy poverty, income inequality, and gender inequality. In all models, we also add GDP and time (years). We chose to not include the Gender Inequality index and the Income inequality coefficient in one each others regression because of collinearity problems. Also, the coefficient of energy poverty is rather a consequence of both than a cause, so we do not include it in each as well.
 
-  In the model explaining energy poverty (log Warm_Households), we include the income-inequality coefficient. The resulting model has strong explanatory power (R² ≈ 0.6). The coefficient on environmental tax revenues remains small, positive, stable (+2.5e-06) and significant. Also, the income-inequality coefficient shows strong positive and significant associations with energy poverty.
+In the model explaining energy poverty (log Warm_Households), we include the income-inequality coefficient. The resulting model has strong explanatory power (R² ≈ 0.6). The coefficient on environmental tax revenues remains small, positive, stable (+2.5e-06) and significant. Also, the income-inequality coefficient shows strong positive and significant associations with energy poverty.
 
-  For income inequality (log coef_ineq), the model remains statistically valid but with limited explanatory power (R² ≈ 0.034), indicating that environmental taxes explain only a small part of the variation in inequality (+2.1e-06) once GDP and time effects are controlled for.
+For income inequality (log coef_ineq), the model remains statistically valid but with limited explanatory power (R² ≈ 0.034), indicating that environmental taxes explain only a small part of the variation in inequality (+2.1e-06) once GDP and time effects are controlled for.
 
-  Similarly, in the gender-inequality model (log GII) again, the inclusion of GDP and time fixed effects strengthens the model substantially (R² ≈ 0.365), and the environmental-tax coefficient remains positive (+4.8e-06) and highly significant.
-
+Similarly, in the gender-inequality model (log GII) again, the inclusion of GDP and time fixed effects strengthens the model substantially (R² ≈ 0.365), and the environmental-tax coefficient remains positive (+4.8e-06) and highly significant.
 
 ## 3. Between tax and economy
+
 We try to answer the following question: "What is the impact of environmental taxes on the economy ?"
 
 ### 3.1. Between taxes and GDP
@@ -1022,10 +1020,10 @@ summary(model_gdp_tax)
 ```
 
 ##### Comment :
- 
-  The regression of GDP on environmental tax revenues and year fixed effects shows a strong positive and statistically significant association between the two variables.The coefficient on environmental tax revenues is 6.02 × 10⁻⁵ and is significant at the 1% level (p < 0.001); an increase of one unit in environmental tax revenues is associated with an increase of approximately 0.006% in GDP, holding the time trend constant.
 
-  The model has substantial explanatory power (R² ≈ 0.27). The year coefficient is also positive and significant, reflecting general GDP growth over the period. But this relationship is correlational and does not imply causation, it indicates that environmental tax revenues tend to increase alongside GDP, consistent with the idea that wealthier economies can collect more from climate-related taxes.
+The regression of GDP on environmental tax revenues and year fixed effects shows a strong positive and statistically significant association between the two variables.The coefficient on environmental tax revenues is 6.02 × 10⁻⁵ and is significant at the 1% level (p \< 0.001); an increase of one unit in environmental tax revenues is associated with an increase of approximately 0.006% in GDP, holding the time trend constant.
+
+The model has substantial explanatory power (R² ≈ 0.27). The year coefficient is also positive and significant, reflecting general GDP growth over the period. But this relationship is correlational and does not imply causation, it indicates that environmental tax revenues tend to increase alongside GDP, consistent with the idea that wealthier economies can collect more from climate-related taxes.
 
 #### Graphical representation
 
@@ -1094,14 +1092,10 @@ ggplot(all_merged |> drop_na(Envt_Tax_Revenues_value, AV_value),
   ) +
   theme_minimal()
 ```
+
 ##### Comment (REDO) :
 
-Summary: Across sectors, higher environmental tax revenues are consistently associated with small but positive percentage changes in added value.. The log-level specification allows interpreting effects in percentage terms.
-Transport: Environmental tax revenues have a positive and highly significant effect on log added value (+5.8e-05, p < 0.001). This implies that higher tax revenues are associated with slightly higher sectoral output.
-Agriculture: We show a positive and significant relationship (+5.4e-05, p < 0.001), with an effect size that is smaller in practical terms, consistent with the sector’s scale.
-Industry (including energy): Positive and highly significant (+6e-05, p < 0.001), there is a stronger sensitivity to tax revenues in this capital-intensive sector.
-Manufacturing: the coefficient is +6.1e-05, highly significant, with a similar magnitude to industry and transport.
-
+Summary: Across sectors, higher environmental tax revenues are consistently associated with small but positive percentage changes in added value.. The log-level specification allows interpreting effects in percentage terms. Transport: Environmental tax revenues have a positive and highly significant effect on log added value (+5.8e-05, p \< 0.001). This implies that higher tax revenues are associated with slightly higher sectoral output. Agriculture: We show a positive and significant relationship (+5.4e-05, p \< 0.001), with an effect size that is smaller in practical terms, consistent with the sector’s scale. Industry (including energy): Positive and highly significant (+6e-05, p \< 0.001), there is a stronger sensitivity to tax revenues in this capital-intensive sector. Manufacturing: the coefficient is +6.1e-05, highly significant, with a similar magnitude to industry and transport.
 
 the consistent upward trend suggests that environmental taxation is not associated with weaker sectoral performance; rather, periods with higher environmental tax revenues tend to coincide with stronger economic activity.
 
@@ -1113,8 +1107,7 @@ We use this forecast to try to predict the impact of environmental taxes on diff
 
 ### 1. Greenhouse Gas emissions by sector
 
-
-#### a. Time series ARIMA forecast of the total Greenhouse Gas emissions
+#### a. Time series ARIMA forecast of the total Greenhouse Gas emissions (#forecasttotalGHGemissions)
 
 ```{r, echo=FALSE}
 #| message: false
@@ -1131,7 +1124,6 @@ fc
 
 auto.arima(ts_data)
 ```
-
 
 ##### Ploting the forecast
 
@@ -1171,13 +1163,14 @@ GHG_all_2050 <- ggplot() +
 ggplotly(GHG_all_2050)
 ```
 
-
 ##### Comment :
-This ARIMA-based forecast indicates a steady but slow decline in total greenhouse gas emissions for the aggreagte EU27 from 2024 to 2050. The ARIMA(0,1,0) with drift models GHG emissions as a random walk with a linear trend, using first differencing (integrated) but no auto regressive (AR) or moving average (MA) terms. The drift of -39,072 indicates emissions decrease on average by ~39k units per year. Emissions fall from roughly 2.45 million units in 2024 to about 1.43 million units by 2050, representing a long-term downward trajectory.
 
-However, despite this continuous decrease, the decline is far from the EU’s net-zero objective for 2050. Even in the most optimistic confidence interval, projected emissions in 2050 remain well above 0 (around 430 000 units), suggesting that under current trends and without major additional interventions—the EU27 is not on track to reach carbon neutrality. 
+This ARIMA-based forecast indicates a steady but slow decline in total greenhouse gas emissions for the aggreagte EU27 from 2024 to 2050. The ARIMA(0,1,0) with drift models GHG emissions as a random walk with a linear trend, using first differencing (integrated) but no auto regressive (AR) or moving average (MA) terms. The drift of -39,072 indicates emissions decrease on average by \~39k units per year. Emissions fall from roughly 2.45 million units in 2024 to about 1.43 million units by 2050, representing a long-term downward trajectory.
+
+However, despite this continuous decrease, the decline is far from the EU’s net-zero objective for 2050. Even in the most optimistic confidence interval, projected emissions in 2050 remain well above 0 (around 430 000 units), suggesting that under current trends and without major additional interventions—the EU27 is not on track to reach carbon neutrality.
 
 #### b. Time series ARIMA forecast of the total Greenhouse Gas emissions per sector
+
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -1222,18 +1215,16 @@ plots <- map2(
 do.call(grid.arrange, c(plots, ncol = 2))
 ```
 
-Comments : 
+Comments :
 
-Agriculture : compared to the trend before, the forecast does not move so much, but bigger and bigger error terms
-Industry (including energy) : slope that decreases not sp slowly and error terms not big, and some chance it goes to 0 by 2050
-Manufacturing : also goes down pretty fast, poss to have 0 in 2050
-Transport : stable bc stable on the last years
+Agriculture : compared to the trend before, the forecast does not move so much, but bigger and bigger error terms Industry (including energy) : slope that decreases not sp slowly and error terms not big, and some chance it goes to 0 by 2050 Manufacturing : also goes down pretty fast, poss to have 0 in 2050 Transport : stable bc stable on the last years
 
-==> the sectors that can be more easily deviated to go to 0 ghg in 2050 = industry and manufacturing
+==\> the sectors that can be more easily deviated to go to 0 ghg in 2050 = industry and manufacturing
 
 transport pretty stable and normal bc of today's use. we didn't see a big change in mean of transportation (cars, boats,...)
 
-### 2. social inequalities: 
+### 2. social inequalities:
+
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -1246,12 +1237,13 @@ coefineq_ts <- ts(EU27_Coefineq$coef_ineq_value, start = min(EU27_Coefineq$TIME_
 coefineq_model <- auto.arima(coefineq_ts)
 coefineq_fc <- forecast(coefineq_model, h = 27)
 
-EU27_Warming_agg <- EU27_Warming |>
-  filter(!is.na(Warm_Households_value)) |>
-  group_by(TIME_PERIOD) |>
-  summarise(Warm_avg = mean(Warm_Households_value, na.rm = TRUE))
+EU27_Warming_agg <- EU27_Warming %>%
+  filter(!is.na(Warm_Households_value),
+         hhtyp == "TOTAL",
+         incgrp == "TOTAL") %>%
+  group_by(TIME_PERIOD) 
 
-warm_ts <- ts(EU27_Warming_agg$Warm_avg, start = min(EU27_Warming_agg$TIME_PERIOD))
+warm_ts <- ts(EU27_Warming_agg$Warm_Households_value, start = min(EU27_Warming_agg$TIME_PERIOD))
 warm_model <- auto.arima(warm_ts)
 warm_fc <- forecast(warm_model, h = 26)
 
@@ -1261,17 +1253,13 @@ coefineq_fc
 warm_fc
 ```
 
-
 ```{r}
 plot(gii_fc, main = "Forecast of GII")
 plot(coefineq_fc, main = "Forecast of Coefficient of Inequality")
 plot(warm_fc, main = "Forecast of Warm Households")
 ```
 
-
 ##### Comment :
-
- 
 
 ### 3. The economy : forecast of the GDP
 
@@ -1287,8 +1275,7 @@ plot(gdp_fc, main = "Forecast of GDP")
 
 ##### Comment :
 
-### 4. The economy : forecast of the environmental taxes
-
+### 4. The economy : forecast of the environmental taxes {#forecastofenvttax}
 
 ```{r}
 # Linear trend model
@@ -1309,7 +1296,6 @@ tax_pred <- predict(
 
 tax_fc_lm <- bind_cols(future_years, as.data.frame(tax_pred))
 ```
-
 
 ```{r}
 tax_all_2050 <- ggplot() +
@@ -1333,11 +1319,9 @@ tax_all_2050 <- ggplot() +
 ggplotly(tax_all_2050)
 ```
 
-
-
 ##### Comment :
-this is an extrapolation from current trend
 
+this is an extrapolation from current trend
 
 # Forecasting: if we plan to get to the 0 net emission by 2050
 
@@ -1346,7 +1330,9 @@ In this project, we are trying to look at the level of tax that would be necessa
 ### 1. Deriving a realistic tax path to reach net-zero by 2050
 
 #### a. The forecast model
-##### Total GHG emissions targeted evolution
+
+To identify a tax trajectory consistent with the European Union’s objective of achieving net-zero greenhouse gas emissions by 2050, we first model the historical relationship between aggregate GHG emissions and environmental tax revenues at the EU-27 level. We estimate a reduced-form, level-level linear regression in which total GHG emissions are explained by environmental tax revenues. This empirical relationship is then used as a policy mapping tool. Assuming a linear absolute reduction in emissions from the last observed level to zero by 2050, we invert the estimated model to derive the level of environmental tax revenues required each year to generate such an emissions trajectory. This approach allows us to construct a stylized tax path under the strong assumption that environmental taxation is the sole policy instrument used to drive emissions reductions.
+
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -1396,59 +1382,99 @@ ggplot(tax_path, aes(x = year)) +
 
 ```
 
-
-##### GHG emissions per sector targeted evolution
-```{r}
-# Latest observed GHG per sector
-latest_year <- max(sector_yearly$TIME_PERIOD)
-sector_last <- sector_yearly |>
-  filter(TIME_PERIOD == latest_year) |>
-  mutate(share = GHG_total / sum(GHG_total)) |>  
-  select(sector, current_GHG = GHG_total, share)
-
-# Compute sector-level targets proportionally
-sector_target <- tax_path %>%
-  select(year, target_GHG) %>%
-  crossing(sector_last) %>%
-  mutate(target_sector_GHG = target_GHG * share)
-
-# Plot all sectors in one graph
-ghg_sector_2050 <- bind_rows(
-  EU27_GHG %>% 
-    mutate(data_type = "Historical") %>%
-    rename(TIME_PERIOD = TIME_PERIOD, GHG_Emissions_value = GHG_Emissions_value),
-  sector_target %>%
-    mutate(data_type = "Target") %>%
-    rename(TIME_PERIOD = year, GHG_Emissions_value = target_sector_GHG)
-)
-
-p_ghg_sector_2050 <- ggplot(
-  ghg_sector_2050, aes(x = TIME_PERIOD, y = GHG_Emissions_value, color = sector, linetype = data_type, 
-  group = interaction(sector, data_type))) +
-  geom_line(linewidth = 1) +
-  labs(
-    title = "EU27 GHG Emissions: Historical Data and Net Zero Targets by 2050",
-    x = "Year",
-    y = "GHG Emissions (thousands of tons of CO2)",
-    color = "Sector",
-    linetype = "Data Type"
-  ) +
-  theme_minimal()
-
-ggplotly(p_ghg_sector_2050)
-```
-
-
-
-
-
-
+The estimated regression reveals a statistically significant negative relationship between environmental tax revenues and total GHG emissions. The coefficient on environmental tax revenues is −1.406 (p-value \< 0.001), indicating that, historically, an increase of one million of USD in environmental tax revenues is associated with a reduction of approximately 1.4 thousand tonnes of CO₂-equivalent of aggregate emissions. The intercept suggests a baseline emissions level of about 4.14 billion thousand tonnes of CO₂-equivalent in the absence of environmental taxation. While the model is intentionally parsimonious, it explains a meaningful share of the observed variation in emissions, with an $R^2$ of 0.39. Using this estimated relationship, we construct a counterfactual emissions trajectory featuring a linear absolute decline from approximately 2.49 million units in 2023 to net-zero emissions in 2050. Inverting the estimated model yields the environmental tax revenues required to sustain this trajectory. As illustrated in the tax path graph, achieving this emissions reduction would require environmental tax revenues to increase steadily from about 1,177,245 million USD in 2023 to approximately 2,945,633 million USD by 2050, corresponding to an average annual increase of roughly 65,5 million USD per year. This steadily rising tax path produces the targeted emissions trajectory shown in the GHG emissions path graph, where predicted emissions decline smoothly to zero by construction. These results highlight both the scale of the fiscal effort required and the limitations of relying on environmental taxation alone, given the modest explanatory power of the reduced-form relationship.
 
 #### b. Comparing with the forecast if we continue as we do
 
+Having established the tax path required to reach net-zero emissions by 2050, we now turn to a systematic comparison of forecasted and targeted trajectories. First, we will examine the total environmental tax revenues to highlight the gap between historical trends and climate targets. Next, we will assess the implications of these tax paths for aggregate GHG emissions, and finally, we will explore sector-level GHG emissions to identify which sectors require the most significant reductions. This stepwise analysis provides a comprehensive view of the fiscal and environmental adjustments necessary to meet the EU’s net-zero objectives.
+
+##### Tax policy : targeted vs predicted
+
+To assess the adequacy of current environmental tax trends, we now compare the forecasted path of total EU-27 environmental tax revenues, based on historical trends (the “forecast model” from the section: [The economy : forecast of the environmental taxes](#forecastofenvttax)), with the tax path required to reach net-zero emissions by 2050. This comparison highlights the gap between the continuation of past tax policies and the ambitious fiscal effort necessary to achieve the EU’s climate target. The code below generates the forecasted confidence intervals and overlays them with the required tax path.
+
+```{r}
+tax_pred_95 <- predict(
+  tax_lm,
+  newdata = future_years,
+  interval = "confidence",
+  level = 0.95
+)
+tax_pred_80 <- predict(
+  tax_lm,
+  newdata = future_years,
+  interval = "confidence",
+  level = 0.80
+)
+tax_fc_lm_ci <- future_years |>
+  mutate(
+    mean = tax_pred_95[, "fit"],
+    lower95 = tax_pred_95[, "lwr"],
+    upper95 = tax_pred_95[, "upr"],
+    lower80 = tax_pred_80[, "lwr"],
+    upper80 = tax_pred_80[, "upr"]
+  ) |>
+  rename(year = TIME_PERIOD)
+tax_plot_df <- tax_fc_lm_ci |>
+  left_join(
+    tax_path |> select(year, tax_required),
+    by = "year"
+  )
+
+ggplot(tax_plot_df, aes(x = year)) +
+  geom_ribbon(
+    aes(ymin = lower95, ymax = upper95, fill = "95% confidence interval"),
+    alpha = 0.35
+  ) +
+  geom_ribbon(
+    aes(ymin = lower80, ymax = upper80, fill = "80% confidence interval"),
+    alpha = 0.5
+  ) +
+  geom_line(
+    aes(y = mean, color = "Forecasted tax revenues (trend continuation)"),
+    linewidth = 1
+  ) +
+  geom_line(
+    aes(y = tax_required, color = "Tax path required for net-zero by 2050"),
+    linewidth = 1,
+    linetype = "dashed"
+  ) +
+  scale_color_manual(
+    name = "Lines",
+    values = c(
+      "Forecasted tax revenues (trend continuation)" = "red",
+      "Tax path required for net-zero by 2050" = "darkblue"
+    )
+  ) +
+  scale_fill_manual(
+    name = "Confidence intervals",
+    values = c(
+      "80% confidence interval" = "grey50",
+      "95% confidence interval" = "grey70"
+    )
+  ) +
+  labs(
+    title = "Environmental Tax Revenues: Trend Forecast vs Climate-Required Path",
+    x = "Year",
+    y = "Tax revenues (millions USD)"
+  ) +
+  scale_y_continuous(limits = c(0, 3e6)) +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    legend.title = element_text(face = "bold")
+  )
+```
+
+Comparing the two paths shows a significant and growing shortfall. The historical trend regression predicts that total environmental tax revenues would increase by approximately 14,767 million USD per year (intercept = −29,038,537; $R^2 = 0.73$), corresponding to a continuation of past trends. In contrast, the tax path required to achieve net-zero emissions calls for a steep and consistent annual increase of roughly 65,5 million USD per year, starting from about 1,2 trillion USD in 2023 and reaching 2,9 trillion USD by 2050. Already in 2024, forecasted revenues (≈ 851 billion USD) fall well below the required level (≈ 1,242 billion USD), and by 2050 the gap widens to roughly 1,7 trillion USD, indicating that current policy trajectories imply structural under-taxation. These results underscore that meeting the net-zero target would require a substantial policy departure from historical trends and a rapid scaling up of environmental taxation.
 
 ##### GHG emissions : targeted vs predicted
- 
+
+Having analyzed the environmental tax paths, we now turn to the environmental outcome they aim to influence: greenhouse gas (GHG) emissions. This subsection compares the emissions trajectory implied by a continuation of historical tax trends with the counter factual path required to achieve net-zero emissions by 2050. We present this analysis at two levels: first for the [total EU-27 GHG emissions](#compartotalGHG), and then broken down by [economic sector](#comparpersectorGHG). This approach allows us to connect fiscal policy to its environmental impact and to identify which sectors will need the largest reductions to meet the climate target.
+
+###### Total GHG emissions (#compartotalGHG)
+
+In this section, we focus on **aggregate EU-27 GHG emissions**. Using the ARIMA model (cf. [Time series ARIMA forecast of the total Greenhouse Gas emissions](#forecasttotalGHGemissions)), we forecast total emissions under a continuation of historical trends and compute confidence intervals (80% and 95%) to capture uncertainty in the projection. We then overlay the **targeted emissions trajectory**, which represents the linear decline needed to reach net-zero by 2050, as derived from the inverted tax–GHG relationship. The resulting graph allows a visual comparison between the likely path of emissions if current policies continue and the ambitious reduction trajectory required by the EU’s climate objectives.
+
 ```{r}
 fc_df <- data.frame(
   year = as.numeric(time(fc$mean)),
@@ -1501,11 +1527,56 @@ ggplot(tax_path, aes(x = year)) +
     legend.title = element_text(face = "bold")
   )
 ```
-
-####### Comment
 As shown in the figure, achieving the targeted GHG emissions trajectory would require a substantial change in current taxing practices. The target path consistently lies at the lower bound of the forecast confidence intervals for emissions, and from around 2035 onwards it even falls outside the 95% confidence interval. This suggests that, under the continuation of current trends captured by the ARIMA forecast, the probability of reaching the targeted emissions level is low, highlighting the need for stronger or additional policy interventions.
 
-###### Per sector emissions
+###### Per sector GHG emissions (#comparpersectorGHG)
+
+Building on the total emissions analysis, we examine **GHG emissions at the sectoral level**. For each sector, we start from the most recent observed emissions and compute sector-level targets by allocating the total net-zero target proportionally to the sector’s share of total emissions. We then compare these **targeted sectoral emissions paths** with forecasts generated by sector-specific ARIMA models, including 80% and 95% confidence intervals. This analysis identifies the sectors where reductions must be concentrated and highlights which sectors are likely to remain above or below their required trajectory under current trends, providing detailed insight for targeted policy interventions.
+
+***GHG emissions per sector targeted evolution***
+
+```{r}
+# Latest observed GHG per sector
+latest_year <- max(sector_yearly$TIME_PERIOD)
+sector_last <- sector_yearly |>
+  filter(TIME_PERIOD == latest_year) |>
+  mutate(share = GHG_total / sum(GHG_total)) |>  
+  select(sector, current_GHG = GHG_total, share)
+
+# Compute sector-level targets proportionally
+sector_target <- tax_path %>%
+  select(year, target_GHG) %>%
+  crossing(sector_last) %>%
+  mutate(target_sector_GHG = target_GHG * share)
+
+ghg_sector_2050 <- bind_rows(
+  EU27_GHG %>% 
+    mutate(data_type = "Historical") %>%
+    rename(TIME_PERIOD = TIME_PERIOD, GHG_Emissions_value = GHG_Emissions_value),
+  sector_target %>%
+    mutate(data_type = "Target") %>%
+    rename(TIME_PERIOD = year, GHG_Emissions_value = target_sector_GHG)
+)
+
+p_ghg_sector_2050 <- ggplot(
+  ghg_sector_2050, aes(x = TIME_PERIOD, y = GHG_Emissions_value, color = sector, linetype = data_type, 
+  group = interaction(sector, data_type))) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "EU27 GHG Emissions: Historical Data and Net Zero Targets by 2050",
+    x = "Year",
+    y = "GHG Emissions (thousands of tons of CO2)",
+    color = "Sector",
+    linetype = "Data Type"
+  ) +
+  theme_minimal()
+
+ggplotly(p_ghg_sector_2050)
+```
+As we are targeting to reach net-zero total GHG emissions by 2050, the emissions should fall to zero by 2050 in all economic sector, as shown in this graph. 
+
+***Comparison with prediction***
+
 ```{r}
 plots <- map2(
   sector_models$sector,
@@ -1555,108 +1626,118 @@ plots <- map2(
 do.call(grid.arrange, c(plots, ncol = 2))
 ```
 
-####### Comment
 Across all four sectors, the forecasted GHG emissions (red line) and the target paths (blue line) start relatively close to each other in the early years, but diverge significantly over time. The forecast confidence intervals (80% and 95%) highlight the uncertainty in future emissions if current trends continue.
 
-- Agriculture: The target path declines steadily toward zero by 2050. The forecast, however, remains relatively flat, lying mostly above the target and even outside the lower bounds of the confidence interval after 2035. This indicates that, without major interventions, agriculture will likely overshoot the required reduction to meet net-zero goals.
-- Industry (including energy): The sector forecast is initially above the target but gradually converges toward it. The target generally lies within the 80% confidence interval, suggesting that modest additional measures could be sufficient to align industry emissions with the net-zero objective.
-- Manufacturing: Forecasted emissions decline over time but remain consistently above the target path. By the mid-2040s, the target falls at the bottom of the 80% confidence interval, indicating that stronger mitigation policies will be necessary for manufacturing to meet net-zero by 2050.
-- Transport: This sector shows the largest divergence. The target path requires a steep decline to zero, whereas the forecast remains almost constant. The target path lies entirely outside the forecast confidence intervals from around 2030 onward, emphasizing the need for urgent and significant interventions in transport emissions.
+-   Agriculture: The target path declines steadily toward zero by 2050. The forecast, however, remains relatively flat, lying mostly above the target and even outside the lower bounds of the confidence interval after 2035. This indicates that, without major interventions, agriculture will likely overshoot the required reduction to meet net-zero goals.
+-   Industry (including energy): The sector forecast is initially above the target but gradually converges toward it. The target generally lies within the 80% confidence interval, suggesting that modest additional measures could be sufficient to align industry emissions with the net-zero objective.
+-   Manufacturing: Forecasted emissions decline over time but remain consistently above the target path. By the mid-2040s, the target falls at the bottom of the 80% confidence interval, indicating that stronger mitigation policies will be necessary for manufacturing to meet net-zero by 2050.
+-   Transport: This sector shows the largest divergence. The target path requires a steep decline to zero, whereas the forecast remains almost constant. The target path lies entirely outside the forecast confidence intervals from around 2030 onward, emphasizing the need for urgent and significant interventions in transport emissions.
 
 Overall, the sector-level analysis reveals heterogeneous challenges. While industry may be able to meet net-zero with moderate adjustments, agriculture, manufacturing, and especially transport require substantial and immediate action to reduce emissions. The comparison highlights that the total net-zero target is heavily dependent on successful mitigation in these high-emission sectors, and that relying solely on current trends will not be sufficient.
 
-##### Tax policy : targeted vs predicted
+### 2. Impact on social inequalities
 
-```{r}
-tax_plot <- tax_fc_lm |>
-  rename(year = TIME_PERIOD, tax_forecast = fit) |>
-  left_join(tax_path |> select(year, tax_required), by = join_by(year)) |>
-  mutate(tax_diff_fc = tax_required - tax_forecast)
-
-#calcul de combien on doit augmenter la tax each year 
-tax_path <- tax_path |>
-  mutate(tax_increment_required = tax_required - dplyr::lag(tax_required))
-```
-
-
-
-```{r}
-ggplot(tax_plot, aes(x = year)) +
-  geom_ribbon(aes(ymin = lwr, ymax = upr), fill = "lightblue", alpha = 0.3) +
-  geom_line(aes(y = tax_forecast), color = "blue", linewidth = 1) +
-  geom_line(aes(y = tax_required), color = "red", linetype = "dashed", linewidth = 1) +
-    geom_line(aes(y = tax_diff_fc), color = "darkolivegreen2", linewidth = 1) +
-  labs(
-    title = "Environmental Tax: Trend Forecast vs Climate-Required Path",
-    y = "Tax revenues (millions USD)",
-    x = "Year"
-  ) +
-  scale_y_continuous(limits = c(0, 3e+06)) +  
-  theme_minimal()
-
-```
-
-
-We compute the environmental tax path required to reach net-zero emissions by 2050 by inverting the estimated tax–GHG relationship. This gives us a constant annual increase of about 65,500 units in environmental tax revenues each year from 2024.
-
-Comparing this required path to the forecast based on past trends shows a large and growing gap. Already in 2024, forecasted revenues (≈ 851 k) fall short of the required level (≈ 1,242 k). By 2050, the gap widens to roughly 1.71 M. This shows that current tax dynamics imply structural under-taxation: the shortfall starts immediately and grows over time, indicating that meeting net-zero objectives would require a substantial policy break from historical trend
-
-
-### 2. Social inequalities w/this tax
 #### a. The forecast model
 
-
-
 ```{r}
-last_obs <- EU27_GII %>%
-  filter(TIME_PERIOD == max(TIME_PERIOD)) %>%
-  select(TIME_PERIOD, GII_value) %>%
-  left_join(
-    EU27_Coefineq %>%
-      filter(TIME_PERIOD == max(TIME_PERIOD)) %>%
-      select(TIME_PERIOD, coef_ineq_value),
-    by = "TIME_PERIOD"
-  ) %>%
-  left_join(
-    EU27_Warming_agg %>%
-      filter(TIME_PERIOD == max(TIME_PERIOD)) %>%
-      select(TIME_PERIOD, Warm_Households_value = Warm_avg),
-    by = "TIME_PERIOD"
-  )
+# Estimate historical relationships between environmental tax and social indicators
 
-# Get coefficients from models
+## Warming ability
+model_warm_tax <- lm(Warm_avg ~ Envt_Tax_Revenues_value, data = 
+                       EU27_Warming_agg %>% inner_join(EU27_Tax, by = "TIME_PERIOD"))
 coef_warm <- coef(model_warm_tax)["Envt_Tax_Revenues_value"]
-coef_ineq <- coef(model_ineq_tax)["Envt_Tax_Revenues_value"]
-coef_gii  <- coef(model_gii_tax)["Envt_Tax_Revenues_value"]
 
-# Initialize future predictions with last observed values
-future_predictions <- data.frame(
-  TIME_PERIOD = max(all_merged$TIME_PERIOD) + 1:27,
-  Envt_Tax_Revenues = tax_path$tax_required[2:28],
-  Predicted_Warming = last_obs$Warm_Households_value,
-  Predicted_Inequality = last_obs$coef_ineq_value,
-  Predicted_GII = last_obs$GII_value
+## Income inequality
+model_ineq_tax <- lm(coef_ineq_value ~ Envt_Tax_Revenues_value, data = 
+                       EU27_Coefineq %>% inner_join(EU27_Tax, by = "TIME_PERIOD"))
+coef_ineq <- coef(model_ineq_tax)["Envt_Tax_Revenues_value"]
+
+## Gender Inequality Index
+model_gii_tax <- lm(GII_value ~ Envt_Tax_Revenues_value, data = 
+                      EU27_GII %>% inner_join(EU27_Tax, by = "TIME_PERIOD"))
+coef_gii <- coef(model_gii_tax)["Envt_Tax_Revenues_value"]
+
+# Compute the average annual increase in the targeted tax path
+avg_tax_increment <- (last(tax_path$tax_required) - first(tax_path$tax_required)) / (nrow(tax_path) - 1)
+
+# Last observed values for the social indicators
+last_obs <- tibble(
+  Predicted_Warming = tail(EU27_Warming_agg$Warm_avg, 1),
+  Predicted_Inequality = tail(EU27_Coefineq$coef_ineq_value, 1),
+  Predicted_GII = tail(EU27_GII$GII_value, 1)
 )
 
-# Update predictions using tax increments
-for (i in 2:nrow(future_predictions)) {
-  future_predictions$Predicted_Warming[i] <-
-    future_predictions$Predicted_Warming[i-1] + coef_warm * tax_path$tax_increment_required[i+1]
-  future_predictions$Predicted_Inequality[i] <-
-    future_predictions$Predicted_Inequality[i-1] + coef_ineq * tax_path$tax_increment_required[i+1]
-  future_predictions$Predicted_GII[i] <-
-    future_predictions$Predicted_GII[i-1] + coef_gii * tax_path$tax_increment_required[i+1]
-}
+# Years of the forecast
+future_years <- tax_path$year
 
-future_predictions$Predicted_GII <- pmax(0, pmin(1, future_predictions$Predicted_GII))
-EU27_Warming_agg <- EU27_Warming_agg %>% slice(1:(n() - 1))
+# Compute predicted evolution using historical coefficients and the average tax increment
+future_predictions <- tibble(
+  year = future_years,
+  Predicted_Warming = last_obs$Predicted_Warming + cumsum(rep(coef(model_warm_tax)["Envt_Tax_Revenues_value"] * avg_tax_increment, length(future_years))),
+  Predicted_Inequality = last_obs$Predicted_Inequality + cumsum(rep(coef(model_ineq_tax)["Envt_Tax_Revenues_value"] * avg_tax_increment, length(future_years))),
+  Predicted_GII = pmax(0, pmin(1, last_obs$Predicted_GII + cumsum(rep(coef(model_gii_tax)["Envt_Tax_Revenues_value"] * avg_tax_increment, length(future_years)))))
+)
 ```
+
 
 ```{r}
+warming_data <- EU27_Warming_agg %>%
+  select(TIME_PERIOD, Warm_avg) %>%
+  rename(year = TIME_PERIOD, value = Warm_avg) %>%
+  mutate(type = "Historical") %>%
+  bind_rows(
+    future_predictions %>%
+      select(year, Predicted_Warming) %>%
+      rename(value = Predicted_Warming) %>%
+      mutate(type = "Forecast")
+  )
 
+ineq_data <- EU27_Coefineq %>%
+  select(TIME_PERIOD, coef_ineq_value) %>%
+  rename(year = TIME_PERIOD, value = coef_ineq_value) %>%
+  mutate(type = "Historical") %>%
+  bind_rows(
+    future_predictions %>%
+      select(year, Predicted_Inequality) %>%
+      rename(value = Predicted_Inequality) %>%
+      mutate(type = "Forecast")
+  )
+
+gii_data <- EU27_GII %>%
+  select(TIME_PERIOD, GII_value) %>%
+  rename(year = TIME_PERIOD, value = GII_value) %>%
+  mutate(type = "Historical") %>%
+  bind_rows(
+    future_predictions %>%
+      select(year, Predicted_GII) %>%
+      rename(value = Predicted_GII) %>%
+      mutate(type = "Forecast")
+  )
+
+# Plot 1: Warming
+p_warming <- ggplot(warming_data, aes(x = year, y = value, color = type)) +
+  geom_line(linewidth = 1.2) +
+  labs(title = "Average Warming Ability", y = "Warming", x = "Year") +
+  scale_color_manual(values = c("Historical" = "black", "Forecast" = "darkgreen")) +
+  theme_minimal()
+
+# Plot 2: Income Inequality
+p_inequality <- ggplot(ineq_data, aes(x = year, y = value, color = type)) +
+  geom_line(linewidth = 1.2) +
+  labs(title = "Income Inequality (Gini Coefficient)", y = "Gini", x = "Year") +
+  scale_color_manual(values = c("Historical" = "black", "Forecast" = "orange")) +
+  theme_minimal()
+
+# Plot 3: Gender Inequality Index
+p_gii <- ggplot(gii_data, aes(x = year, y = value, color = type)) +
+  geom_line(linewidth = 1.2) +
+  labs(title = "Gender Inequality Index (GII)", y = "GII", x = "Year") +
+  scale_color_manual(values = c("Historical" = "black", "Forecast" = "purple")) +
+  theme_minimal()
+
+# Stack vertically
+grid.arrange(p_warming, p_inequality, p_gii, ncol = 1)
 ```
-
-
 
 
 
@@ -1666,7 +1747,9 @@ EU27_Warming_agg <- EU27_Warming_agg %>% slice(1:(n() - 1))
 
 
 ### 4. Is the model viable ? Its impact on the GDP
+
 #### a. The forecast model
+
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
