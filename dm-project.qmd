@@ -1464,9 +1464,8 @@ ggplot(tax_plot_df, aes(x = year)) +
   )
 ```
 
-We compute the environmental tax path required to reach net-zero emissions by 2050 by inverting the estimated tax–GHG relationship. This gives us a constant annual increase of about 65,500 units in environmental tax revenues each year from 2024.
+Comparing the two paths shows a significant and growing shortfall. The historical trend regression predicts that total environmental tax revenues would increase by approximately 14,767 million USD per year (intercept = −29,038,537; $R^2 = 0.73$), corresponding to a continuation of past trends. In contrast, the tax path required to achieve net-zero emissions calls for a steep and consistent annual increase of roughly 65,5 million USD per year, starting from about 1,2 trillion USD in 2023 and reaching 2,9 trillion USD by 2050. Already in 2024, forecasted revenues (≈ 851 billion USD) fall well below the required level (≈ 1,242 billion USD), and by 2050 the gap widens to roughly 1,7 trillion USD, indicating that current policy trajectories imply structural under-taxation. These results underscore that meeting the net-zero target would require a substantial policy departure from historical trends and a rapid scaling up of environmental taxation.
 
-Comparing this required path to the forecast based on past trends shows a large and growing gap. Already in 2024, forecasted revenues (≈ 851 k) fall short of the required level (≈ 1,242 k). By 2050, the gap widens to roughly 1.71 M. This shows that current tax dynamics imply structural under-taxation: the shortfall starts immediately and grows over time, indicating that meeting net-zero objectives would require a substantial policy break from historical trend
 
 ##### GHG emissions : targeted vs predicted
 
