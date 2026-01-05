@@ -1890,10 +1890,7 @@ ggplot() +
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-model_gdp_tax <- lm(
-  GDP_value ~ Envt_Tax_Revenues_value,
-  data = EU27_GDP |> inner_join(EU27_Tax, by = "TIME_PERIOD")
-)
+model_gdp_tax <- lm(GDP_value ~ Envt_Tax_Revenues_value, data = EU27_GDP |> inner_join(EU27_Tax, by = "TIME_PERIOD"))
 
 coef_gdp <- coef(model_gdp_tax)["Envt_Tax_Revenues_value"]
 
@@ -1914,9 +1911,66 @@ ggplot(future_gdp_predictions, aes(x = year)) +
 
 ```
 
-#### b. GDP per country: forecast & comparison
 
-#### c. Per sector Added Value: forecast & comparison
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+
+# Convert forecast to dataframe
+gdp_forecast_df <- tibble(
+  year = seq(max(EU27_GDP$TIME_PERIOD) + 1, max(EU27_GDP$TIME_PERIOD) + 27),
+  GDP_forecast = as.numeric(gdp_fc$mean)
+)
+
+# Combine tax path with GDP forecast
+viability_data <- tax_path |>
+  left_join(gdp_forecast_df, by = "year")
+
+
+# Tax as % of GDP
+
+viability_data <- viability_data |>
+  mutate(
+    tax_gdp_ratio = (tax_required / GDP_forecast) * 100,
+    # Viability classification
+    viability_status = case_when(
+      tax_gdp_ratio < 1 ~ "Very Feasible",
+      tax_gdp_ratio >= 1 & tax_gdp_ratio < 3 ~ "Feasible",
+      tax_gdp_ratio >= 3 & tax_gdp_ratio < 5 ~ "High Tension",
+      tax_gdp_ratio >= 5 ~ "Very Difficult",
+      TRUE ~ NA_character_
+    )
+  )
+
+p1 <- ggplot(viability_data, aes(x = year, y = tax_gdp_ratio)) +
+  # zones
+  annotate("rect", xmin = -Inf, xmax = Inf, ymin = 0, ymax = 1, 
+           fill = "green", alpha = 0.1) +
+  annotate("rect", xmin = -Inf, xmax = Inf, ymin = 1, ymax = 3, 
+           fill = "yellow", alpha = 0.1) +
+  annotate("rect", xmin = -Inf, xmax = Inf, ymin = 3, ymax = 5, 
+           fill = "orange", alpha = 0.1) +
+  annotate("rect", xmin = -Inf, xmax = Inf, ymin = 5, ymax = Inf, 
+           fill = "red", alpha = 0.1) +
+  geom_line(color = "darkblue", linewidth = 1.2) +
+  geom_point(color = "darkblue", size = 2, alpha = 0.6) +
+  geom_hline(yintercept = c(1, 3, 5), linetype = "dashed", color = "gray40") +
+  labs(
+    title = "Economic Viability: Required Environmental Tax as % of GDP",
+    y = "Tax as % of GDP",
+    x = "Year"
+  ) +
+  scale_y_continuous(breaks = seq(0, 10, 1)) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.subtitle = element_text(size = 10),
+    plot.caption = element_text(size = 8, hjust = 0)
+  )
+
+p1
+```
+The thresholds (1%, 3%, 5%) are based on empirical observations from existing tax systems.
+We say that above 5% it would be Very Disruptive: At this scale, capital flight risks increase, sectoral lobbying intensifies, and social acceptance becomes critical. 
 
 # Conclusion
 
