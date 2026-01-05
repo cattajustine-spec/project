@@ -1568,32 +1568,78 @@ Overall, the sector-level analysis reveals heterogeneous challenges. While indus
 ##### Tax policy : targeted vs predicted
 
 ```{r}
-tax_plot <- tax_fc_lm |>
-  rename(year = TIME_PERIOD, tax_forecast = fit) |>
-  left_join(tax_path |> select(year, tax_required), by = join_by(year)) |>
-  mutate(tax_diff_fc = tax_required - tax_forecast)
+tax_pred_95 <- predict(
+  tax_lm,
+  newdata = future_years,
+  interval = "confidence",
+  level = 0.95
+)
+tax_pred_80 <- predict(
+  tax_lm,
+  newdata = future_years,
+  interval = "confidence",
+  level = 0.80
+)
+tax_fc_lm_ci <- future_years |>
+  mutate(
+    mean = tax_pred_95[, "fit"],
+    lower95 = tax_pred_95[, "lwr"],
+    upper95 = tax_pred_95[, "upr"],
+    lower80 = tax_pred_80[, "lwr"],
+    upper80 = tax_pred_80[, "upr"]
+  ) |>
+  rename(year = TIME_PERIOD)
+tax_plot_df <- tax_fc_lm_ci |>
+  left_join(
+    tax_path |> select(year, tax_required),
+    by = "year"
+  )
 
-#calcul de combien on doit augmenter la tax each year 
-tax_path <- tax_path |>
-  mutate(tax_increment_required = tax_required - dplyr::lag(tax_required))
-```
-
-
-
-```{r}
-ggplot(tax_plot, aes(x = year)) +
-  geom_ribbon(aes(ymin = lwr, ymax = upr), fill = "lightblue", alpha = 0.3) +
-  geom_line(aes(y = tax_forecast), color = "blue", linewidth = 1) +
-  geom_line(aes(y = tax_required), color = "red", linetype = "dashed", linewidth = 1)
-  labs(
-    title = "Environmental Tax: Trend Forecast vs Climate-Required Path",
-    y = "Tax revenues (millions USD)",
-    x = "Year"
+ggplot(tax_plot_df, aes(x = year)) +
+  geom_ribbon(
+    aes(ymin = lower95, ymax = upper95, fill = "95% confidence interval"),
+    alpha = 0.35
   ) +
-  scale_y_continuous(limits = c(0, 3e+06)) +  
-  theme_minimal()
-
+  geom_ribbon(
+    aes(ymin = lower80, ymax = upper80, fill = "80% confidence interval"),
+    alpha = 0.5
+  ) +
+  geom_line(
+    aes(y = mean, color = "Forecasted tax revenues (trend continuation)"),
+    linewidth = 1
+  ) +
+  geom_line(
+    aes(y = tax_required, color = "Tax path required for net-zero by 2050"),
+    linewidth = 1,
+    linetype = "dashed"
+  ) +
+  scale_color_manual(
+    name = "Lines",
+    values = c(
+      "Forecasted tax revenues (trend continuation)" = "red",
+      "Tax path required for net-zero by 2050" = "darkblue"
+    )
+  ) +
+  scale_fill_manual(
+    name = "Confidence intervals",
+    values = c(
+      "80% confidence interval" = "grey50",
+      "95% confidence interval" = "grey70"
+    )
+  ) +
+  labs(
+    title = "Environmental Tax Revenues: Trend Forecast vs Climate-Required Path",
+    x = "Year",
+    y = "Tax revenues (millions USD)"
+  ) +
+  scale_y_continuous(limits = c(0, 3e6)) +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    legend.title = element_text(face = "bold")
+  )
 ```
+
 
 
 We compute the environmental tax path required to reach net-zero emissions by 2050 by inverting the estimated tax–GHG relationship. This gives us a constant annual increase of about 65,500 units in environmental tax revenues each year from 2024.
