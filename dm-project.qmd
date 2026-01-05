@@ -1689,7 +1689,7 @@ p_warming <- ggplot(future_predictions, aes(x = year, y = Predicted_Warming)) +
 # Plot 2: Income Inequality
 p_inequality <- ggplot(future_predictions, aes(x = year, y = Predicted_Inequality)) +
   geom_line(color = "orange", linewidth = 1) +
-  labs(title = "Forecasted impact on Income Inequalities", x = "Year", y = "Gini Coefficient") +
+  labs(title = "Forecasted impact on the Coefficient of Human Inequality", x = "Year", y = "Gini Coefficient") +
   theme_minimal()
 
 # Plot 3: Gender Inequality Index
@@ -1704,6 +1704,63 @@ grid.arrange(p_warming, p_inequality, p_gii, ncol = 1)
 
 #### b. Comparing with the forecast if we continue as we do
 
+
+```{r}
+ineq_fc_df <- data.frame(
+  year = as.numeric(time(coefineq_fc$mean)),
+  mean = as.numeric(coefineq_fc$mean),
+  lower80 = as.numeric(coefineq_fc$lower[, 1]),
+  upper80 = as.numeric(coefineq_fc$upper[, 1]),
+  lower95 = as.numeric(coefineq_fc$lower[, 2]),
+  upper95 = as.numeric(coefineq_fc$upper[, 2])
+)
+
+ggplot() +
+  geom_ribbon(
+    data = ineq_fc_df,
+    aes(x = year, ymin = lower95, ymax = upper95, fill = "95% confidence interval"),
+    alpha = 0.35
+  ) +
+  geom_ribbon(
+    data = ineq_fc_df,
+    aes(x = year, ymin = lower80, ymax = upper80, fill = "80% confidence interval"),
+    alpha = 0.5
+  ) +
+  geom_line(
+    data = ineq_fc_df,
+    aes(x = year, y = mean, color = "ARIMA forecast (no tax policy)"),
+    linewidth = 1
+  ) +
+  geom_line(
+    data = future_predictions,
+    aes(x = year, y = Predicted_Inequality, color = "Forecasted impact on the Coefficient of Human Inequality"),
+    linewidth = 1
+  ) +
+  scale_color_manual(
+    name = "Scenarios",
+    values = c(
+      "ARIMA forecast (no tax policy)" = "red",
+      "Forecasted impact on the Coefficient of Human Inequality" = "darkblue"
+    )
+  ) +
+  scale_fill_manual(
+    name = "Confidence intervals",
+    values = c(
+      "80% confidence interval" = "grey50",
+      "95% confidence interval" = "grey70"
+    )
+  ) +
+  labs(
+    title = "Coefficient of Human Inequality: Tax Policy vs No-Policy Scenario",
+    x = "Year",
+    y = "Coefficient of Human Inequality"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    legend.title = element_text(face = "bold")
+  )
+```
 
 
 ```{r}
@@ -1741,7 +1798,7 @@ ggplot() +
     name = "Scenarios",
     values = c(
       "ARIMA forecast (no tax policy)" = "red",
-      "Targeted tax path" = "darkblue"
+      "Forecasted impact on the GII" = "darkblue"
     )
   ) +
   scale_fill_manual(
@@ -1762,6 +1819,7 @@ ggplot() +
     legend.title = element_text(face = "bold")
   )
 ```
+
 
 ### 4. Is the model viable ? Its impact on the GDP
 
