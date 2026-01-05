@@ -1347,6 +1347,9 @@ In this project, we are trying to look at the level of tax that would be necessa
 
 #### a. The forecast model
 ##### Total GHG emissions targeted evolution
+
+To identify a tax trajectory consistent with the European Union’s objective of achieving net-zero greenhouse gas emissions by 2050, we first model the historical relationship between aggregate GHG emissions and environmental tax revenues at the EU-27 level. We estimate a reduced-form, level-level linear regression in which total GHG emissions are explained by environmental tax revenues. This empirical relationship is then used as a policy mapping tool. Assuming a linear absolute reduction in emissions from the last observed level to zero by 2050, we invert the estimated model to derive the level of environmental tax revenues required each year to generate such an emissions trajectory. This approach allows us to construct a stylized tax path under the strong assumption that environmental taxation is the sole policy instrument used to drive emissions reductions.
+
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
