@@ -1729,19 +1729,19 @@ future_predictions <- tibble(
 # Plot 1: Warming ability
 p_warming <- ggplot(future_predictions, aes(x = year, y = Predicted_Warming)) +
   geom_line(color = "darkgreen", linewidth = 1) +
-  labs(title = "Forecasted Average Warming Ability", x = "Year", y = "Warming") +
+  labs(title = "Forecasted impact on Average Warming Inability", x = "Year", y = "Warming") +
   theme_minimal()
 
 # Plot 2: Income Inequality
 p_inequality <- ggplot(future_predictions, aes(x = year, y = Predicted_Inequality)) +
   geom_line(color = "orange", linewidth = 1) +
-  labs(title = "Forecasted Income Inequality", x = "Year", y = "Gini Coefficient") +
+  labs(title = "Forecasted impact on the Coefficient of Human Inequality", x = "Year", y = "Gini Coefficient") +
   theme_minimal()
 
 # Plot 3: Gender Inequality Index
 p_gii <- ggplot(future_predictions, aes(x = year, y = Predicted_GII)) +
   geom_line(color = "purple", linewidth = 1) +
-  labs(title = "Forecasted Gender Inequality Index (GII)", x = "Year", y = "GII") +
+  labs(title = "Forecasted impact on the Gender Inequality Index (GII)", x = "Year", y = "GII") +
   theme_minimal()
 
 # Stack vertically using grid.arrange
@@ -1749,67 +1749,124 @@ grid.arrange(p_warming, p_inequality, p_gii, ncol = 1)
 ```
 
 
+#### b. Comparing with the forecast if we continue as we do
+
+
 ```{r}
-warming_data <- EU27_Warming_agg |>
-  select(TIME_PERIOD, Warm_avg) |>
-  rename(year = TIME_PERIOD, value = Warm_avg) |>
-  mutate(type = "Historical") |>
-  bind_rows(
-    future_predictions |>
-      select(year, Predicted_Warming) |>
-      rename(value = Predicted_Warming) |>
-      mutate(type = "Forecast")
+ineq_fc_df <- data.frame(
+  year = as.numeric(time(coefineq_fc$mean)),
+  mean = as.numeric(coefineq_fc$mean),
+  lower80 = as.numeric(coefineq_fc$lower[, 1]),
+  upper80 = as.numeric(coefineq_fc$upper[, 1]),
+  lower95 = as.numeric(coefineq_fc$lower[, 2]),
+  upper95 = as.numeric(coefineq_fc$upper[, 2])
+)
+
+ggplot() +
+  geom_ribbon(
+    data = ineq_fc_df,
+    aes(x = year, ymin = lower95, ymax = upper95, fill = "95% confidence interval"),
+    alpha = 0.35
+  ) +
+  geom_ribbon(
+    data = ineq_fc_df,
+    aes(x = year, ymin = lower80, ymax = upper80, fill = "80% confidence interval"),
+    alpha = 0.5
+  ) +
+  geom_line(
+    data = ineq_fc_df,
+    aes(x = year, y = mean, color = "ARIMA forecast (no tax policy)"),
+    linewidth = 1
+  ) +
+  geom_line(
+    data = future_predictions,
+    aes(x = year, y = Predicted_Inequality, color = "Forecasted impact on the Coefficient of Human Inequality"),
+    linewidth = 1
+  ) +
+  scale_color_manual(
+    name = "Scenarios",
+    values = c(
+      "ARIMA forecast (no tax policy)" = "red",
+      "Forecasted impact on the Coefficient of Human Inequality" = "darkblue"
+    )
+  ) +
+  scale_fill_manual(
+    name = "Confidence intervals",
+    values = c(
+      "80% confidence interval" = "grey50",
+      "95% confidence interval" = "grey70"
+    )
+  ) +
+  labs(
+    title = "Coefficient of Human Inequality: Tax Policy vs No-Policy Scenario",
+    x = "Year",
+    y = "Coefficient of Human Inequality"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    legend.title = element_text(face = "bold")
   )
-
-ineq_data <- EU27_Coefineq |>
-  select(TIME_PERIOD, coef_ineq_value) |>
-  rename(year = TIME_PERIOD, value = coef_ineq_value) |>
-  mutate(type = "Historical") |>
-  bind_rows(
-    future_predictions |>
-      select(year, Predicted_Inequality) |>
-      rename(value = Predicted_Inequality) |>
-      mutate(type = "Forecast")
-  )
-
-gii_data <- EU27_GII |>
-  select(TIME_PERIOD, GII_value) |>
-  rename(year = TIME_PERIOD, value = GII_value) |>
-  mutate(type = "Historical") |>
-  bind_rows(
-    future_predictions |>
-      select(year, Predicted_GII) |>
-      rename(value = Predicted_GII) |>
-      mutate(type = "Forecast")
-  )
-
-# Plot 1: Warming
-p_warming <- ggplot(warming_data, aes(x = year, y = value, color = type)) +
-  geom_line(linewidth = 1.2) +
-  labs(title = "Average Warming Ability", y = "Warming", x = "Year") +
-  scale_color_manual(values = c("Historical" = "black", "Forecast" = "darkgreen")) +
-  theme_minimal()
-
-# Plot 2: Income Inequality
-p_inequality <- ggplot(ineq_data, aes(x = year, y = value, color = type)) +
-  geom_line(linewidth = 1.2) +
-  labs(title = "Income Inequality (Gini Coefficient)", y = "Gini", x = "Year") +
-  scale_color_manual(values = c("Historical" = "black", "Forecast" = "orange")) +
-  theme_minimal()
-
-# Plot 3: Gender Inequality Index
-p_gii <- ggplot(gii_data, aes(x = year, y = value, color = type)) +
-  geom_line(linewidth = 1.2) +
-  labs(title = "Gender Inequality Index (GII)", y = "GII", x = "Year") +
-  scale_color_manual(values = c("Historical" = "black", "Forecast" = "purple")) +
-  theme_minimal()
-
-# Stack vertically
-grid.arrange(p_warming, p_inequality, p_gii, ncol = 1)
 ```
 
 
-#### b. Comparing with the forecast if we continue as we do
+```{r}
+gii_fc_df <- data.frame(
+  year = as.numeric(time(gii_fc$mean)),
+  mean = as.numeric(gii_fc$mean),
+  lower80 = as.numeric(gii_fc$lower[, 1]),
+  upper80 = as.numeric(gii_fc$upper[, 1]),
+  lower95 = as.numeric(gii_fc$lower[, 2]),
+  upper95 = as.numeric(gii_fc$upper[, 2])
+)
+
+ggplot() +
+  geom_ribbon(
+    data = gii_fc_df,
+    aes(x = year, ymin = lower95, ymax = upper95, fill = "95% confidence interval"),
+    alpha = 0.35
+  ) +
+  geom_ribbon(
+    data = gii_fc_df,
+    aes(x = year, ymin = lower80, ymax = upper80, fill = "80% confidence interval"),
+    alpha = 0.5
+  ) +
+  geom_line(
+    data = gii_fc_df,
+    aes(x = year, y = mean, color = "ARIMA forecast (no tax policy)"),
+    linewidth = 1
+  ) +
+  geom_line(
+    data = future_predictions,
+    aes(x = year, y = Predicted_GII, color = "Forecasted impact on the GII"),
+    linewidth = 1
+  ) +
+  scale_color_manual(
+    name = "Scenarios",
+    values = c(
+      "ARIMA forecast (no tax policy)" = "red",
+      "Forecasted impact on the GII" = "darkblue"
+    )
+  ) +
+  scale_fill_manual(
+    name = "Confidence intervals",
+    values = c(
+      "80% confidence interval" = "grey50",
+      "95% confidence interval" = "grey70"
+    )
+  ) +
+  labs(
+    title = "Gender Inequality Index: Tax Policy vs No-Policy Scenario",
+    x = "Year",
+    y = "GII"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    legend.title = element_text(face = "bold")
+  )
+```
+
 
 ### 4. Is the model viable ? Its impact on the GDP
 
