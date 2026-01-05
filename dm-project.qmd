@@ -1107,7 +1107,7 @@ We use this forecast to try to predict the impact of environmental taxes on diff
 
 ### 1. Greenhouse Gas emissions by sector
 
-#### a. Time series ARIMA forecast of the total Greenhouse Gas emissions
+#### a. Time series ARIMA forecast of the total Greenhouse Gas emissions (#forecasttotalGHGemissions)
 
 ```{r, echo=FALSE}
 #| message: false
@@ -1471,6 +1471,8 @@ Comparing the two paths shows a significant and growing shortfall. The historica
 Having analyzed the environmental tax paths, we now turn to the environmental outcome they aim to influence: greenhouse gas (GHG) emissions. This subsection compares the emissions trajectory implied by a continuation of historical tax trends with the counter factual path required to achieve net-zero emissions by 2050. We present this analysis at two levels: first for the [total EU-27 GHG emissions](#compartotalGHG), and then broken down by [economic sector](#comparpersectorGHG). This approach allows us to connect fiscal policy to its environmental impact and to identify which sectors will need the largest reductions to meet the climate target.
 
 ###### Total GHG emissions (#compartotalGHG)
+
+In this section, we focus on **aggregate EU-27 GHG emissions**. Using the ARIMA model (cf. [Time series ARIMA forecast of the total Greenhouse Gas emissions](#forecasttotalGHGemissions)), we forecast total emissions under a continuation of historical trends and compute confidence intervals (80% and 95%) to capture uncertainty in the projection. We then overlay the **targeted emissions trajectory**, which represents the linear decline needed to reach net-zero by 2050, as derived from the inverted tax–GHG relationship. The resulting graph allows a visual comparison between the likely path of emissions if current policies continue and the ambitious reduction trajectory required by the EU’s climate objectives.
 
 ```{r}
 fc_df <- data.frame(
