@@ -1704,6 +1704,63 @@ grid.arrange(p_warming, p_inequality, p_gii, ncol = 1)
 
 #### b. Comparing with the forecast if we continue as we do
 
+```{r}
+warm_fc_df <- data.frame(
+  year = as.numeric(time(warm_fc$mean)),
+  mean = as.numeric(warm_fc$mean),
+  lower80 = as.numeric(warm_fc$lower[, 1]),
+  upper80 = as.numeric(warm_fc$upper[, 1]),
+  lower95 = as.numeric(warm_fc$lower[, 2]),
+  upper95 = as.numeric(warm_fc$upper[, 2])
+)
+
+ggplot() +
+  geom_ribbon(
+    data = warm_fc_df,
+    aes(x = year, ymin = lower95, ymax = upper95, fill = "95% confidence interval"),
+    alpha = 0.35
+  ) +
+  geom_ribbon(
+    data = warm_fc_df,
+    aes(x = year, ymin = lower80, ymax = upper80, fill = "80% confidence interval"),
+    alpha = 0.5
+  ) +
+  geom_line(
+    data = warm_fc_df,
+    aes(x = year, y = mean, color = "ARIMA forecast (no tax policy)"),
+    linewidth = 1
+  ) +
+  geom_line(
+    data = future_predictions,
+    aes(x = year, y = Predicted_Warming, color = "Forecasted impact on Average Warming Inability"),
+    linewidth = 1
+  ) +
+  scale_color_manual(
+    name = "Scenarios",
+    values = c(
+      "ARIMA forecast (no tax policy)" = "red",
+      "Forecasted impact on Average Warming Inability" = "darkgreen"
+    )
+  ) +
+  scale_fill_manual(
+    name = "Confidence intervals",
+    values = c(
+      "80% confidence interval" = "grey50",
+      "95% confidence interval" = "grey70"
+    )
+  ) +
+  labs(
+    title = "Average Warming Inability: Tax Policy vs No-Policy Scenario",
+    x = "Year",
+    y = "Average Warming Inability"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    legend.title = element_text(face = "bold")
+  )
+```
+
 
 ```{r}
 ineq_fc_df <- data.frame(
@@ -1740,7 +1797,7 @@ ggplot() +
     name = "Scenarios",
     values = c(
       "ARIMA forecast (no tax policy)" = "red",
-      "Forecasted impact on the Coefficient of Human Inequality" = "darkblue"
+      "Forecasted impact on the Coefficient of Human Inequality" = "orange"
     )
   ) +
   scale_fill_manual(
@@ -1798,7 +1855,7 @@ ggplot() +
     name = "Scenarios",
     values = c(
       "ARIMA forecast (no tax policy)" = "red",
-      "Forecasted impact on the GII" = "darkblue"
+      "Forecasted impact on the GII" = "purple"
     )
   ) +
   scale_fill_manual(
