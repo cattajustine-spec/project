@@ -1466,8 +1466,11 @@ ggplot(tax_plot_df, aes(x = year)) +
 
 Comparing the two paths shows a significant and growing shortfall. The historical trend regression predicts that total environmental tax revenues would increase by approximately 14,767 million USD per year (intercept = −29,038,537; $R^2 = 0.73$), corresponding to a continuation of past trends. In contrast, the tax path required to achieve net-zero emissions calls for a steep and consistent annual increase of roughly 65,5 million USD per year, starting from about 1,2 trillion USD in 2023 and reaching 2,9 trillion USD by 2050. Already in 2024, forecasted revenues (≈ 851 billion USD) fall well below the required level (≈ 1,242 billion USD), and by 2050 the gap widens to roughly 1,7 trillion USD, indicating that current policy trajectories imply structural under-taxation. These results underscore that meeting the net-zero target would require a substantial policy departure from historical trends and a rapid scaling up of environmental taxation.
 
-
 ##### GHG emissions : targeted vs predicted
+
+Having analyzed the environmental tax paths, we now turn to the environmental outcome they aim to influence: greenhouse gas (GHG) emissions. This subsection compares the emissions trajectory implied by a continuation of historical tax trends with the counter factual path required to achieve net-zero emissions by 2050. We present this analysis at two levels: first for the [total EU-27 GHG emissions](#compartotalGHG), and then broken down by [economic sector](#comparpersectorGHG). This approach allows us to connect fiscal policy to its environmental impact and to identify which sectors will need the largest reductions to meet the climate target.
+
+###### Total GHG emissions (#compartotalGHG)
 
 ```{r}
 fc_df <- data.frame(
@@ -1526,9 +1529,9 @@ ggplot(tax_path, aes(x = year)) +
 
 As shown in the figure, achieving the targeted GHG emissions trajectory would require a substantial change in current taxing practices. The target path consistently lies at the lower bound of the forecast confidence intervals for emissions, and from around 2035 onwards it even falls outside the 95% confidence interval. This suggests that, under the continuation of current trends captured by the ARIMA forecast, the probability of reaching the targeted emissions level is low, highlighting the need for stronger or additional policy interventions.
 
-###### Per sector emissions
+###### Per sector GHG emissions (#comparpersectorGHG)
 
-##### GHG emissions per sector targeted evolution
+GHG emissions per sector targeted evolution
 
 ```{r}
 # Latest observed GHG per sector
