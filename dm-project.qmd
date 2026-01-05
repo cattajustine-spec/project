@@ -1680,7 +1680,6 @@ future_predictions <- tibble(
     pmax(0, pmin(1,last_obs$GII +
         cumsum(rep(b_gii_tax * avg_tax_increment + b_gii_time, future_years))
       )))
-
 ```
 
 ```{r}
@@ -1890,28 +1889,97 @@ ggplot() +
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-model_gdp_tax <- lm(GDP_value ~ Envt_Tax_Revenues_value, data = EU27_GDP |> inner_join(EU27_Tax, by = "TIME_PERIOD"))
 
-coef_gdp <- coef(model_gdp_tax)["Envt_Tax_Revenues_value"]
+# Average yearly tax increase
+avg_tax_increment <- (last(tax_path$tax_required) -
+                      first(tax_path$tax_required)) /
+                      (nrow(tax_path) - 1)
 
-last_gdp <- tail(EU27_GDP$GDP_value, 1)
+# Last observed levels
+last_obs <- tibble(GDP = tail(EU27_GDP$GDP_value, 1))
 
+future_years <- length(tax_path$year)
+
+# Extract coefficients
+b_gdp_tax  <- coef(model_gdp_tax)["Envt_Tax_Revenues_value"]
+b_gdp_time <- coef(model_gdp_tax)["TIME_PERIOD"]
+
+# Build paths
 future_gdp_predictions <- tibble(
   year = tax_path$year,
-  Predicted_GDP = last_gdp +
-    cumsum(
-      rep(coef_gdp * avg_tax_increment, length(tax_path$year))
-    )
-)
+  Predicted_GDP =
+    last_obs$GDP +
+    cumsum(rep(b_gdp_tax * avg_tax_increment + b_gdp_time, future_years)))
 
-ggplot(future_gdp_predictions, aes(x = year)) +
-  geom_line(aes(y = Predicted_GDP), color = "darkblue") +
-  labs(title="Forecasted impact on Aggregate GDP", y="European GDP", x="Year") +
+ggplot(future_gdp_predictions,
+                aes(x = year, y = Predicted_GDP)) +
+  geom_line(color = "steelblue", linewidth = 1) +
+  labs(
+    title = "Forecasted impact of the tax policy on EU27 GDP",
+    x = "Year",
+    y = "GDP"
+  ) +
   theme_minimal()
-
 ```
 
+```{r}
+gdp_fc_df <- data.frame(
+  year = as.numeric(time(gdp_fc$mean)),
+  mean = as.numeric(gdp_fc$mean),
+  lower80 = as.numeric(gdp_fc$lower[, 1]),
+  upper80 = as.numeric(gdp_fc$upper[, 1]),
+  lower95 = as.numeric(gdp_fc$lower[, 2]),
+  upper95 = as.numeric(gdp_fc$upper[, 2])
+)
 
+ggplot() +
+  geom_ribbon(
+    data = gdp_fc_df,
+    aes(x = year, ymin = lower95, ymax = upper95, fill = "95% confidence interval"),
+    alpha = 0.35
+  ) +
+  geom_ribbon(
+    data = gdp_fc_df,
+    aes(x = year, ymin = lower80, ymax = upper80, fill = "80% confidence interval"),
+    alpha = 0.5
+  ) +
+  geom_line(
+    data = gdp_fc_df,
+    aes(x = year, y = mean, color = "ARIMA forecast (no tax policy)"),
+    linewidth = 1
+  ) +
+  geom_line(
+    data = future_gdp_predictions,
+    aes(x = year, y = Predicted_GDP, color = "Forecasted impact on Aggregate GDP"),
+    linewidth = 1
+  ) +
+  scale_color_manual(
+    name = "Scenarios",
+    values = c(
+      "ARIMA forecast (no tax policy)" = "red",
+      "Forecasted impact on Aggregate GDP" = "darkblue"
+    )
+  ) +
+  scale_fill_manual(
+    name = "Confidence intervals",
+    values = c(
+      "80% confidence interval" = "grey50",
+      "95% confidence interval" = "grey70"
+    )
+  ) +
+  labs(
+    title = "Aggregate GDP: Tax Policy vs No-Policy Scenario",
+    x = "Year",
+    y = "Aggregate GDP"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    legend.title = element_text(face = "bold")
+  )
+```
+
+#### Ratio Tax/GDP
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
