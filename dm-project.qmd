@@ -1584,8 +1584,7 @@ tax_path <- tax_path |>
 ggplot(tax_plot, aes(x = year)) +
   geom_ribbon(aes(ymin = lwr, ymax = upr), fill = "lightblue", alpha = 0.3) +
   geom_line(aes(y = tax_forecast), color = "blue", linewidth = 1) +
-  geom_line(aes(y = tax_required), color = "red", linetype = "dashed", linewidth = 1) +
-    geom_line(aes(y = tax_diff_fc), color = "darkolivegreen2", linewidth = 1) +
+  geom_line(aes(y = tax_required), color = "red", linetype = "dashed", linewidth = 1)
   labs(
     title = "Environmental Tax: Trend Forecast vs Climate-Required Path",
     y = "Tax revenues (millions USD)",
