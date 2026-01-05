@@ -1704,6 +1704,65 @@ grid.arrange(p_warming, p_inequality, p_gii, ncol = 1)
 
 #### b. Comparing with the forecast if we continue as we do
 
+
+
+```{r}
+gii_fc_df <- data.frame(
+  year = as.numeric(time(gii_fc$mean)),
+  mean = as.numeric(gii_fc$mean),
+  lower80 = as.numeric(gii_fc$lower[, 1]),
+  upper80 = as.numeric(gii_fc$upper[, 1]),
+  lower95 = as.numeric(gii_fc$lower[, 2]),
+  upper95 = as.numeric(gii_fc$upper[, 2])
+)
+
+ggplot() +
+  geom_ribbon(
+    data = gii_fc_df,
+    aes(x = year, ymin = lower95, ymax = upper95, fill = "95% confidence interval"),
+    alpha = 0.35
+  ) +
+  geom_ribbon(
+    data = gii_fc_df,
+    aes(x = year, ymin = lower80, ymax = upper80, fill = "80% confidence interval"),
+    alpha = 0.5
+  ) +
+  geom_line(
+    data = gii_fc_df,
+    aes(x = year, y = mean, color = "ARIMA forecast (no tax policy)"),
+    linewidth = 1
+  ) +
+  geom_line(
+    data = future_predictions,
+    aes(x = year, y = Predicted_GII, color = "Targeted tax path"),
+    linewidth = 1
+  ) +
+  scale_color_manual(
+    name = "Scenarios",
+    values = c(
+      "ARIMA forecast (no tax policy)" = "red",
+      "Targeted tax path" = "darkblue"
+    )
+  ) +
+  scale_fill_manual(
+    name = "Confidence intervals",
+    values = c(
+      "80% confidence interval" = "grey50",
+      "95% confidence interval" = "grey70"
+    )
+  ) +
+  labs(
+    title = "Gender Inequality Index: Tax Policy vs No-Policy Scenario",
+    x = "Year",
+    y = "GII"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    legend.title = element_text(face = "bold")
+  )
+```
+
 ### 4. Is the model viable ? Its impact on the GDP
 
 #### a. The forecast model
