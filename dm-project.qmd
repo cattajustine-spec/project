@@ -1066,7 +1066,7 @@ sector <- c("Transport", "Agriculture", "Industry (including energy)", "Manufact
 
 model_AV_tax <- lapply(sector, function(s){
   data_s <- all_merged |> filter(sector == s)
-  lm(log(AV_value) ~ Envt_Tax_Revenues_value + TIME_PERIOD, data = data_s, subset = iso3 != "EU27")
+  lm(AV_value ~ Envt_Tax_Revenues_value + TIME_PERIOD, data = data_s, subset = iso3 != "EU27")
 })
 
 names(model_AV_tax) <- sector
@@ -1095,10 +1095,10 @@ ggplot(all_merged |> drop_na(Envt_Tax_Revenues_value, AV_value),
 ##### Comment :
 
 Across sectors, higher environmental tax revenues are consistently associated with small but positive percentage changes in added value. The log-level specification allows interpreting effects in percentage terms. 
-- Transport: Environmental tax revenues have a positive and highly significant effect on log added value (+5.8e-5, p < 0.001). This implies that higher tax revenues are associated with slightly higher sectoral output. 
-- Agriculture: We show a positive and significant relationship (+5.4e-05, p < 0.001), with an effect size that is smaller in practical terms, consistent with the sector’s scale. 
-- Industry (including energy): Positive and highly significant (+6e-05, p < 0.001), there is a stronger sensitivity to tax revenues in this capital-intensive sector. 
-- Manufacturing: the coefficient is highly significant, with a similar magnitude to industry and transport (+6.1e-05, p < 0.001).
+- Transport: Environmental tax revenues have a positive and highly significant effect on log added value (+6.6, p < 0.001). This implies that higher tax revenues are associated with slightly higher sectoral output. 
+- Agriculture: We show a positive and significant relationship (+5.4e-01, p < 0.001), with an effect size that is smaller in practical terms, consistent with the sector’s scale. 
+- Industry (including energy): Positive and highly significant (+7.5, p < 0.001), there is a stronger sensitivity to tax revenues in this capital-intensive sector. 
+- Manufacturing: the coefficient is highly significant, with a similar magnitude to industry and transport (+6.5, p < 0.001).
 
 Periods with higher environmental tax revenues tend to coincide with stronger economic activity.
 
