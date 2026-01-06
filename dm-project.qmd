@@ -1252,7 +1252,9 @@ warm_fc
 ```
 
 
-```{r}
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
 plot(gii_fc, main = "Forecast of GII")
 plot(coefineq_fc, main = "Forecast of Coefficient of Inequality")
 plot(warm_fc, main = "Forecast of Warm Households")
@@ -1276,7 +1278,9 @@ plot(gdp_fc, main = "Forecast of GDP")
 
 ### 4. The economy : forecast of the environmental taxes {#forecastofenvttax}
 
-```{r}
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
 # Linear trend model
 tax_lm <- lm(Envt_Tax_Revenues_value ~ TIME_PERIOD, data = EU27_Tax)
 summary(tax_lm)
@@ -1296,7 +1300,9 @@ tax_pred <- predict(
 tax_fc_lm <- bind_cols(future_years, as.data.frame(tax_pred))
 ```
 
-```{r}
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
 tax_all_2050 <- ggplot() +
   geom_line(data=EU27_Tax, aes(x = TIME_PERIOD, y = Envt_Tax_Revenues_value, color = "Observations")) +
   geom_line(data=tax_fc_lm, aes(x = TIME_PERIOD, y = fit, color = "Forecast")) +
@@ -1392,7 +1398,9 @@ Having established the tax path required to reach net-zero emissions by 2050, we
 
 To assess the adequacy of current environmental tax trends, we now compare the forecasted path of total EU-27 environmental tax revenues, based on historical trends (the “forecast model” from the section: [The economy : forecast of the environmental taxes](#forecastofenvttax)), with the tax path required to reach net-zero emissions by 2050. This comparison highlights the gap between the continuation of past tax policies and the ambitious fiscal effort necessary to achieve the EU’s climate target. The code below generates the forecasted confidence intervals and overlays them with the required tax path.
 
-```{r}
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
 tax_pred_95 <- predict(
   tax_lm,
   newdata = future_years,
@@ -1475,7 +1483,9 @@ Having analyzed the environmental tax paths, we now turn to the environmental ou
 
 In this section, we focus on **aggregate EU-27 GHG emissions**. Using the ARIMA model (cf. [Time series ARIMA forecast of the total Greenhouse Gas emissions](#forecasttotalGHGemissions)), we forecast total emissions under a continuation of historical trends and compute confidence intervals (80% and 95%) to capture uncertainty in the projection. We then overlay the **targeted emissions trajectory**, which represents the linear decline needed to reach net-zero by 2050, as derived from the inverted tax–GHG relationship. The resulting graph allows a visual comparison between the likely path of emissions if current policies continue and the ambitious reduction trajectory required by the EU’s climate objectives.
 
-```{r}
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
 fc_df <- data.frame(
   year = as.numeric(time(fc$mean)),
   mean = as.numeric(fc$mean),
@@ -1535,7 +1545,9 @@ Building on the total emissions analysis, we examine **GHG emissions at the sect
 
 ***GHG emissions per sector targeted evolution***
 
-```{r}
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
 # Latest observed GHG per sector
 latest_year <- max(sector_yearly$TIME_PERIOD)
 sector_last <- sector_yearly |>
@@ -1577,7 +1589,9 @@ As we are targeting to reach net-zero total GHG emissions by 2050, the emissions
 
 ***Comparison with prediction***
 
-```{r}
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
 plots <- map2(
   sector_models$sector,
   sector_models$forecast,
@@ -1639,7 +1653,9 @@ Overall, the sector-level analysis reveals heterogeneous challenges. While indus
 
 #### a. The forecast model
 
-```{r}
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
 # Average yearly tax increase
 avg_tax_increment <- (last(tax_path$tax_required) -
                       first(tax_path$tax_required)) /
@@ -1682,7 +1698,9 @@ future_predictions <- tibble(
       )))
 ```
 
-```{r}
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
 # Plot 1: Warming ability
 p_warming <- ggplot(future_predictions, aes(x = year, y = Predicted_Warming)) +
   geom_line(color = "darkgreen", linewidth = 1) +
@@ -1708,7 +1726,9 @@ grid.arrange(p_warming, p_inequality, p_gii, ncol = 1)
 
 #### b. Comparing with the forecast if we continue as we do
 
-```{r}
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
 warm_fc_df <- data.frame(
   year = as.numeric(time(warm_fc$mean)),
   mean = as.numeric(warm_fc$mean),
@@ -1766,7 +1786,9 @@ ggplot() +
 ```
 
 
-```{r}
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
 ineq_fc_df <- data.frame(
   year = as.numeric(time(coefineq_fc$mean)),
   mean = as.numeric(coefineq_fc$mean),
@@ -1824,7 +1846,9 @@ ggplot() +
 ```
 
 
-```{r}
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
 gii_fc_df <- data.frame(
   year = as.numeric(time(gii_fc$mean)),
   mean = as.numeric(gii_fc$mean),
@@ -1922,7 +1946,9 @@ ggplot(future_gdp_predictions,
   theme_minimal()
 ```
 
-```{r}
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
 gdp_fc_df <- data.frame(
   year = as.numeric(time(gdp_fc$mean)),
   mean = as.numeric(gdp_fc$mean),
@@ -2065,10 +2091,6 @@ ggplot() +
 ```
 The thresholds (1%, 3%, 5%) are based on empirical observations from existing tax systems.
 We say that above 5% it would be Very Disruptive: At this scale, capital flight risks increase, sectoral lobbying intensifies, and social acceptance becomes critical. 
-```{r}
-nrow(tax_pred)
-length(tax_path$year)
-```
 
 # Conclusion
 
