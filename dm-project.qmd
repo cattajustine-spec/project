@@ -1102,7 +1102,7 @@ Across sectors, higher environmental tax revenues are consistently associated wi
 
 Periods with higher environmental tax revenues tend to coincide with stronger economic activity.
 
-# Forecasting : if we continue as we do
+# Forecasting : no-policy
 
 We use this forecast to try to predict the impact of environmental taxes on different variables.
 
@@ -1431,7 +1431,7 @@ ggplot(tax_path, aes(x = year)) +
 
 The estimated regression reveals a statistically significant negative relationship between environmental tax revenues and total GHG emissions. The coefficient on environmental tax revenues is −1.406 (p-value \< 0.001), indicating that, historically, an increase of one million of USD in environmental tax revenues is associated with a reduction of approximately 1.4 thousand tonnes of CO₂-equivalent of aggregate emissions. The intercept suggests a baseline emissions level of about 4.14 billion thousand tonnes of CO₂-equivalent in the absence of environmental taxation. While the model is intentionally parsimonious, it explains a meaningful share of the observed variation in emissions, with an $R^2$ of 0.39. Using this estimated relationship, we construct a counterfactual emissions trajectory featuring a linear absolute decline from approximately 2.49 million units in 2023 to net-zero emissions in 2050. Inverting the estimated model yields the environmental tax revenues required to sustain this trajectory. As illustrated in the tax path graph, achieving this emissions reduction would require environmental tax revenues to increase steadily from about 1,177,245 million USD in 2023 to approximately 2,945,633 million USD by 2050, corresponding to an average annual increase of roughly 65,5 million USD per year. This steadily rising tax path produces the targeted emissions trajectory shown in the GHG emissions path graph, where predicted emissions decline smoothly to zero by construction. These results highlight both the scale of the fiscal effort required and the limitations of relying on environmental taxation alone, given the modest explanatory power of the reduced-form relationship.
 
-#### b. Comparing with the forecast if we continue as we do
+#### b. Comparing with the no-policy forecast
 
 Having established the tax path required to reach net-zero emissions by 2050, we now turn to a systematic comparison of forecasted and targeted trajectories. First, we will examine the total environmental tax revenues to highlight the gap between historical trends and climate targets. Next, we will assess the implications of these tax paths for aggregate GHG emissions, and finally, we will explore sector-level GHG emissions to identify which sectors require the most significant reductions. This stepwise analysis provides a comprehensive view of the fiscal and environmental adjustments necessary to meet the EU’s net-zero objectives.
 
@@ -1552,7 +1552,7 @@ ggplot(tax_path, aes(x = year)) +
     inherit.aes = FALSE,
     alpha = 0.5) +
   geom_line(data = fc_df, aes(
-    x = year, y = mean, color = "ARIMA forecast (if we continue as we do)"),
+    x = year, y = mean, color = "ARIMA forecast (no-policy)"),
     inherit.aes = FALSE,
     linewidth = 1) +
   geom_line(
@@ -1562,7 +1562,7 @@ ggplot(tax_path, aes(x = year)) +
     name = "Lines",
     values = c(
       "Targeted GHG (if we plan to get zero net emissions)" = "darkblue",
-      "ARIMA forecast (if we continue as we do)" = "red")) +
+      "ARIMA forecast (no-policy)" = "red")) +
   scale_fill_manual(
     name = "Confidence intervals",
     values = c(
@@ -1765,7 +1765,7 @@ grid.arrange(p_warming, p_inequality, p_gii, ncol = 1)
 ```
 
 
-#### b. Comparing with the forecast if we continue as we do
+#### b. Comparing with the no-policy forecast
 
 ```{r, echo=FALSE}
 #| message: false
