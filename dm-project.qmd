@@ -1922,9 +1922,7 @@ ggplot(future_gdp_predictions,
     y = "GDP"
   ) +
   theme_minimal()
-```
 
-```{r}
 gdp_fc_df <- data.frame(
   year = as.numeric(time(gdp_fc$mean)),
   mean = as.numeric(gdp_fc$mean),
@@ -1980,6 +1978,8 @@ ggplot() +
     legend.title = element_text(face = "bold")
   )
 ```
+
+
 
 #### Ratio Tax/GDP
 ```{r, echo=FALSE}
@@ -2037,6 +2037,15 @@ We say that above 5% it would be Very Disruptive: At this scale, capital flight 
 
 # Conclusion
 
+In conclusion, this research project has evaluated the effectiveness of environmental taxation as a tool for achieving the European Union’s goal of net-zero emissions by 2050. The study involved cleaning and merging large datasets covering the EU-27 from 1990 to 2024, focusing on four key sectors: Agriculture, Industry (including energy), Manufacturing, and Transport. By integrating indicators such as environmental tax revenues, the Gender Inequality Index (GII), the Coefficient of Human Inequality, and energy poverty, we assessed both environmental efficacy and socioeconomic sustainability.
+Our findings indicate that while environmental taxes have a statistically significant negative association with GHG emissions, the impact has been small. 
+Our analysis revealed that the current forecasted tax trajectory is insufficient to reach the European Green Deal’s objectives. Under current trends as GHG emissions are projected to fall only to approximately 1.43 million units by 2050. 
+To determine the tax level required for the 2050 target, we inverted a level-level linear regression of total GHG emissions against tax revenues. This model allowed us to find a "required tax path" that would theoretically drive emissions to zero by itself. We found that environmental tax revenues would need to scale up to roughly 2.9 trillion USD by 2050, (1.7 trillion USD more than predicted historical trends).
+
+The impacts of such a massive tax increase on society and the economy would be severe:
+• Social Inequality: The regressions show that environmental taxes are positively correlated with energy poverty, income inequality, and gender inequality. Implementing the required tax path would likely exacerbate these social costs, and increase these indicators largely above the levels expected in a no-policy scenario.
+• Economic Viability: Although tax revenues tend to increase alongside GDP, the required fiscal burden would likely reach between 6% and 10% of the total GDP. This exceeds empirical thresholds for economic stability and could be highly disruptive.
+
 ## Ouverture
 
-Si une telle les 3 types de taxes ne sont pas compatibles / impact trop grand sur les inégalités et/ou sur l'économie / impact trop faible sur les GHG, quelles alternatives (en plus de la taxe / à la place de la taxe) ? - subvention : à la recherche ? - changement modes de consommation, institutions : sobriété éco ? décroissance - autre ?
+If relying exclusively on environmental taxation proves to be socially regressive or economically unviable, what alternative strategies could the European Union use to fill the gap? Some possibilities could be the use of complementary green technology subsidies, the implementation of stricter sector-specific regulations, or the potential for economic sobriety and degrowth to reduce the overall energy demand. 
