@@ -1329,6 +1329,45 @@ ggplotly(tax_all_2050)
 this is an extrapolation from current trend
 
 ### 5. The economic impact: on added value (per sector) 
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+avsector_yearly <- EU27_AV |>
+  filter(!is.na(AV_value), !is.na(sector)) |>
+  group_by(sector, TIME_PERIOD) |>
+  summarise(AV_total = sum(AV_value, na.rm = TRUE), .groups = "drop")
+
+# nest per sector to run the same ARIMA model independently
+avsector_models <- avsector_yearly |> group_by(sector) |>
+  nest() |> mutate(
+    ts_data = map(data, ~ ts(.x$AV_total, start = min(.x$TIME_PERIOD))),
+    model = map(ts_data, auto.arima),
+    forecast = map(model, ~ forecast(.x, h = 27)))
+
+# unnest forecast results into a tidy dataframe
+avsector_forecasts <- avsector_models |>
+  mutate(avpreds_models = map(forecast, ~ {tibble(
+        TIME_PERIOD = (max(avsector_yearly$TIME_PERIOD)+1) :
+                       (max(avsector_yearly$TIME_PERIOD) + length(.x$mean)),
+        forecast = as.numeric(.x$mean),
+        lo_80 = as.numeric(.x$lower[,1]),
+        hi_80 = as.numeric(.x$upper[,1]),
+        lo_95 = as.numeric(.x$lower[,2]),
+        hi_95 = as.numeric(.x$upper[,2]))})) |>
+  select(sector, avpreds_models) |>
+  unnest(avpreds_models)
+
+avsector_forecasts
+plots <- map2(
+  avsector_models$sector,
+  avsector_models$forecast, 
+  ~ autoplot(.y) + ggtitle(paste("Forecast of", .x))
+)
+
+do.call(grid.arrange, c(plots, ncol = 2))
+```
+
+
 # Forecasting: if we plan to get to the 0 net emission by 2050
 
 In this project, we are trying to look at the level of tax that would be necessary to reach the 0 net emissions by 2050 required by the European Union. To do so, we should first look at the level of tax that allows for this evolution, and then check the evolution of the GHG emissions per sector induced by this level of tax. Furthermore, we should look at the impact of this level of tax on the social inequalities and on the economy.
