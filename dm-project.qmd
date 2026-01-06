@@ -1092,13 +1092,15 @@ ggplot(all_merged |> drop_na(Envt_Tax_Revenues_value, AV_value),
   theme_minimal()
 ```
 
-##### Comment (REDO) :
+##### Comment :
 
-Summary: Across sectors, higher environmental tax revenues are consistently associated with small but positive percentage changes in added value.. The log-level specification allows interpreting effects in percentage terms. Transport: Environmental tax revenues have a positive and highly significant effect on log added value (+5.8e-05, p \< 0.001). This implies that higher tax revenues are associated with slightly higher sectoral output. Agriculture: We show a positive and significant relationship (+5.4e-05, p \< 0.001), with an effect size that is smaller in practical terms, consistent with the sector’s scale. Industry (including energy): Positive and highly significant (+6e-05, p \< 0.001), there is a stronger sensitivity to tax revenues in this capital-intensive sector. Manufacturing: the coefficient is +6.1e-05, highly significant, with a similar magnitude to industry and transport.
+Across sectors, higher environmental tax revenues are consistently associated with small but positive percentage changes in added value. The log-level specification allows interpreting effects in percentage terms. 
+- Transport: Environmental tax revenues have a positive and highly significant effect on log added value (+5.8e-5, p < 0.001). This implies that higher tax revenues are associated with slightly higher sectoral output. 
+- Agriculture: We show a positive and significant relationship (+5.4e-05, p < 0.001), with an effect size that is smaller in practical terms, consistent with the sector’s scale. 
+- Industry (including energy): Positive and highly significant (+6e-05, p < 0.001), there is a stronger sensitivity to tax revenues in this capital-intensive sector. 
+- Manufacturing: the coefficient is highly significant, with a similar magnitude to industry and transport (+6.1e-05, p < 0.001).
 
-the consistent upward trend suggests that environmental taxation is not associated with weaker sectoral performance; rather, periods with higher environmental tax revenues tend to coincide with stronger economic activity.
-
--\>which economic sector is the most economically efficient & produces the less emissions (à favoriser, éventuellement subsidies -\> info à garder pour la conclusion) -\>which is the less efficient & emits the most ? -\>target the tax on this sector !
+Periods with higher environmental tax revenues tend to coincide with stronger economic activity.
 
 # Forecasting : if we continue as we do
 
