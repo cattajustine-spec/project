@@ -1246,32 +1246,34 @@ plot(gdp_fc, main = "Forecast of GDP")
 
 ### 3.2 The economy : forecast of the Added Values (GDP per sector)
 ```{r}
-# Function to use auto.arima and forecast
-fit_arima_and_forecast <- function(series, steps = 27) {
-  model <- auto.arima(series)
-  fc <- forecast(model, h = steps)
-  return(fc)
-}
+# nest per sector to run the same ARIMA model independently
+avsector_models <- EU27_AV |> group_by(sector) |>
+  nest() |> mutate(
+    ts_data = map(data, ~ ts(.x$AV_value, start = min(.x$TIME_PERIOD))),
+    model = map(ts_data, auto.arima),
+    forecast = map(model, ~ forecast(.x, h = 27)))
 
-forecasts <- lapply(sector, function(sector) {
-  sector_data <- EU27_AV %>%
-    filter(sector == !!sector) %>%
-    select(TIME_PERIOD, AV_value) %>%
-    arrange(TIME_PERIOD)
-  
-  ts_data <- ts(sector_data$AV_value, start = min(sector_data$TIME_PERIOD))
+# unnest forecast results into a tidy dataframe
+avsector_forecasts <- avsector_models |>
+  mutate(avpreds_models = map(forecast, ~ {tibble(
+        TIME_PERIOD = (max(EU27_AV$TIME_PERIOD)+1) :
+                       (max(EU27_AV$TIME_PERIOD) + length(.x$mean)),
+        forecast = as.numeric(.x$mean),
+        lo_80 = as.numeric(.x$lower[,1]),
+        hi_80 = as.numeric(.x$upper[,1]),
+        lo_95 = as.numeric(.x$lower[,2]),
+        hi_95 = as.numeric(.x$upper[,2]))})) |>
+  select(sector, avpreds_models) |>
+  unnest(avpreds_models)
 
-  fc <- fit_arima_and_forecast(ts_data)
-  return(fc)
-})
+avsector_forecasts
+plots <- map2(
+  avsector_models$sector,
+  avsector_models$forecast, 
+  ~ autoplot(.y) + ggtitle(paste("Forecast of", .x))
+)
 
-# Plot forecasts
-par(mfrow = c(2, 2))
-for (i in seq_along(sector)) {
-  plot(forecasts[[i]],
-       main = paste("Forecast for", sector[i]),
-       ylim = c(0, max(forecasts[[i]]$mean + forecasts[[i]]$upper[, 2])))
-}
+do.call(grid.arrange, c(plots, ncol = 2))
 ```
 
 
@@ -1325,49 +1327,9 @@ tax_all_2050 <- ggplot() +
 ggplotly(tax_all_2050)
 ```
 
-##### Comment :
+##### Comment (redo) :
 
 this is an extrapolation from current trend
-
-### 5. The economic impact: on added value (per sector) 
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-avsector_yearly <- EU27_AV |>
-  filter(!is.na(AV_value), !is.na(sector)) |>
-  group_by(sector, TIME_PERIOD) |>
-  summarise(AV_total = sum(AV_value, na.rm = TRUE), .groups = "drop")
-
-# nest per sector to run the same ARIMA model independently
-avsector_models <- avsector_yearly |> group_by(sector) |>
-  nest() |> mutate(
-    ts_data = map(data, ~ ts(.x$AV_total, start = min(.x$TIME_PERIOD))),
-    model = map(ts_data, auto.arima),
-    forecast = map(model, ~ forecast(.x, h = 27)))
-
-# unnest forecast results into a tidy dataframe
-avsector_forecasts <- avsector_models |>
-  mutate(avpreds_models = map(forecast, ~ {tibble(
-        TIME_PERIOD = (max(avsector_yearly$TIME_PERIOD)+1) :
-                       (max(avsector_yearly$TIME_PERIOD) + length(.x$mean)),
-        forecast = as.numeric(.x$mean),
-        lo_80 = as.numeric(.x$lower[,1]),
-        hi_80 = as.numeric(.x$upper[,1]),
-        lo_95 = as.numeric(.x$lower[,2]),
-        hi_95 = as.numeric(.x$upper[,2]))})) |>
-  select(sector, avpreds_models) |>
-  unnest(avpreds_models)
-
-avsector_forecasts
-plots <- map2(
-  avsector_models$sector,
-  avsector_models$forecast, 
-  ~ autoplot(.y) + ggtitle(paste("Forecast of", .x))
-)
-
-do.call(grid.arrange, c(plots, ncol = 2))
-```
-
 
 # Forecasting: if we plan to get to the 0 net emission by 2050
 
