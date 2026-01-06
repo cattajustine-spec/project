@@ -1983,96 +1983,85 @@ ggplot() +
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-
-# Convert forecast to dataframe
+# Build GDP forecast dataframe
 gdp_forecast_df <- tibble(
-  year = seq(max(EU27_GDP$TIME_PERIOD) + 1, max(EU27_GDP$TIME_PERIOD) + 27),
+  year = seq(max(EU27_GDP$TIME_PERIOD) + 1,
+             max(EU27_GDP$TIME_PERIOD) + 27),
   GDP_forecast = as.numeric(gdp_fc$mean)
 )
 
-# Combine tax path with GDP forecast
-viability_data <- tax_path |>
-  left_join(gdp_forecast_df, by = "year")
-
-
-# Tax as % of GDP
-
-viability_data <- viability_data |>
+# Required tax path → tax / GDP
+required_data <- tax_path |>
+  left_join(gdp_forecast_df, by = "year") |>
   mutate(
-    tax_gdp_ratio = (tax_required / GDP_forecast) * 100
-    )
+    tax_gdp_ratio = (tax_required / GDP_forecast) * 100,
+    scenario = "Required tax-GDP ratio"
+  ) |>
+  select(year, tax_gdp_ratio, scenario)
 
-
-p1 <- ggplot(viability_data, aes(x = year, y = tax_gdp_ratio)) +
-  # zones
-  annotate("rect", xmin = -Inf, xmax = Inf, ymin = 0, ymax = 1, 
-           fill = "green", alpha = 0.1) +
-  annotate("rect", xmin = -Inf, xmax = Inf, ymin = 1, ymax = 3, 
-           fill = "yellow", alpha = 0.1) +
-  annotate("rect", xmin = -Inf, xmax = Inf, ymin = 3, ymax = 5, 
-           fill = "orange", alpha = 0.1) +
-  annotate("rect", xmin = -Inf, xmax = Inf, ymin = 5, ymax = Inf, 
-           fill = "red", alpha = 0.1) +
-  geom_line(color = "darkblue", linewidth = 1.2) +
-  geom_point(color = "darkblue", size = 2, alpha = 0.6) +
-  geom_hline(yintercept = c(1, 3, 5), linetype = "dashed", color = "gray40") +
-  labs(
-    title = "Economic Viability: Required Environmental Tax as % of GDP",
-    y = "Tax as % of GDP",
-    x = "Year"
-  ) +
-  scale_y_continuous(breaks = seq(0, 10, 1)) +
-  theme_minimal(base_size = 12) +
-  theme(
-    plot.subtitle = element_text(size = 10),
-    plot.caption = element_text(size = 8, hjust = 0)
-  )
-
-p1
-
-tax_pred_df <- as.data.frame(tax_pred) |>
+# Forecasted tax path → tax / GDP
+forecasted_data <- as.data.frame(tax_pred) |>
   mutate(year = tax_path$year[-1]) |>
-  select(year, fit)
-
-# Combine tax path with GDP forecast
-viability_data_norm <- tax_pred_df |>
-  left_join(gdp_forecast_df, by = "year")
-
-
-# Tax as % of GDP
-
-viability_data_norm <- viability_data_norm |>
+  select(year, fit) |>
+  left_join(gdp_forecast_df, by = "year") |>
   mutate(
-    tax_gdp_ratio_norm = (fit / GDP_forecast) * 100
-    )
+    tax_gdp_ratio = (fit / GDP_forecast) * 100,
+    scenario = "Forecasted tax-GDP ratio"
+  ) |>
+  select(year, tax_gdp_ratio, scenario)
 
+# Combine both paths
+comparison_data <- bind_rows(required_data, forecasted_data)
 
-p2 <- ggplot(viability_data_norm, aes(x = year, y = tax_gdp_ratio_norm)) +
-  # zones
-  annotate("rect", xmin = -Inf, xmax = Inf, ymin = 0, ymax = 1, 
-           fill = "green", alpha = 0.1) +
-  annotate("rect", xmin = -Inf, xmax = Inf, ymin = 1, ymax = 3, 
-           fill = "yellow", alpha = 0.1) +
-  annotate("rect", xmin = -Inf, xmax = Inf, ymin = 3, ymax = 5, 
-           fill = "orange", alpha = 0.1) +
-  annotate("rect", xmin = -Inf, xmax = Inf, ymin = 5, ymax = Inf, 
-           fill = "red", alpha = 0.1) +
-  geom_line(color = "darkblue", linewidth = 1.2) +
-  geom_point(color = "darkblue", size = 2, alpha = 0.6) +
-  geom_hline(yintercept = c(1, 3, 5), linetype = "dashed", color = "gray40") +
-  labs(
-    title = "Economic Viability: Forecasted Environmental Tax as % of GDP",
-    y = "Tax as % of GDP",
-    x = "Year"
+#Viability zones
+zones <- tibble(
+  ymin = c(0, 1, 3, 5),
+  ymax = c(1, 3, 5, Inf),
+  zone = c("Viable", "Caution", "Risk", "High Risk")
+)
+
+# Plot: Required vs Forecasted Tax as % of GDP
+ggplot() +
+  geom_rect(data = zones,
+            aes(xmin = -Inf, xmax = Inf, ymin = ymin, ymax = ymax, fill = zone),
+            alpha = 0.2) +
+  geom_line(data = comparison_data,
+            aes(x = year, y = tax_gdp_ratio, color = scenario),
+            linewidth = 1.2) +
+  geom_point(data = comparison_data,
+             aes(x = year, y = tax_gdp_ratio, color = scenario),
+             size = 2, alpha = 0.7) +
+  geom_hline(yintercept = c(1, 3, 5),
+             linetype = "dashed", color = "gray40") +
+  scale_color_manual(
+    values = c(
+      "Required tax-GDP ratio"   = "darkblue",
+      "Forecasted tax-GDP ratio" = "firebrick"
+    ),
+    name = "Scenario"
   ) +
+  scale_fill_manual(
+    values = c(
+      "Viable" = "green",
+      "Caution" = "yellow",
+      "Risk" = "orange",
+      "High Risk" = "red"
+    ),
+    name = "Viability zone"
+  ) +
+
+  labs(
+    title = "Economic Viability of Environmental Tax Policy",
+    subtitle = "Required vs Forecasted Environmental Tax as % of GDP",
+    x = "Year",
+    y = "Tax as % of GDP"
+  ) +
+
   scale_y_continuous(breaks = seq(0, 10, 1)) +
   theme_minimal(base_size = 12) +
   theme(
-    plot.subtitle = element_text(size = 10),
-    plot.caption = element_text(size = 8, hjust = 0)
+    legend.position = "right"
   )
-
-p2
 ```
 The thresholds (1%, 3%, 5%) are based on empirical observations from existing tax systems.
 We say that above 5% it would be Very Disruptive: At this scale, capital flight risks increase, sectoral lobbying intensifies, and social acceptance becomes critical. 
