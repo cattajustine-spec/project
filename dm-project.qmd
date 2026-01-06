@@ -1126,42 +1126,8 @@ fc
 auto.arima(ts_data)
 ```
 
-##### Ploting the forecast
-
-##### Our values between 1990 and 2023
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-# model -> data set -> plot
-forecast_df <- tibble(TIME_PERIOD = 
-  (max(EUGHG_agg_yearly$TIME_PERIOD) + 1):(max(EUGHG_agg_yearly$TIME_PERIOD) + 27),
-  Point_Forecast = fc$mean, Lo80 = fc$lower[, 1], Hi80 = fc$upper[, 1], Lo95 = fc$lower[, 2], Hi95 = fc$upper[, 2])
-```
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-GHG_all_2050 <- ggplot() +
-
-  geom_line(data=EUGHG_agg_yearly, aes(x = TIME_PERIOD, y = GHG_total, color = "Observations")) +
-  geom_line(data=forecast_df, aes(x = TIME_PERIOD, y = Point_Forecast, color = "Time series forecast")) +
-  geom_point(data=forecast_df, aes(x = TIME_PERIOD, y = Lo95, color = "Low 95%")) +
-  geom_point(data=forecast_df, aes(x = TIME_PERIOD, y = Hi95, color = "High 95%")) +
-   geom_vline(xintercept = 2023.5, linetype = "dotted") +
-  scale_color_manual(
-    name = "Legend",
-    values = c("Observations" = "steelblue", "Time series forecast" = "brown2", "Low 95%" = "salmon1", "High 95%" = "salmon1")
-  ) +
-  labs(
-    title = "EU27 Average Greenhouse gas emissions in total, forecast to 2050",
-    x = "Year",
-    y = "Greenhouse gas emissions (thousands of ton of CO2)"
-  ) +
-  scale_y_continuous(limits = c(0, 4e+06)) +  
-  theme_minimal()
-
-ggplotly(GHG_all_2050)
+```{r}
+autoplot(fc)
 ```
 
 ##### Comment :
