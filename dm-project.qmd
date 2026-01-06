@@ -1947,7 +1947,7 @@ ggplot() +
 
 ### 3. Is the model viable ? Its impact on the GDP & on added value
 
-#### a. Aggregate GDP : forecast & comparison
+#### a. Aggregate GDP: forecast & comparison
 
 ```{r, echo=FALSE}
 #| message: false
@@ -2044,7 +2044,7 @@ ggplot() +
   )
 ```
 
-#### Ratio Tax/GDP
+##### Ratio Tax/GDP
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -2130,6 +2130,60 @@ ggplot() +
 ```
 The thresholds (1%, 3%, 5%) are based on empirical observations from existing tax systems.
 We say that above 5% it would be Very Disruptive: At this scale, capital flight risks increase, sectoral lobbying intensifies, and social acceptance becomes critical. 
+
+#### b. Added value per sector: forecast & comparison
+***AV per sector targeted evolution***
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+# Latest observed AV per sector
+latest_year <- max(avsector_yearly$TIME_PERIOD)
+
+sector_last <- avsector_yearly |>
+  filter(TIME_PERIOD == latest_year) |>
+  mutate(share = AV_total / sum(AV_total)) |>  
+  select(sector, current_AV = AV_total, share)
+
+# Compute sector-level target AV proportionally to their last share
+avsector_forecasts <- avsector_forecasts |>
+  rename(year = TIME_PERIOD)
+sectors <- avsector_forecasts |> select(sector) |> distinct()
+sector_tax_path <- crossing(sectors, tax_path)
+sector_target_av <- avsector_forecasts |>
+  left_join(sector_tax_path, by = c("sector", "year"))
+sector_target_av <- sector_target_av |>
+  group_by(year) |>
+  mutate(target_sector_AV = forecast * (pred_GHG / sum(forecast))) |>
+  ungroup()
+
+# Combine historical AV + future target per sector
+av_sector_2050 <- bind_rows(
+  EU27_AV |> 
+    mutate(data_type = "Historical") |>
+    rename(TIME_PERIOD = TIME_PERIOD, AV_value = AV_value),
+  
+  sector_target_av |>
+    mutate(data_type = "Target") |>
+    rename(TIME_PERIOD = year, AV_value = target_sector_AV)
+)
+
+p_av_sector_2050 <- ggplot(
+  av_sector_2050, 
+  aes(x = TIME_PERIOD, y = AV_value, color = sector, linetype = data_type,
+      group = interaction(sector, data_type))
+) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "EU27 Added Value: Historical Data and Tax Policy Targets by 2050",
+    x = "Year",
+    y = "Added Value (millions of USD)",
+    color = "Sector",
+    linetype = "Data Type"
+  ) +
+  theme_minimal()
+
+ggplotly(p_av_sector_2050)
+```
 
 # Conclusion
 
