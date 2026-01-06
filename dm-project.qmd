@@ -1230,7 +1230,7 @@ plot(warm_fc, main = "Forecast of Warm Households")
 
 ##### Comment :
 
-### 3. The economy : forecast of the GDP
+### 3.1 The economy : forecast of the GDP
 
 ```{r, echo=FALSE}
 #| message: false
@@ -1243,6 +1243,39 @@ plot(gdp_fc, main = "Forecast of GDP")
 ```
 
 ##### Comment :
+
+### 3.2 The economy : forecast of the Added Values (GDP per sector)
+```{r}
+# Function to use auto.arima and forecast
+fit_arima_and_forecast <- function(series, steps = 27) {
+  model <- auto.arima(series)
+  fc <- forecast(model, h = steps)
+  return(fc)
+}
+
+forecasts <- lapply(sector, function(sector) {
+  sector_data <- EU27_AV %>%
+    filter(sector == !!sector) %>%
+    select(TIME_PERIOD, AV_value) %>%
+    arrange(TIME_PERIOD)
+  
+  ts_data <- ts(sector_data$AV_value, start = min(sector_data$TIME_PERIOD))
+
+  fc <- fit_arima_and_forecast(ts_data)
+  return(fc)
+})
+
+# Plot forecasts
+par(mfrow = c(2, 2))
+for (i in seq_along(sector)) {
+  plot(forecasts[[i]],
+       main = paste("Forecast for", sector[i]),
+       ylim = c(0, max(forecasts[[i]]$mean + forecasts[[i]]$upper[, 2])))
+}
+```
+
+
+
 
 ### 4. The economy : forecast of the environmental taxes {#forecastofenvttax}
 
@@ -2047,6 +2080,8 @@ forecasted_data <- as.data.frame(tax_pred) |>
     scenario = "Forecasted tax-GDP ratio"
   ) |>
   select(year, tax_gdp_ratio, scenario)
+
+
 
 # Combine both paths
 comparison_data <- bind_rows(required_data, forecasted_data)
