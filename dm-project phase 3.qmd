@@ -356,18 +356,7 @@ GHG_Emissions <- GHG_Emissions  |> select (iso3, TIME_PERIOD, OBS_VALUE)
 
 ### Changing the type of some variables
 
-For the variables related to the economic sectors, we consider them as *factor*, rather than as *character* variables.
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-GHG_Emissions$src_crf <- factor(GHG_Emissions$src_crf)
-EU27_GHG$src_crf <- factor(EU27_GHG$src_crf)
-Added_value$`Activité économique` <- factor(Added_value$`Activité économique`)
-EU27_AV$`Activité économique` <- factor(EU27_AV$`Activité économique`)
-```
-
-Same reasoning for the household types, and for the tax categories.
+For the inability to keep home adequately warm variable, we consider the household type variable and the income group variable as *factor*, rather than as *character* variables.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -391,8 +380,6 @@ names(Envt_Tax_Revenues)[names(Envt_Tax_Revenues) == "OBS_VALUE"] <- "Envt_Tax_R
 names(EU27_Tax)[names(EU27_Tax) == "OBS_VALUE"] <- "Envt_Tax_Revenues_value"
 names(GDP)[names(GDP) == "OBS_VALUE"] <- "GDP_value"
 names(EU27_GDP)[names(EU27_GDP) == "OBS_VALUE"] <- "GDP_value"
-names(Added_value)[names(Added_value) == "OBS_VALUE"] <- "AV_value"
-names(EU27_AV)[names(EU27_AV) == "OBS_VALUE"] <- "AV_value"
 names(GHG_Emissions)[names(GHG_Emissions) == "OBS_VALUE"] <- "GHG_Emissions_value"
 names(EU27_GHG)[names(EU27_GHG) == "OBS_VALUE"] <- "GHG_Emissions_value"
 names(GII)[names(GII) == "OBS_VALUE"] <- "GII_value"
@@ -401,61 +388,7 @@ names(coef_ineq)[names(coef_ineq) == "OBS_VALUE"] <- "coef_ineq_value"
 names(EU27_Coefineq)[names(EU27_Coefineq) == "OBS_VALUE"] <- "coef_ineq_value"
 ```
 
-We rename the sectors in the data sets including variables related to the economic sectors.
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-Added_value <- Added_value |>
-  mutate(`Activité économique` = recode(`Activité économique`,
-                                        "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration" = "Transport", 
-                                        "Agriculture, sylviculture et pêche"= "Agriculture", 
-                                        "Industrie (sauf construction)" = "Industry (including energy)",
-                                        "Activités de fabrication" = "Manufacturing"
-                                        ))
-
-EU27_AV <- EU27_AV |>
-  mutate(`Activité économique` = recode(`Activité économique`,
-                                        "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration" = "Transport", 
-                                        "Agriculture, sylviculture et pêche"= "Agriculture", 
-                                        "Industrie (sauf construction)" = "Industry (including energy)",
-                                        "Activités de fabrication" = "Manufacturing"
-                                        ))
-
-GHG_Emissions <- GHG_Emissions|>  #here we are combining the sectors related to manufacturing. 
-  mutate(
-    src_crf = case_when(
-      src_crf %in% c("Fuel combustion in manufacturing industries and construction", 
-                     "Industrial processes and product use") ~ "Manufacturing",
-      TRUE ~ src_crf
-    )
-  ) |>
-  group_by(iso3, TIME_PERIOD, src_crf) |>
-  summarise(GHG_Emissions_value = sum(GHG_Emissions_value), .groups = "drop")
-GHG_Emissions <- GHG_Emissions |>
-  mutate(src_crf = recode(src_crf, 
-                          "Fuel combustion in energy industries"="Industry (including energy)", 
-                          "Fuel combustion in transport"="Transport"))
-
-EU27_GHG <- EU27_GHG|>
-  mutate(
-    src_crf = case_when(
-      src_crf %in% c("Fuel combustion in manufacturing industries and construction", 
-                     "Industrial processes and product use") ~ "Manufacturing",
-      TRUE ~ src_crf
-    )
-  ) |>
-  group_by(name_en, TIME_PERIOD, src_crf) |>
-  summarise(GHG_Emissions_value = sum(GHG_Emissions_value), .groups = "drop")
-EU27_GHG <- EU27_GHG |>
-  mutate(src_crf = recode(src_crf, 
-                          "Fuel combustion in energy industries"="Industry (including energy)", 
-                          "Fuel combustion in transport"="Transport"))
-```
-
 We rename the country codes as the ones in the country key we created in [Country keys](#countrykeys).
-
-We also rename the variable "sector" itself, because it was different in the different data bases (src_crf and `Activité économique`).
 
 ```{r, echo=FALSE}
 #| message: false
@@ -465,18 +398,10 @@ Envt_Tax_Revenues <- Envt_Tax_Revenues |>
 EU27_Tax <- EU27_Tax |>
   rename(iso3 = REF_AREA)
 
-GDP <- GDP |> rename(iso3 = REF_AREA)
-EU27_GDP <- EU27_GDP |> rename(iso3 = REF_AREA)
-
-Added_value <- Added_value |>
-  rename(iso3 = REF_AREA,
-    sector = `Activité économique`) 
-EU27_AV <- EU27_AV |>
-  rename(iso3 = REF_AREA,
-    sector = `Activité économique`) 
-
-GHG_Emissions <- GHG_Emissions |> rename (sector = src_crf)
-EU27_GHG <- EU27_GHG |> rename (sector = src_crf)
+GDP <- GDP |> 
+  rename(iso3 = REF_AREA)
+EU27_GDP <- EU27_GDP |> 
+  rename(iso3 = REF_AREA)
 ```
 
 # Merging all data sets on country-year pairs
