@@ -1,7 +1,8 @@
 ---
 title: "dm-project"
 author: "Daphné Perry and Justine Catta"
-format: html
+format: 
+  wordcount-html: default
 ---
 
 # Introduction
@@ -2103,89 +2104,45 @@ We say that above 5% it would be Very Disruptive: At this scale, capital flight 
 
 #### b. Added value per sector: forecast & comparison
 ***AV per sector targeted evolution***
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-# Latest observed AV per sector
-latest_year <- max(avsector_yearly$TIME_PERIOD)
-
-sector_last <- avsector_yearly |>
-  filter(TIME_PERIOD == latest_year) |>
-  mutate(share = AV_total / sum(AV_total)) |>  
-  select(sector, current_AV = AV_total, share)
-
-# Compute sector-level target AV proportionally to their last share
-avsector_forecasts <- avsector_forecasts |>
-  rename(year = TIME_PERIOD)
-sectors <- avsector_forecasts |> select(sector) |> distinct()
-sector_tax_path <- crossing(sectors, tax_path)
-sector_target_av <- avsector_forecasts |>
-  left_join(sector_tax_path, by = c("sector", "year"))
-sector_target_av <- sector_target_av |>
-  group_by(year) |>
-  mutate(target_sector_AV = forecast * (pred_GHG / sum(forecast))) |>
-  ungroup()
-
-# Combine historical AV + future target per sector
-av_sector_2050 <- bind_rows(
-  EU27_AV |> 
-    mutate(data_type = "Historical") |>
-    rename(TIME_PERIOD = TIME_PERIOD, AV_value = AV_value),
-  
-  sector_target_av |>
-    mutate(data_type = "Target") |>
-    rename(TIME_PERIOD = year, AV_value = target_sector_AV)
-)
-
-p_av_sector_2050 <- ggplot(
-  av_sector_2050, 
-  aes(x = TIME_PERIOD, y = AV_value, color = sector, linetype = data_type,
-      group = interaction(sector, data_type))
-) +
-  geom_line(linewidth = 1) +
-  labs(
-    title = "EU27 Added Value: Historical Data and Tax Policy Targets by 2050",
-    x = "Year",
-    y = "Added Value (millions of USD)",
-    color = "Sector",
-    linetype = "Data Type"
-  ) +
-  theme_minimal()
-
-ggplotly(p_av_sector_2050)
-```
 
 
 ###### my forecast and comparison 
-```{r}
-# Paths for each sector
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+avlast_year <- max(EU27_AV$TIME_PERIOD)
+
+avlast_obs <- EU27_AV |>
+  filter(TIME_PERIOD == avlast_year) |>
+  group_by(sector) |>
+  summarise(
+    AV_value = sum(AV_value, na.rm = TRUE),
+    .groups = "drop"
+  )
+
 future_av_predictions_linear <- lapply(sector, function(sector) {
-  # Get the coefficients directly from the model
-  coef <- coef(model_AV_tax[[sector]])
 
-  # Print coefficients for debugging
-  cat("Coefficients for sector", sector, ":\n")
-  print(coef)
+  coef_sector <- coef(model_AV_tax[[sector]])
 
-  last_av <- last_obs$AV_value[last_obs$sector == sector]
+  last_av <- avlast_obs |>
+    filter(sector == !!sector) |>
+    pull(AV_value)
 
-  # Ensure last_av is a single value
   if (length(last_av) != 1) {
     stop(paste("last_av for sector", sector, "is not a single value."))
   }
 
-  # Get the yearly increment
-  yearly_increment <- coef["Envt_Tax_Revenues_value"] * avg_tax_increment + coef["TIME_PERIOD"]
+  yearly_increment <-
+    coef_sector["Envt_Tax_Revenues_value"] * avg_tax_increment +
+    coef_sector["TIME_PERIOD"]
 
-  # Ensure yearly_increment is a single value
   if (length(yearly_increment) != 1) {
     stop(paste("yearly_increment for sector", sector, "is not a single value."))
   }
 
-  # Predicted AV path: start from last_av and add cumulative increments
-  predicted_av <- last_av + cumsum(rep(yearly_increment, future_years))
+  predicted_av <- last_av +
+    cumsum(rep(yearly_increment, future_years))
 
-  # Create a tibble
   tibble(
     year = tax_path$year,
     sector = sector,
@@ -2193,23 +2150,30 @@ future_av_predictions_linear <- lapply(sector, function(sector) {
   )
 })
 
-# Combine all predictions
 future_av_predictions_linear <- bind_rows(future_av_predictions_linear)
 
+
 # Plot
-ggplot(future_av_predictions_linear, aes(x = year, y = Predicted_AV, color = sector)) +
+ggplot(future_av_predictions_linear,
+       aes(x = year, y = Predicted_AV, color = sector)) +
   geom_line(linewidth = 1) +
   labs(
-    title = "Forecasted Impact of Tax Policy on Sector Added Value (Linear Model)",
+    title = "Forecasted Impact of the Tax Policy on Sectoral Added Value",
     x = "Year",
-    y = "Added Value"
+    y = "Added Value",
+    color = "Sector"
   ) +
   scale_y_continuous(limits = c(0, NA)) +
   theme_minimal() +
-  theme(legend.position = "right")
+  theme(
+    legend.position = "right",
+    legend.title = element_text(face = "bold")
+  )
 ```
 
-```{r}
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
 future_av_predictions_linear <- future_av_predictions_linear |>
   rename(TIME_PERIOD = year)
 
