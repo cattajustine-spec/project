@@ -210,8 +210,9 @@ We keep the English name, the reference year and the observed numerical value of
 #| message: false
 #| warning: false
 GHG_Emissions <- GHG_Emissions |>
-  select(geo, TIME_PERIOD, OBS_VALUE) |>
-  filter(geo %in% eu_country_key$name_en)
+  filter(geo %in% eu_country_key$name_en, 
+         src_crf == "Total (excluding memo items)")|>
+    select(geo, TIME_PERIOD, OBS_VALUE)
 ```
 
 ### 4. Inability to keep home adequately warm
