@@ -699,15 +699,15 @@ Now we try to evaluate the coefficient between an increase in taxes in the year 
 for (k in 1:5) {
   GHG_Emissions[[paste0("GHG_Emissions_value.lead", k)]] <- ave(
     GHG_Emissions$GHG_Emissions_value, 
-    GHG_Emissions$iso3, GHG_Emissions$sector,
+    GHG_Emissions$iso3, 
     FUN = function(x) c(x[(1+k):length(x)], rep(NA, k)))}
 
 # add them in all merged
 all_merged_plus_leads <- merge(all_merged, GHG_Emissions,
-  by = c("iso3", "TIME_PERIOD", "sector", "GHG_Emissions_value"),
+  by = c("iso3", "TIME_PERIOD", "GHG_Emissions_value"),
   all.x = TRUE)
 all_merged_plus_leads <- all_merged_plus_leads |>
-    select(iso3, TIME_PERIOD, GDP_value, sector, Envt_Tax_Revenues_value, GHG_Emissions_value, GHG_Emissions_value.lead1, GHG_Emissions_value.lead2, GHG_Emissions_value.lead3, GHG_Emissions_value.lead4, GHG_Emissions_value.lead5 )
+    select(iso3, TIME_PERIOD, GDP_value, Envt_Tax_Revenues_value, GHG_Emissions_value, GHG_Emissions_value.lead1, GHG_Emissions_value.lead2, GHG_Emissions_value.lead3, GHG_Emissions_value.lead4, GHG_Emissions_value.lead5 )
 ```
 
 ```{r, echo=FALSE}
@@ -715,19 +715,17 @@ all_merged_plus_leads <- all_merged_plus_leads |>
 #| warning: false
 reg_results <- lapply(1:5, function(k) {formula_k <- as.formula(
     paste0("GHG_Emissions_value.lead", k,
-           " ~ Envt_Tax_Revenues_value + GDP_value + sector + TIME_PERIOD"))
+           " ~ Envt_Tax_Revenues_value + GDP_value + TIME_PERIOD"))
   lm(formula_k, data = all_merged_plus_leads)})
 
 lapply(reg_results, summary)
 ```
 
-##### Comment :
+We estimated a series of linear regressions to examine whether environmental tax revenues in year n have an effect on greenhouse gas emissions in subsequent years, from n+1 to n+5. Across the five models, the number of observations decreases gradually as the lead increases, because later lead variables contain more missing data. Despite this reduction in sample size, all models explain roughly 84% of the variation in emissions (R-squared between 0.8444 and 0.835), which is highly consistent across specifications.
 
-We estimated a series of linear regressions to examine whether environmental tax revenues in year n have an effect on greenhouse gas emissions in subsequent years, from n+1 to n+5. Across the five models, the number of observations decreases gradually as the lead increases, because later lead variables contain more missing data. Despite this reduction in sample size, all models explain roughly 65% of the variation in emissions (R-squared between 0.650 and 0.654), which is highly consistent across specifications.
+Across the five specifications, the coefficient on environmental tax revenues is negative, statistically significant, and remarkably stable. It increases from –1.516 at horizon n+1 to -2.083 at n+4, and then slightly decreases to -2.012 at n+5. This pattern suggests that higher environmental tax revenues are systematically associated with lower future GHG emissions. Statistical significance is very strong in all models (p \< 0.001).
 
-Across the five specifications, the coefficient on environmental tax revenues is negative, statistically significant, and remarkably stable. It ranges from –0.052 at horizon n+1 to –0.061 at n+2, before settling around –0.058 at n+3 and n+4 and –0.051 at n + 5. This pattern suggests that higher environmental tax revenues are systematically associated with slightly lower future GHG emissions, although the magnitude of the effect remains small in practical terms. Statistical significance is very strong in all models (p \< 0.001).
-
-All other coefficients are close to the ones saw before (GDP around 0.043, Manufacturing: +15,200 to +16,100 units, Industry (including energy production): +25,000 to +26,900 units, Transport: approximately +16,100 units, and time has coefficients between –902 and –959, all highly significant)
+All other coefficients are close to the ones saw before (GDP around 0.25, and time has coefficients between –4,320 and –4,552, all highly significant)
 
 ## 2. Between taxes and social inequalities
 
