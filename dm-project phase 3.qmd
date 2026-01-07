@@ -667,29 +667,22 @@ We try to answer one of our fundamental question : "Do taxes reduce emissions ?"
 
 ### a. Between taxes (n) and GHG (n)
 
-\*\*\* A REFAIRE \*\*\* : ça va à l'encontre de nos conclusions ! Possible solution : use GHG TOTAL instead of GHG value !
-
 First we try to evaluate the coefficient between an increase in taxes in the year n and the impact on Greenhouse gases emissions in the same year n.
 
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-model <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value + GDP_value + sector + TIME_PERIOD, data = all_merged)
+model <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value + GDP_value + TIME_PERIOD, data = all_merged)
 
 summary(model)
 ```
+We estimated a linear regression to examine the relationship between environmental tax revenues and greenhouse gas emissions, while controlling for GDP and year. The model explains about 84% of the variation in emissions (Adjusted R-squared = 0.8456).
 
-##### Comment :
+The coefficient on environmental tax revenues is -1.029, and it is highly statistically significant (p \< 0.001). This suggests that, holding GDP and time constant, higher environmental tax revenues are associated with slightly lower greenhouse gas emissions. However, the magnitude of the effect remains very small, implying a limited practical impact.
 
-We estimated a linear regression to examine the relationship between environmental tax revenues and greenhouse gas emissions, while controlling for GDP, emission sector, and year. The model explains about 65% of the variation in emissions (R-squared = 0.6542).
+GDP has a positive and small significant effect on emissions, with a coefficient of 0.2355 (p \< 0.001). This indicates that countries with higher economic output tend to emit more, consistent with scale effects: larger economies produce more goods and services, and thus more emissions.
 
-The coefficient on environmental tax revenues is -0.043, and it is highly statistically significant (p \< 0.001). This suggests that, holding GDP, sector, and time constant, higher environmental tax revenues are associated with slightly lower greenhouse gas emissions. However, the magnitude of the effect remains very small, implying a limited practical impact.
-
-GDP has a positive and very large significant effect on emissions, with a coefficient of 0.043 (p \< 0.001). This indicates that countries with higher economic output tend to emit more, consistent with scale effects: larger economies produce more goods and services, and thus more emissions.
-
-Sectoral effects are strong and highly significant. Relative to the baseline category (Agriculture), estimated additional emissions are: - Manufacturing: +16,440 units - Energy industry: +27,370 units - Transport: +16,150 units These substantial differences reflect the much higher emission intensities of industrial, energy, and transport activities compared with agriculture.
-
-The coefficient on the time variable is –913, highly significant (p \< 0.001), indicating a robust downward trend in emissions over time. This is consistent with what we saw before in the descriptive data.
+The coefficient on the time variable is -4,484, highly significant (p \< 0.001), indicating a robust downward trend in emissions over time. This is consistent with what we saw before in the descriptive data.
 
 Overall, the results suggest that GDP and sectoral composition remain the dominant drivers of emissions. Environmental tax revenues show a statistically significant negative association with emissions, but the magnitude of the effect is small. The pronounced negative time trend indicates that greenhouse gas emissions have declined over the period independently of the direct influence of environmental tax revenues.
 
