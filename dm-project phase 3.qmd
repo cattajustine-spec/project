@@ -303,19 +303,21 @@ EU27_Warming <- Warm_Households |>  #computing the average European inability to
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
   mutate(geo = "EU27") |>
   relocate(geo)
-
 #adding in Warm households, using country keys to have by iso3
-Warm_Households <- Warm_Households |> rename(iso2 = geo) |>
+Warm_Households <- Warm_Households |> 
+  rename(iso2 = geo) |>
   left_join(eu_country_key |> select(iso2, iso3), by = "iso2")
-EU27_Warming <- EU27_Warming |> rename(iso2 = geo) |> left_join(eu_country_key |> select(iso2, iso3), by = "iso2")
+EU27_Warming <- EU27_Warming |> 
+  rename(iso2 = geo) |> 
+  left_join(eu_country_key |> select(iso2, iso3), by = "iso2")
 Warm_Households <- bind_rows(Warm_Households, EU27_Warming) 
-Warm_Households <- Warm_Households |> select (iso3, TIME_PERIOD, hhtyp, incgrp, OBS_VALUE)
-
+Warm_Households <- Warm_Households |> 
+  select (iso3, TIME_PERIOD, hhtyp, incgrp, OBS_VALUE)
 ```
 
 ### Add European total
 
-For the economic data sets that are not described per economic sector (GDP, Taxes), we compute the European total across countries.
+For other economic data sets (GDP, Taxes, GHG emissions), we compute the European total across countries.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -333,35 +335,21 @@ EU27_Tax <- Envt_Tax_Revenues |>   #computing the total European environmental t
   mutate(REF_AREA = "EU27") |>
   relocate(REF_AREA)
 Envt_Tax_Revenues <- bind_rows(Envt_Tax_Revenues, EU27_Tax)
-```
 
-### Add European total per sector
-
-For the data sets that are described per economic sector (Added Value, GHG emissions), we have to compute the European total sum per sector.
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-EU27_AV <- Added_value |> #computing the total European gross added value, depending on the economic sector.  
-  group_by(TIME_PERIOD, `Activité économique`) |>
-  summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) |>
-  mutate(REF_AREA = "EU27") |>
-  relocate(REF_AREA)
-Added_value <- bind_rows(Added_value, EU27_AV)
-
-EU27_GHG <- GHG_Emissions |> #computing the total European greenhouse gas emissions, depending on the economic sector.  
-  group_by(TIME_PERIOD, src_crf) |>
+EU27_GHG <- GHG_Emissions |> #computing the total European greenhouse gas emissions
+  group_by(TIME_PERIOD) |>
   summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) |>
   mutate(geo = "EU27") |>
   relocate(geo)
-
 #adding in GHG_Emissions, using country keys to have by iso3
-GHG_Emissions <- GHG_Emissions |> rename(name_en = geo) |>
+GHG_Emissions <- GHG_Emissions |> 
+  rename(name_en = geo) |>
   left_join(eu_country_key |> select(name_en, iso3), by = "name_en")
-EU27_GHG <- EU27_GHG  |> rename(name_en = geo) |> left_join(eu_country_key |> select(name_en, iso3), by = "name_en")
+EU27_GHG <- EU27_GHG  |> 
+  rename(name_en = geo) |> 
+  left_join(eu_country_key |> select(name_en, iso3), by = "name_en")
 GHG_Emissions <- bind_rows(GHG_Emissions, EU27_GHG) 
-GHG_Emissions <- GHG_Emissions  |> select (iso3, TIME_PERIOD, src_crf, OBS_VALUE)
-
+GHG_Emissions <- GHG_Emissions  |> select (iso3, TIME_PERIOD, OBS_VALUE)
 ```
 
 ## Modifiying the characteristics of the variables
