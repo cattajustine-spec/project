@@ -501,76 +501,35 @@ European GDP has increased a lot since the early 1990s. Starting from roughly 6.
 
 The long-run average GDP (≈ 12.2 trillion USD) and the very large standard deviation (≈ 4.1 trillion USD) reflect substantial economic growth over time as well as cyclical fluctuations. The median (≈ 13.7 trillion USD) suggests that GDP has remained consistently high over the last two decades, despite temporary downturns.
 
-## 3. Added Value per economic sector
+## 3. Greenhouse gas emissions 
 
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-p_va <- ggplot(EU27_AV, aes(x = TIME_PERIOD, y = AV_value, color = sector, group = sector)) +
-  geom_line(linewidth = 1) +
+ggplot(EU27_GHG, aes(x = TIME_PERIOD, y = GHG_Emissions_value)) +
+  geom_line(linewidth = 1, color = "darkgreen") +
   labs(
-    title = "EU27 Total Added Value per Sector",
+    title = "Total European Greenhouse gas emissions (in millions of USD)",
     x = "Year",
-    y = "Value Added (million USD)",
-    color = "Sector"
+    y = "Greenhouse gas emissions (thousands of ton of CO2)"
   ) +
   theme_minimal()
-
-ggplotly(p_va)
 ```
 
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-summary_stats_AV <- EU27_AV |>
-  group_by(sector) |>
-  summarise(
-    Min = min(AV_value, na.rm = TRUE),
-    Max = max(AV_value, na.rm = TRUE),
-    Mean = mean(AV_value, na.rm = TRUE),
-    Median = median(AV_value, na.rm = TRUE),
-    SD = sd(AV_value, na.rm = TRUE)
-  )
-
-kable(summary_stats_AV, caption = "Descriptive statistics of EU total gross added value by sector (all years combined)")
-```
-
-Looking at the EU27 total gross added value by sector, three major sectors dominate and remain close in magnitude: manufacturing, transport, and industry (with energy related industries such as public electricity and heat production). Each of these sectors shows total added values between 610 and 3,410 billion USD, making them the core of the European economy. They all increased quite linearly accross the selected time period (1990 - 2024), with a slightly lower growth rate between 1995 and 2005.
-
-Agriculture, by contrast, contributes much less, with a total added value of only ≈ 215 billion USD on average, which is expected given its smaller role in modern European economies.
-
-## 4. Greenhouse gas emissions per economic sector
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-p_GHG <- ggplot(EU27_GHG, aes(x = TIME_PERIOD, y = GHG_Emissions_value, color = sector, group = sector)) +
-  geom_line(linewidth = 1) +
-  labs(
-    title = "EU27 Total Greenhouse gas emissions per Sector",
-    x = "Year",
-    y = "Greenhouse gas emissions (thousands of ton of CO2)",
-    color = "Sector"
-  ) +
-  theme_minimal()
-
-ggplotly(p_GHG)
-```
 
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
 summary_stats_GHG <- EU27_GHG |>
-  group_by(sector) |>                
   summarise(
     Min = min(GHG_Emissions_value, na.rm = TRUE),
     Max = max(GHG_Emissions_value, na.rm = TRUE),
     Mean = mean(GHG_Emissions_value, na.rm = TRUE),
     Median = median(GHG_Emissions_value, na.rm = TRUE),
     SD = sd(GHG_Emissions_value, na.rm = TRUE)
-  )
+    )
 
-kable(summary_stats_GHG, caption = "Descriptive statistics of EU total greenhouse gases emissions by sector (all years combined)")
+kable(summary_stats_GHG, caption = "Descriptive statistics of EU total greenhouse gases emissions (all years combined)")
 ```
 
 The EU27 total data show greenhouse gas emissions across four sectors: agriculture, manufacturing, energy industries, and transport. All sectors display a downward trend except transport, which starts rising again after 2010. With the exception of agriculture, all sectors experienced a marked drop in 2020 due to the COVID-19 shock, followed by a partial rebound.
@@ -579,7 +538,7 @@ Industrial emissions have declined sharply over the selected time period (from v
 
 Since around 2009–2012, transport emissions have surpassed those of manufacturing, and in 2023 they even exceeded energy industries emissions.
 
-## 5. Inability to keep home adequately warm per household type
+## 4. Inability to keep home adequately warm per household type
 
 ```{r, echo=FALSE}
 #| message: false
@@ -621,7 +580,7 @@ Among all subgroups, the total-population categories show the lowest percentages
 
 Women in low-income single households consistently report slightly higher percentages than men. For instance, low-income women (A1F, B_MD60) have an average inability rate of ≈ 21.1%, compared with ≈ 23.1% for low-income men (A1M, B_MD60), while total-population rates remain much lower at ≈ 10% across categories.
 
-## 6. GII per country
+## 5. GII per country
 
 ```{r, echo=FALSE}
 #| message: false
@@ -661,7 +620,7 @@ The Gender Inequality Index (GII) shows a clear downward trend across all Europe
 
 By 2024, the countries with the highest GII values are Cyprus, Romania, and Hungary, while the EU27 average has fallen to approximately 0.08, reflecting substantial progress over time. This aligns with the descriptive statistics: Romania has the highest mean GII (≈ 0.36), while Sweden and Denmark are among the lowest, with mean values of ≈ 0.05 and ≈ 0.054, respectively.
 
-## 7. Coefficient of human inequality per country
+## 6. Coefficient of human inequality per country
 
 ```{r, echo=FALSE}
 #| message: false
