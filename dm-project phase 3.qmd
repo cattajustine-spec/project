@@ -52,7 +52,7 @@ library(gridExtra)
 here::i_am("project.Rproj")
 ```
 
-## Presenting our data :
+## Presenting our data:
 ### 1. Environmental tax revenues (OECD, 1994–2023)
 
 This data set reports annual environmentally related tax revenues for EU countries from the OECD ([link](https://data-explorer.oecd.org/vis?lc=en&tm=DF_ERTR&pg=0&snb=1&vw=tb&df%5Bds%5D=dsDisseminateFinalDMZ&df%5Bid%5D=DSD_ERTR%40DF_ERTR&df%5Bag%5D=OECD.ENV.EPI&df%5Bvs%5D=&pd=1994%2C2023&dq=A.HRV%2BLVA%2BLTU%2BLUX%2BMLT%2BNLD%2BCYP%2BAUT%2BBEL%2BCZE%2BDNK%2BEST%2BFIN%2BFRA%2BDEU%2BGRC%2BHUN%2BIRL%2BITA%2BPOL%2BPRT%2BSVK%2BSVN%2BESP%2BSWE%2BBGR%2BROU.TAXREV.CAT_ENE%2BCAT_TRA%2BCAT_POL%2BCAT_RES%2B_T._T.USD.&ly%5Brw%5D=REF_AREA&ly%5Bcl%5D=TIME_PERIOD&to%5BTIME_PERIOD%5D=false)). Values are expressed in millions of USD and they cover a time period from 1994 to 2023.
@@ -71,9 +71,9 @@ Envt_Tax_Revenues <- vroom(here("data", "OECD_envt_tax.csv"))
 | Number of columns | `r ncol(Envt_Tax_Revenues)` |
 :::
 
-### 2. GDP and Added Value (OECD, 1990-2024)
+### 2. GDP (OECD, 1990-2024)
 
-This data set provides annual GDP and sectoral gross Value Added figures for EU countries. All variables are from the OECD data set ([link](https://data-explorer.oecd.org/vis?df%5Bds%5D=dsDisseminateFinalDMZ&df%5Bid%5D=DSD_NAMAIN10%40DF_TABLE1_OUTPUT&df%5Bag%5D=OECD.SDD.NAD&df%5Bvs%5D=&dq=A.BEL%2BAUT%2BCZE%2BDNK%2BEST%2BFIN%2BFRA%2BDEU%2BGRC%2BHUN%2BIRL%2BITA%2BLVA%2BLTU%2BLUX%2BNLD%2BPOL%2BPRT%2BSVK%2BSVN%2BESP%2BSWE%2BBGR%2BHRV%2BCYP%2BMLT%2BROU...B1G%2BB1GQ.._Z%2B_T%2BC%2BA%2BBTE%2BF%2BGTI%2BJ%2BK%2BL%2BM_N%2BOTQ%2BRTU..USD_EXC.V..&to%5BTIME_PERIOD%5D=false&pd=1990%2C2024&vw=tb)), are measured in millions of USD, using exchange rate and they cover the time period 1990 to 2024.
+This data set provides annual GDP figures for EU countries from the OECD ([link](https://data-explorer.oecd.org/vis?df%5Bds%5D=dsDisseminateFinalDMZ&df%5Bid%5D=DSD_NAMAIN10%40DF_TABLE1_OUTPUT&df%5Bag%5D=OECD.SDD.NAD&df%5Bvs%5D=&dq=A.BEL%2BAUT%2BCZE%2BDNK%2BEST%2BFIN%2BFRA%2BDEU%2BGRC%2BHUN%2BIRL%2BITA%2BLVA%2BLTU%2BLUX%2BNLD%2BPOL%2BPRT%2BSVK%2BSVN%2BESP%2BSWE%2BBGR%2BHRV%2BCYP%2BMLT%2BROU...B1G%2BB1GQ.._Z%2B_T%2BC%2BA%2BBTE%2BF%2BGTI%2BJ%2BK%2BL%2BM_N%2BOTQ%2BRTU..USD_EXC.V..&to%5BTIME_PERIOD%5D=false&pd=1990%2C2024&vw=tb)), measured in millions of USD, using exchange rate and they cover the time period 1990 to 2024.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -89,9 +89,9 @@ GDP_and_AV <- vroom(here("data", "OECD_GDP_and_AV.csv"))
 | Number of columns | `r ncol(GDP_and_AV)` |
 :::
 
-### 3. Greenhouse gas emissions by source sector (Eurostat, 1990-2023)
+### 3. Greenhouse gas emissions (Eurostat, 1990-2023)
 
-This data set reports total greenhouse gas emissions by source sector for the 27 EU countries. Values are expressed in thousand tonnes of CO₂-equivalent. The data set is from Eurostat ([here](https://ec.europa.eu/eurostat/databrowser/view/env_air_gge__custom_18942108/default/table)) and covers the time period 1990 to 2023.
+This data set reports total greenhouse gas emissions for the 27 EU countries. Values are expressed in thousand tonnes of CO₂-equivalent. The data set is from Eurostat ([here](https://ec.europa.eu/eurostat/databrowser/view/env_air_gge__custom_18942108/default/table)) and covers the time period 1990 to 2023.
 
 ```{r, echo=FALSE}
 #| message: false
