@@ -184,8 +184,9 @@ In this data set, we select only the ISO3 code, the reference year, and the obse
 #| message: false
 #| warning: false
 Envt_Tax_Revenues <- Envt_Tax_Revenues |>
-  select(REF_AREA, TIME_PERIOD, OBS_VALUE) |>
-  filter(REF_AREA %in% eu_country_key$iso3)
+  filter(REF_AREA %in% eu_country_key$iso3,
+         CATEGORY == "_T") |>
+  select(REF_AREA, TIME_PERIOD, OBS_VALUE)
 ```
 
 ### 2. GDP (in million of USD)
@@ -416,14 +417,12 @@ This merge will allow us to study environmental taxes, emissions, economic struc
 #| message: false
 #| warning: false
 all_merged <- Envt_Tax_Revenues |>
-  left_join(Added_value |> distinct(iso3, TIME_PERIOD, sector), by = c("iso3", "TIME_PERIOD")) |>
-  left_join(Added_value, by = c("iso3", "TIME_PERIOD", "sector")) |>
   left_join(GDP, by = c("iso3", "TIME_PERIOD")) |>
-  left_join(GHG_Emissions, by = c("iso3", "TIME_PERIOD", "sector")) |>
+  left_join(GHG_Emissions, by = c("iso3", "TIME_PERIOD")) |>
   left_join(Warm_Households, by = c("iso3", "TIME_PERIOD")) |>
   left_join(GII, by = c("iso3", "TIME_PERIOD")) |>
   left_join(coef_ineq, by = c("iso3", "TIME_PERIOD")) |>
-  select(iso3, TIME_PERIOD, sector, hhtyp, incgrp, Envt_Tax_Revenues_value, AV_value, GDP_value, GHG_Emissions_value, Warm_Households_value, GII_value, coef_ineq_value) |>
+  select(iso3, TIME_PERIOD, hhtyp, incgrp, Warm_Households_value, GII_value, coef_ineq_value, Envt_Tax_Revenues_value, GDP_value, GHG_Emissions_value) |>
   filter(iso3 != "EU27")
 ```
 
