@@ -676,7 +676,7 @@ model <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value + GDP_value + TIME_PER
 
 summary(model)
 ```
-We estimated a linear regression to examine the relationship between environmental tax revenues and greenhouse gas emissions, while controlling for GDP and year. The model explains about 84% of the variation in emissions (Adjusted R-squared = 0.8456).
+We estimated a linear regression to examine the relationship between environmental tax revenues and greenhouse gas emissions, while controlling for GDP and year. The model explains about 84% of the variation in emissions (Adjusted $R^2$ = 0.8456).
 
 The coefficient on environmental tax revenues is -1.029, and it is highly statistically significant (p \< 0.001). This suggests that, holding GDP and time constant, higher environmental tax revenues are associated with slightly lower greenhouse gas emissions. However, the magnitude of the effect remains very small, implying a limited practical impact.
 
@@ -721,7 +721,7 @@ reg_results <- lapply(1:5, function(k) {formula_k <- as.formula(
 lapply(reg_results, summary)
 ```
 
-We estimated a series of linear regressions to examine whether environmental tax revenues in year n have an effect on greenhouse gas emissions in subsequent years, from n+1 to n+5. Across the five models, the number of observations decreases gradually as the lead increases, because later lead variables contain more missing data. Despite this reduction in sample size, all models explain roughly 84% of the variation in emissions (R-squared between 0.8444 and 0.835), which is highly consistent across specifications.
+We estimated a series of linear regressions to examine whether environmental tax revenues in year n have an effect on greenhouse gas emissions in subsequent years, from n+1 to n+5. Across the five models, the number of observations decreases gradually as the lead increases, because later lead variables contain more missing data. Despite this reduction in sample size, all models explain roughly 84% of the variation in emissions ($R^2$ between 0.8444 and 0.835), which is highly consistent across specifications.
 
 Across the five specifications, the coefficient on environmental tax revenues is negative, statistically significant, and remarkably stable. It increases from –1.516 at horizon n+1 to -2.083 at n+4, and then slightly decreases to -2.012 at n+5. This pattern suggests that higher environmental tax revenues are systematically associated with lower future GHG emissions. Statistical significance is very strong in all models (p \< 0.001).
 
@@ -746,21 +746,17 @@ summary(model_gii_tax)
 
 ```
 
-##### Comment :
-
 We estimate three regressions to evaluate the association between environmental tax revenues and three social outcomes, in percentage: energy poverty, income inequality, and gender inequality. In all models, we also add GDP and time (years). We chose to not include the Gender Inequality index and the Income inequality coefficient in one each others regression because of collinearity problems. Also, the coefficient of energy poverty is rather a consequence of both than a cause, so we do not include it in each as well.
 
-In the model explaining energy poverty (log Warm_Households), we include the income-inequality coefficient. The resulting model has strong explanatory power (R² ≈ 0.6). The coefficient on environmental tax revenues remains small, positive, stable (+2.5e-06) and significant. Also, the income-inequality coefficient shows strong positive and significant associations with energy poverty.
+In the model explaining energy poverty (log Warm_Households), we include the income-inequality coefficient. The resulting model has strong explanatory power (Adjusted $R^2$ ≈ 0.6). The coefficient on environmental tax revenues remains small, positive, stable (+3.719e-05) and significant. Also, the income-inequality coefficient shows strong positive and significant associations with energy poverty.
 
-For income inequality (log coef_ineq), the model remains statistically valid but with limited explanatory power (R² ≈ 0.034), indicating that environmental taxes explain only a small part of the variation in inequality (+2.1e-06) once GDP and time effects are controlled for.
+For income inequality (log coef_ineq), the model remains statistically valid but with limited explanatory power (Adjusted $R^2$ ≈ 0.034), indicating that environmental taxes explain only a small part of the variation in inequality (+2.1e-06) once GDP and time effects are controlled for.
 
-Similarly, in the gender-inequality model (log GII) again, the inclusion of GDP and time fixed effects strengthens the model substantially (R² ≈ 0.365), and the environmental-tax coefficient remains positive (+4.8e-06) and highly significant.
+Similarly, in the gender-inequality model (log GII) again, the inclusion of GDP and time fixed effects strengthens the model substantially (Adjusted $R^2$ ≈ 0.365), and the environmental-tax coefficient remains positive (+4.8e-06) and highly significant.
 
 ## 3. Between tax and economy
 
 We try to answer the following question: "What is the impact of environmental taxes on the economy ?"
-
-### 3.1. Between taxes and GDP
 
 #### Regression
 
@@ -771,11 +767,9 @@ model_gdp_tax <- lm(log(GDP_value) ~ Envt_Tax_Revenues_value + TIME_PERIOD, data
 summary(model_gdp_tax)
 ```
 
-##### Comment :
-
 The regression of GDP on environmental tax revenues and year fixed effects shows a strong positive and statistically significant association between the two variables.The coefficient on environmental tax revenues is 6.02 × 10⁻⁵ and is significant at the 1% level (p \< 0.001); an increase of one unit in environmental tax revenues is associated with an increase of approximately 0.006% in GDP, holding the time trend constant.
 
-The model has substantial explanatory power (R² ≈ 0.27). The year coefficient is also positive and significant, reflecting general GDP growth over the period. But this relationship is correlational and does not imply causation, it indicates that environmental tax revenues tend to increase alongside GDP, consistent with the idea that wealthier economies can collect more from climate-related taxes.
+The model has substantial explanatory power (Adjusted $R^2$ ≈ 0.63). The year coefficient is also positive and significant, reflecting general GDP growth over the period. But this relationship is correlational and does not imply causation, it indicates that environmental tax revenues tend to increase alongside GDP, consistent with the idea that wealthier economies can collect more from climate-related taxes.
 
 #### Graphical representation
 
@@ -806,53 +800,6 @@ ggplot(clean_tax_data, aes(x = Envt_Tax_Revenues_value, y = GDP_value)) +
   theme(legend.title = element_text(size = 10, face = "bold"))
 
 ```
-
-### 3.2. Between taxes and added value
-
-#### Regression
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-sector <- c("Transport", "Agriculture", "Industry (including energy)", "Manufacturing")
-
-model_AV_tax <- lapply(sector, function(s){
-  data_s <- all_merged |> filter(sector == s)
-  lm(AV_value ~ Envt_Tax_Revenues_value + TIME_PERIOD, data = data_s, subset = iso3 != "EU27")
-})
-
-names(model_AV_tax) <- sector
-
-lapply(model_AV_tax, summary)
-```
-
-#### Graphical representation
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-ggplot(all_merged |> drop_na(Envt_Tax_Revenues_value, AV_value),
-       aes(x = Envt_Tax_Revenues_value, y = AV_value)) +
-  geom_point(alpha = 0.1, color = "darkgreen") +
-  geom_smooth(method = "lm", se = TRUE, color = "darkred") +
-  facet_wrap(~ sector, scales = "free") +
-  labs(
-    title = "Relationship between Environmental Tax Revenues and Added Value by Sector",
-    x = "Environmental Tax Revenues",
-    y = "Added Value"
-  ) +
-  theme_minimal()
-```
-
-##### Comment :
-
-Across sectors, higher environmental tax revenues are consistently associated with small but positive percentage changes in added value. The log-level specification allows interpreting effects in percentage terms. 
-- Transport: Environmental tax revenues have a positive and highly significant effect on log added value (+6.6, p < 0.001). This implies that higher tax revenues are associated with slightly higher sectoral output. 
-- Agriculture: We show a positive and significant relationship (+5.4e-01, p < 0.001), with an effect size that is smaller in practical terms, consistent with the sector’s scale. 
-- Industry (including energy): Positive and highly significant (+7.5, p < 0.001), there is a stronger sensitivity to tax revenues in this capital-intensive sector. 
-- Manufacturing: the coefficient is highly significant, with a similar magnitude to industry and transport (+6.5, p < 0.001).
-
-Periods with higher environmental tax revenues tend to coincide with stronger economic activity.
 
 # Forecasting : no-policy
 
