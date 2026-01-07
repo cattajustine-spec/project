@@ -1,0 +1,946 @@
+---
+title: "dm project - Phase 2"
+author: "Daphne Perry and Justine Catta"
+format: html
+---
+
+# Introduction
+
+## Description of our research question
+
+Our research question is the following: “To what extent do environmental taxes reduce Greenhouse Gas Emissions (GHG) in EU countries, and what are their long-term socioeconomic impacts across economic sectors?”. As the European Union commits to achieving net-zero emissions by 2050 under the European Green Deal, we aim to better understand the effectiveness and consequences of environmental taxation, both on emissions and socially.
+
+To answer this question, we will use sector-level panel data for all EU member states. Our data set includes GHG emissions, sectoral GDP (measured as Added Value), environmental tax revenues, and several indicators of social well-being. These include the Gender Inequality Index (GII), a coefficient of human inequality, and a measure of energy poverty that is the inability to adequately heat one’s home. Together, these variables allow us to evaluate the distributive consequences of taxes.
+
+After cleaning, harmonizing, and describing the data sets, we aim to estimate several relationships. First, we will measure the link between environmental taxation and sectoral GHG emissions. Do higher taxes lead to statistically significant reductions in emissions at both the EU and country levels? Are some sectors more responsive to taxation than others? To maintain analytical clarity and comparability across states, we will focus on four key sectors: Agriculture, Energy, Manufacturing, and Transport, which together account for the bulk of emissions and policy intervention.
+
+We will then investigate the association between environmental taxes and social inequality indicators. Our core question here can be summarized as: “Is there a social cost associated with environmental taxation, and if so, how large is it?” Specifically, we will analyse whether environmental taxes correlate with increases or decreases in gender inequality, income inequality, and energy poverty. This step is essential because policies that are environmentally effective but socially regressive may have a reduced long-term viability.
+
+Building on these empirical relationships, we will construct forecasts for the period 2026–2050 to estimate the level of taxation required to meet the European Green Deal’s emissions targets. We consider a policy scenario relying solely on environmental taxation applied to relevant sectors. Our analysis will assess whether such an approach is socially and economically sustainable: How would different tax levels affect inequalities and energy poverty? How much revenue would such taxes generate, and would the required tax burden be compatible with each country’s GDP levels?
+
+By combining environmental effectiveness, economic feasibility, and social impact, we can then address our overarching question: Is it socially and economically optimal for the EU to rely exclusively on environmental taxation to achieve net-zero emissions by 2050? If taxation alone proves insufficient or too socially costly, our results may highlight the need for complementary policies such as subsidies for green technologies, targeted social transfers, or sector-specific regulations to ensure a fair and effective ecological transition.
+
+## Link to the github project
+
+Our project is available on github [here](https://github.com/cattajustine-spec/project).
+
+## Setup
+
+```{r echo=FALSE}
+#| message: false
+#| warning: false
+library(vroom)
+library(ggplot2)
+library(knitr)
+library(dplyr)
+library(here)
+library(countrycode)
+library(plotly)
+library(tidyr)
+library(knitr)
+library(plm)
+library(tidyverse)
+library(broom)
+library(forecast)
+library(purrr)
+```
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+here::i_am("project.Rproj")
+```
+
+## Presenting our data :
+
+### 1. Environmental tax revenues (OECD, 1994–2023)
+
+This data set reports annual environmentally related tax revenues for EU countries, broken into categorises based on their environmental relevance by tax-base category (including energy, transport, pollution, and resources) that are mutually exclusive. According to the OECD, the database contains detailed qualitative and quantitative information on environmentally related taxes and fees, tradable permits and offsets, deposit-refund schemes, environmentally beneficial subsidies and payments and voluntary approaches used for environmental policy. Values are expressed in millions of USD. It is from the OECD and is available on this [link](https://data-explorer.oecd.org/vis?lc=en&tm=DF_ERTR&pg=0&snb=1&vw=tb&df%5Bds%5D=dsDisseminateFinalDMZ&df%5Bid%5D=DSD_ERTR%40DF_ERTR&df%5Bag%5D=OECD.ENV.EPI&df%5Bvs%5D=&pd=1994%2C2023&dq=A.HRV%2BLVA%2BLTU%2BLUX%2BMLT%2BNLD%2BCYP%2BAUT%2BBEL%2BCZE%2BDNK%2BEST%2BFIN%2BFRA%2BDEU%2BGRC%2BHUN%2BIRL%2BITA%2BPOL%2BPRT%2BSVK%2BSVN%2BESP%2BSWE%2BBGR%2BROU.TAXREV.CAT_ENE%2BCAT_TRA%2BCAT_POL%2BCAT_RES%2B_T._T.USD.&ly%5Brw%5D=REF_AREA&ly%5Bcl%5D=TIME_PERIOD&to%5BTIME_PERIOD%5D=false). They cover a time period from 1994 to 2023.
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+Envt_Tax_Revenues <- vroom(here("data", "OECD_envt_tax.csv"))
+```
+
+::: {columns}
+|                   |                             |
+|-------------------|-----------------------------|
+| Name              | `r "Envt_Tax_Revenues"`     |
+| Number of rows    | `r nrow(Envt_Tax_Revenues)` |
+| Number of columns | `r ncol(Envt_Tax_Revenues)` |
+:::
+
+### 2. GDP and Added Value (OECD, 1990-2024)
+
+This data set provides annual GDP and sectoral gross Value Added figures for EU countries. It follows an output approach : GDP is measured as the sum of gross value added. For the Value Added by sectors, we will keep these ones : "Agriculture,forestry and fishing", "Manufacturing", "Industry (except construction)" and "Wholesale and retail trade; repair of motor vehicles and motorcycles; transportation and storage; accommodation and food service activities" (cf. [Justification for the Sector Mapping Between ISIC and CRF Classifications](#justificationforsectormapping)). All variables are measured in millions of USD, using exchange rate. The data set on GDP and Added Value is available at this [link](https://data-explorer.oecd.org/vis?df%5Bds%5D=dsDisseminateFinalDMZ&df%5Bid%5D=DSD_NAMAIN10%40DF_TABLE1_OUTPUT&df%5Bag%5D=OECD.SDD.NAD&df%5Bvs%5D=&dq=A.BEL%2BAUT%2BCZE%2BDNK%2BEST%2BFIN%2BFRA%2BDEU%2BGRC%2BHUN%2BIRL%2BITA%2BLVA%2BLTU%2BLUX%2BNLD%2BPOL%2BPRT%2BSVK%2BSVN%2BESP%2BSWE%2BBGR%2BHRV%2BCYP%2BMLT%2BROU...B1G%2BB1GQ.._Z%2B_T%2BC%2BA%2BBTE%2BF%2BGTI%2BJ%2BK%2BL%2BM_N%2BOTQ%2BRTU..USD_EXC.V..&to%5BTIME_PERIOD%5D=false&pd=1990%2C2024&vw=tb). The data covers the time period 1990 to 2024.
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+GDP_and_AV <- vroom(here("data", "OECD_GDP_and_AV.csv"))
+```
+
+::: {columns}
+|                   |                      |
+|-------------------|----------------------|
+| Name              | `r "GDP_and_AV"`     |
+| Number of rows    | `r nrow(GDP_and_AV)` |
+| Number of columns | `r ncol(GDP_and_AV)` |
+:::
+
+### 3. Greenhouse gas emissions by source sector (Eurostat, 1990-2023)
+
+This data set reports total greenhouse gas emissions by source sector for the 27 eu countries. Values are expressed in thousand tonnes of CO₂-equivalent. The GHG source sectors we chose are the following ones, to be able to match the Added Value sectors (energy, transport, agriculture, industry): Total, Fuel combustion in energy industries, Fuel combustion in manufacturing industries and construction, Industrial processes and product use, agriculture,  fuel combustion in transport The data set on Greenhouse gas emissions is [here](https://ec.europa.eu/eurostat/databrowser/view/env_air_gge__custom_18942108/default/table). The data covers the time period 1990 to 2023.
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+GHG_Emissions <- vroom(here("data", "Eurostat_ghg.csv"))
+```
+
+::: {columns}
+|                   |                         |
+|-------------------|-------------------------|
+| Name              | `r "GHG_Emissions"`     |
+| Number of rows    | `r nrow(GHG_Emissions)` |
+| Number of columns | `r ncol(GHG_Emissions)` |
+:::
+
+### 4. Inability to keep home adequately warm (Eurostat, 2003-2024)
+
+This data set measures the percentage of households unable to keep their home adequately warm. It reflects energy poverty and distributional effects of energy pricing across income groups and household types. We chose 3 households type : the total, single female and single male to be able to have an idea of the gender issues. We also chose two income situations : the total (all incomes) and the group below 60% of the median (in situation of poverty), because the income inequality is not available in the Human Index. The data set on Inability to keep home adequately warm is linked [here](https://ec.europa.eu/eurostat/databrowser/view/ILC_MDES01__custom_18945942/default/table). The time period covered is 2003-2024.
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+Warm_Households <- vroom(here("data","Eurostat_warm.csv"))
+```
+
+::: {columns}
+|                   |                           |
+|-------------------|---------------------------|
+| Name              | `r "Warm_Households"`     |
+| Number of rows    | `r nrow(Warm_Households)` |
+| Number of columns | `r ncol(Warm_Households)` |
+:::
+
+### 5. Human index (UNDP HDR, 1990-2023)
+
+This data set provides annual values for lots of Human Development Indexes. We focus on the Coefficient of Human Inequality and Gender Inequality Index (GII) for most countries worldwide. It combines indicators related to health, education, income, and gender disparities, enabling long-run social development comparisons.
+
+Available on this [page](HDR%20index%20https://hdr.undp.org/data-center/documentation-and-downloads) from the UNDP Human Development Report (HDR) "All composite indices and components time series (1990-2023)" or directly with this [link](https://hdr.undp.org/sites/default/files/2025_HDR/HDR25_Composite_indices_complete_time_series.csv). The time period of this data set is 1990 to 2023.
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+Soc_Indexes <- vroom(here("data", "HDR_indexes.csv"))
+```
+
+::: {columns}
+|                   |                       |
+|-------------------|-----------------------|
+| Name              | `r "Soc_Indexes"`     |
+| Number of rows    | `r nrow(Soc_Indexes)` |
+| Number of columns | `r ncol(Soc_Indexes)` |
+:::
+
+# Modifying the data sets
+
+Because the data sets we chose are quite huge, we first need to remove all the variables we will not use, then add missing variables that we think are important for our analysis, and then modify the variables we kept.
+
+Finally, to simplify our analysis, we will merge all our data sets in one data base.
+
+### Country keys {#countrykeys}
+
+Our analysis is on the 27 countries in the European Union, in the following list to be precise : Austria, Belgium, Bulgaria, Croatia, Cyprus, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden. 
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+eu_countries <- unique(GHG_Emissions$geo)
+
+eu_country_key <- data.frame(name_en = eu_countries) |>
+  mutate(
+    iso3 = countrycode(name_en, origin = "country.name", destination = "iso3c"),
+    iso2 = countrycode(name_en, origin = "country.name", destination = "iso2c"),
+    name_fr = countrycode(name_en, origin = "country.name", destination = "country.name.fr"))  |>
+  bind_rows(tibble(name_en = "EU27", name_fr = "EU27", iso2 = "EU27", iso3 = "EU27"))
+```
+
+Why we construct country keys and filter to EU-27: 
+
+Our analysis focuses exclusively on the 27 Member States of the European Union. However, each dataset uses different country identifiers: ISO2 codes, ISO3 codes, or full English names. To ensure consistency across datasets and avoid mismatches during merging, we must first harmonize all country identifiers.
+
+The emissions dataset provides a clean list of country names, from which we build a unified “country key” mapping English names to ISO2, ISO3, and French names. This serves as a reference table for filtering every dataset to the same geographical scope and ensures that only EU-27 countries are retained throughout the cleaning process.
+
+### Removing unwanted variables
+
+The original datasets contain many variables and dimensions that are irrelevant to our research question (such as measurement units, alternative breakdowns, metadata, or categories outside our scope). Keeping these unnecessary variables would complicate the merging process and make the analysis more difficult to interpret. Therefore, for each dataset, we systematically retain only four essential components:
+
+- The geographical identifier (ISO2, ISO3, or name).
+- The reference year.
+- The relevant economic or social variable (e.g., revenues, GDP, emissions, inequality index).
+- The sector information when relevant.
+
+This ensures a clean, comparable structure across datasets before we perform more complex transformations.
+
+##### 1. Environmental tax revenues (in million of USD)
+
+In this data set, we are only interested in the following variables:
+
+-   **REF_AREA**: Identifies the country or reporting area using an ISO3 code (e.g., LVA for Latvia, LTU for Lithuania). This variable is the geographic dimension of the data set.
+-   **TIME_PERIOD**: Indicates the reference year of observation (from 1994 to 2023).
+-   **OBS_VALUE**: Contains the numerical value of environmentally related tax revenues.
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+Envt_Tax_Revenues <- Envt_Tax_Revenues |>
+  select(REF_AREA, TIME_PERIOD, OBS_VALUE) |>
+  filter(REF_AREA %in% eu_country_key$iso3)
+```
+
+##### 2. GDP and Value Added per capita annual growth per sector (in million of USD)
+
+In this data set, we have two main variables of interest: the [Gross Domestic Product](#grossdomesticproduct) and the [Gross Added Value](#grossaddedvalue).
+
+They are described by the **Transaction** variable, therefore, we need to create two independent data sets, one for each variable of interest.
+
+###### Gross Domestic product {#grossdomesticproduct}
+
+In this data set, we are only interested in the following variables:
+
+-   **REF_AREA**: Identifies the country or reporting area using an ISO3 code. This variable is the geographic dimension of the data set.
+-   **TIME_PERIOD**: Indicates the reference year of observation (from 1990 to 2024).
+-   **OBS_VALUE**: Contains the numerical value of the GDP, for a given time and year.
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+GDP <- GDP_and_AV |>
+  filter(Transaction == "Produit intérieur brut", 
+         REF_AREA %in% eu_country_key$iso3) |>
+  select(REF_AREA, TIME_PERIOD, OBS_VALUE)
+```
+
+###### Gross Added Value {#grossaddedvalue}
+
+In this data set, we are only interested in the following variables:
+
+-   **REF_AREA**: Identifies the country or reporting area using an ISO3 code. This variable is the geographic dimension of the data set.
+-   **TIME_PERIOD**: Indicates the reference year of observation (from 1990 to 2024).
+-   **Activité économique**: A label in French describing the economic activity or industry sector associated with the added value produced. In this data set, we are only interested in four sectors (cf. [Justification for the Sector Mapping Between ISIC and CRF Classifications](#justificationforsectormapping)):
+    -   "Activités de fabrication", i.e., manufacturing.
+    -   "Agriculture, sylviculture et pêche", i.e., agriculture.
+    -   "Industrie (sauf construction)", i.e., public electricity and heat production.
+    -   "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration", i.e., transport.\
+-   **OBS_VALUE**: Contains the numerical value of the gross added value.
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+Added_value <- GDP_and_AV |>
+  filter(Transaction == "Valeur ajoutée, brute", 
+         REF_AREA %in% eu_country_key$iso3, 
+         `Activité économique` %in% c(
+           "Agriculture, sylviculture et pêche",
+           "Activités de fabrication",
+           "Industrie (sauf construction)",
+           "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration"
+           )) |>
+  select(REF_AREA, `Activité économique`, 
+         TIME_PERIOD, OBS_VALUE)
+```
+
+##### 3. Greenhouse gas emissions by source sector (in million of ton)
+
+In this data set, we are only interested in the following variables:
+
+-   **geo**: Identifies the country or reporting area with its English name. This variable is the geographic dimension of the data set.
+-   **TIME_PERIOD**: Indicates the reference year of observation (from 1990 to 2024).
+-   **src_crf**: Describes the economic activity or industry sector associated with the greenhouse gases emitted. In this data set, we are only interested in five sectors (cf. [Justification for the Sector Mapping Between ISIC and CRF Classifications](#justificationforsectormapping)):
+    -   "Agriculture".
+    -   "Fuel combustion in energy industries", i.e., public electricity and heat production.
+    -   "Fuel combustion in manufacturing industries and construction" and “Industrial processes and product use”, i.e., manufacturing (we will combine this sectors in the [Renaming some variables](#renamingsomevariables) section).
+    -   "Fuel combustion in transport", i.e., transport.
+-   **OBS_VALUE**: Contains the numerical value of the Greenhouse Gases emitted.
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+GHG_Emissions <- GHG_Emissions |>
+  select(src_crf, geo, TIME_PERIOD, OBS_VALUE) |>
+  filter(geo %in% eu_country_key$name_en, 
+         src_crf != "Total (excluding memo items)")
+```
+
+###### Justification for the Sector Mapping Between ISIC and CRF Classifications {#justificationforsectormapping}
+
+The reconciliation of sectors across the ISIC-based data set and the CRF (Common Reporting Format) classification relies on aligning economic activities with their dominant emission sources. Although the two systems are not structurally identical—ISIC being an economic activity classification and CRF being an emissions reporting framework—several robust correspondences can be established.
+
+First, Agriculture, forestry and fishing (ISIC A) is mapped to CRF 3 (Agriculture). Both refer to primary-sector biological production and include emissions directly linked to agricultural practices such as enteric fermentation, manure management, and agricultural soils.
+
+Second, Manufacturing (ISIC C) is associated with CRF 1.A.2 (Manufacturing industries and construction) and CRF 2 (Industrial processes and product use). Manufacturing activity generates emissions both from fuel combustion in industrial facilities (covered by 1.A.2) and from process-related sources such as cement, chemicals, or metals production (covered by CRF 2), making this linkage consistent with the structure of industrial emissions.
+
+Third, Electricity, gas, steam and air conditioning supply (ISIC D)—even though aggregated within “Industry (except construction)” in the first data set—logically corresponds to CRF 1.A.1 (Public electricity and heat production). This CRF category captures emissions from power generation and heat production, which are the core activities of ISIC D.
+
+Finally, Transportation and storage (ISIC H)—included in a broader aggregated category in the data set—is aligned with CRF 1.A.3 (Transport). This CRF category encompasses fuel combustion from road, rail, aviation, and navigation transport, which directly reflects the operational scope of ISIC H.
+
+Overall, the mapping follows a principle of dominant emission source equivalence, ensuring that each ISIC activity is linked to the CRF category representing the primary origin of its greenhouse gas emissions. This approach allows the two data sets—despite structural differences—to be compared and integrated in a coherent and meaningful way for our analysis.
+
+##### 4. Inability to keep home adequately warm
+
+In this data set, we are only interested in the following variables:
+
+-   **geo**: Identifies the country or reporting area using a ISO2 code. This variable is the geographic dimension of the data set.
+-   **TIME_PERIOD**: Indicates the reference year of observation (from 2003 to 2024).
+-   **hhtyp**: Indicates the composition of the household, here we are only interested in:
+    -   "A1F", i.e., the households composed by only one female.
+    -   "A1M", i.e., the households composed by only one male.
+    -   "TOTAL", i.e., all households (whatever their composition).
+-   **incrp**: Indicates the income group of the household, here we are only interested in:
+    -   "B_MD60", i.e., the households who have an income below 60% of the median income (meaning they are below the poverty threshold).
+    -   "TOTAL", i.e., all households (whatever their revenue).
+-   **OBS_VALUE**: Contains the percentage of household who report that they are unable to keep their home adequately warm, within the designated group.
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+Warm_Households <- Warm_Households |>
+  select(geo, TIME_PERIOD, hhtyp, incgrp, OBS_VALUE) |>
+  filter(geo %in% eu_country_key$iso2, 
+         hhtyp %in% c("A1F", "A1M", "TOTAL"))
+```
+
+##### 5. HDR index
+
+In this data set, we have two main variables of interest: the [Gender Inequality Index](#genderinequalityindex) and the [Coefficient of Human Inequality](#coefficientofhumaninequality).
+
+They are described per year as different variables (meaning we have a gii_2020, gii_2021, ..., coef_ineq_2003, coef_ineq_2004, etc.). Therefore, we need to pivot our database, and then create two independent data sets, one for each variable of interest.
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+Soc_Indexes <- Soc_Indexes |>
+  pivot_longer(
+    cols = matches("_[0-9]{4}$"),   
+    names_to = c("Indicator", "TIME_PERIOD"),
+    names_pattern = "^(.*)_(\\d{4})$",
+    values_to = "OBS_VALUE"
+  ) |>
+  mutate(
+    OBS_VALUE = as.numeric(OBS_VALUE),
+    TIME_PERIOD = as.integer(TIME_PERIOD)
+  )
+```
+
+###### Gender inequality Index {#genderinequalityindex}
+
+In this data set, we are only interested in the following variables:
+
+-   **iso3**: Identifies the country or reporting area using an ISO3 code. This variable is the geographic dimension of the data set.
+-   **TIME_PERIOD**: Indicates the reference year of observation (from 1990 to 2023).
+-   **OBS_VALUE**: Contains the numerical value of the GII.
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+GII <- Soc_Indexes|>
+  filter(iso3 %in% eu_country_key$iso3,
+         Indicator == "gii") |>
+  select(iso3, TIME_PERIOD, OBS_VALUE)
+```
+
+###### Coefficient of Human inequality {#coefficientofhumaninequality}
+
+In this data set, we are only interested in the following variables:
+
+-   **iso3**: Identifies the country or reporting area using an ISO3 code. This variable is the geographic dimension of the data set.
+-   **TIME_PERIOD**: Indicates the reference year of observation (from 2010 to 2023).
+-   **OBS_VALUE**: Contains the numerical value of the coefficient of human inequality.
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+coef_ineq <- Soc_Indexes|>
+  filter(iso3 %in% eu_country_key$iso3,
+         Indicator == "coef_ineq")|>
+  select(iso3, TIME_PERIOD, OBS_VALUE)
+```
+
+### Adding some entities
+
+#### Add European average (across countries)
+
+For the data sets that describe inequality indexes, we compute the European average across countries:
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+EU27_GII <- GII |>  #computing the average European gender inequality index. 
+  group_by(TIME_PERIOD) |>
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
+  mutate(iso3 = "EU27") |>
+  relocate(iso3)
+GII <- bind_rows(GII, EU27_GII)
+
+EU27_Coefineq <- coef_ineq |> #computing the average European coefficient of human inequality. 
+  group_by(TIME_PERIOD) |>
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
+  mutate(iso3 = "EU27") |>
+  relocate(iso3)
+coef_ineq <- bind_rows(coef_ineq, EU27_Coefineq)
+
+EU27_Warming <- Warm_Households |>  #computing the average European inability to keep home adequately warm, depending on the household composition and income.  
+  group_by(TIME_PERIOD, hhtyp, incgrp) |>
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) |>
+  mutate(geo = "EU27") |>
+  relocate(geo)
+
+#adding in Warm households, using country keys to have by iso3
+Warm_Households <- Warm_Households |> rename(iso2 = geo) |>
+  left_join(eu_country_key |> select(iso2, iso3), by = "iso2")
+EU27_Warming <- EU27_Warming |> rename(iso2 = geo) |> left_join(eu_country_key |> select(iso2, iso3), by = "iso2")
+Warm_Households <- bind_rows(Warm_Households, EU27_Warming) 
+Warm_Households <- Warm_Households |> select (iso3, TIME_PERIOD, hhtyp, incgrp, OBS_VALUE)
+
+```
+
+#### Add European total
+
+For the economic data sets that are not described per economic sector, we compute the European total across countries:
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+EU27_GDP <- GDP |>                #computing the total European GDP 
+  group_by(TIME_PERIOD) |>
+  summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) |>
+  mutate(REF_AREA = "EU27") |>
+  relocate(REF_AREA)
+GDP <- bind_rows(GDP, EU27_GDP)
+
+EU27_Tax <- Envt_Tax_Revenues |>   #computing the total European environmental tax revenue
+  group_by(TIME_PERIOD) |>
+  summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) |>
+  mutate(REF_AREA = "EU27") |>
+  relocate(REF_AREA)
+Envt_Tax_Revenues <- bind_rows(Envt_Tax_Revenues, EU27_Tax)
+```
+
+#### Add European total per sector
+
+For the data sets that are described per economic sector, we have to compute the European total sum per sectors:
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+EU27_AV <- Added_value |> #computing the total European gross added value, depending on the economic sector.  
+  group_by(TIME_PERIOD, `Activité économique`) |>
+  summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) |>
+  mutate(REF_AREA = "EU27") |>
+  relocate(REF_AREA)
+Added_value <- bind_rows(Added_value, EU27_AV)
+
+EU27_GHG <- GHG_Emissions |> #computing the total European greenhouse gas emissions, depending on the economic sector.  
+  group_by(TIME_PERIOD, src_crf) |>
+  summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) |>
+  mutate(geo = "EU27") |>
+  relocate(geo)
+
+#adding in GHG_Emissions, using country keys to have by iso3
+GHG_Emissions <- GHG_Emissions |> rename(name_en = geo) |>
+  left_join(eu_country_key |> select(name_en, iso3), by = "name_en")
+EU27_GHG <- EU27_GHG  |> rename(name_en = geo) |> left_join(eu_country_key |> select(name_en, iso3), by = "name_en")
+GHG_Emissions <- bind_rows(GHG_Emissions, EU27_GHG) 
+GHG_Emissions <- GHG_Emissions  |> select (iso3, TIME_PERIOD, src_crf, OBS_VALUE)
+
+```
+
+### Modifiying the characteristics of the variables
+
+#### Changing the type of some variables
+
+For the variables related to the economic sectors, it will be easier to consider them as *factor*, rather than as *character* variables.
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+GHG_Emissions$src_crf <- factor(GHG_Emissions$src_crf)
+EU27_GHG$src_crf <- factor(EU27_GHG$src_crf)
+Added_value$`Activité économique` <- factor(Added_value$`Activité économique`)
+EU27_AV$`Activité économique` <- factor(EU27_AV$`Activité économique`)
+```
+
+Same reasoning for the household types in the Warm_Households data set, and for the tax categories in the Envt_Tax_Revenues data set.
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+Warm_Households$hhtyp <- factor(Warm_Households$hhtyp)
+EU27_Warming$hhtyp <- factor(EU27_Warming$hhtyp)
+Warm_Households$incgrp <- factor(Warm_Households$incgrp)
+EU27_Warming$incgrp <- factor(EU27_Warming$incgrp)
+```
+
+#### Renaming some variables {#renamingsomevariables}
+
+To be able to merge our data sets in a data base, we need to modify the name of the variable **OBS_VALUE** that is in every data set to be able to identify which OBS_VALUE is associated to which data set.
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+names(Warm_Households)[names(Warm_Households) == "OBS_VALUE"] <- "Warm_Households_value"
+names(EU27_Warming)[names(EU27_Warming) == "OBS_VALUE"] <- "Warm_Households_value"
+names(Envt_Tax_Revenues)[names(Envt_Tax_Revenues) == "OBS_VALUE"] <- "Envt_Tax_Revenues_value"
+names(EU27_Tax)[names(EU27_Tax) == "OBS_VALUE"] <- "Envt_Tax_Revenues_value"
+names(GDP)[names(GDP) == "OBS_VALUE"] <- "GDP_value"
+names(EU27_GDP)[names(EU27_GDP) == "OBS_VALUE"] <- "GDP_value"
+names(Added_value)[names(Added_value) == "OBS_VALUE"] <- "AV_value"
+names(EU27_AV)[names(EU27_AV) == "OBS_VALUE"] <- "AV_value"
+names(GHG_Emissions)[names(GHG_Emissions) == "OBS_VALUE"] <- "GHG_Emissions_value"
+names(EU27_GHG)[names(EU27_GHG) == "OBS_VALUE"] <- "GHG_Emissions_value"
+names(GII)[names(GII) == "OBS_VALUE"] <- "GII_value"
+names(EU27_GII)[names(EU27_GII) == "OBS_VALUE"] <- "GII_value"
+names(coef_ineq)[names(coef_ineq) == "OBS_VALUE"] <- "coef_ineq_value"
+names(EU27_Coefineq)[names(EU27_Coefineq) == "OBS_VALUE"] <- "coef_ineq_value"
+```
+
+To be able to merge the data sets including variables related to the economic sectors, it will be easier to have the same sector names, in English.
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+Added_value <- Added_value |>
+  mutate(`Activité économique` = recode(`Activité économique`,
+                                        "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration" = "Transport", 
+                                        "Agriculture, sylviculture et pêche"= "Agriculture", 
+                                        "Industrie (sauf construction)" = "Industry (including energy)",
+                                        "Activités de fabrication" = "Manufacturing"
+                                        ))
+
+EU27_AV <- EU27_AV |>
+  mutate(`Activité économique` = recode(`Activité économique`,
+                                        "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration" = "Transport", 
+                                        "Agriculture, sylviculture et pêche"= "Agriculture", 
+                                        "Industrie (sauf construction)" = "Industry (including energy)",
+                                        "Activités de fabrication" = "Manufacturing"
+                                        ))
+
+GHG_Emissions <- GHG_Emissions|>  #here we are combining the sectors related to manufacturing. 
+  mutate(
+    src_crf = case_when(
+      src_crf %in% c("Fuel combustion in manufacturing industries and construction", 
+                     "Industrial processes and product use") ~ "Manufacturing",
+      TRUE ~ src_crf
+    )
+  ) |>
+  group_by(iso3, TIME_PERIOD, src_crf) |>
+  summarise(GHG_Emissions_value = sum(GHG_Emissions_value), .groups = "drop")
+GHG_Emissions <- GHG_Emissions |>
+  mutate(src_crf = recode(src_crf, 
+                          "Fuel combustion in energy industries"="Industry (including energy)", 
+                          "Fuel combustion in transport"="Transport"))
+
+EU27_GHG <- EU27_GHG|>
+  mutate(
+    src_crf = case_when(
+      src_crf %in% c("Fuel combustion in manufacturing industries and construction", 
+                     "Industrial processes and product use") ~ "Manufacturing",
+      TRUE ~ src_crf
+    )
+  ) |>
+  group_by(name_en, TIME_PERIOD, src_crf) |>
+  summarise(GHG_Emissions_value = sum(GHG_Emissions_value), .groups = "drop")
+EU27_GHG <- EU27_GHG |>
+  mutate(src_crf = recode(src_crf, 
+                          "Fuel combustion in energy industries"="Industry (including energy)", 
+                          "Fuel combustion in transport"="Transport"))
+```
+
+To be able to merge all the data sets, it will be easier to rename the country codes as the ones in the country key we created in [Country keys](#countrykeys).
+
+We also rename the different sectors in the different data bases as "sector" to be able to merge more easily and have two values for the same sector : one for the Added Value and one for the Greenhouse gases emissions.
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+Envt_Tax_Revenues <- Envt_Tax_Revenues |>
+  rename(iso3 = REF_AREA)
+EU27_Tax <- EU27_Tax |>
+  rename(iso3 = REF_AREA)
+
+GDP <- GDP |> rename(iso3 = REF_AREA)
+EU27_GDP <- EU27_GDP |> rename(iso3 = REF_AREA)
+
+Added_value <- Added_value |>
+  rename(iso3 = REF_AREA,
+    sector = `Activité économique`) 
+EU27_AV <- EU27_AV |>
+  rename(iso3 = REF_AREA,
+    sector = `Activité économique`) 
+
+GHG_Emissions <- GHG_Emissions |> rename (sector = src_crf)
+EU27_GHG <- EU27_GHG |> rename (sector = src_crf)
+```
+
+# Merging all data sets on country-year pairs
+
+After cleaning and harmonizing all datasets, we merge them into a single database combining economic, environmental and social indicators. The environmental tax dataset is used as the base for the merge because it contains only country-year information and no sectoral breakdown; we then enrich it with sector-specific variables (value added and emissions) through matching on (iso3, TIME_PERIOD, sector).
+
+For variables defined only at the country-year level (GDP, inequality indices, households unable to heat their home), the join is performed on (iso3, TIME_PERIOD).
+
+All merges use left_join(). This choice ensures that countries or years missing some variables are retained in the dataset rather than dropped — which would happen with inner_join(). Keeping these rows is important for transparency and for allowing later analyses to handle missingness explicitly.
+
+Overall, merging these datasets is meaningful because it allows us to study environmental taxes, emissions, economic structure, and social inequalities jointly within a single analytical framework.
+
+We do this big join to have in only one data set all these variables:
+
+-   Country
+-   Year of observation
+-   Environmentally related tax revenues (aggregated)
+-   GHG emissions by economic sector
+-   Added value by economic sector (using the same sector as the GHG emissions one)
+-   GDP_value
+-   Gender inequality index value
+-   Income inequality index value
+-   Share of households unable to adequately heat their home, by subgroup :
+    -   household type
+    -   income group
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+all_merged <- Envt_Tax_Revenues |>
+  left_join(Added_value |> distinct(iso3, TIME_PERIOD, sector), by = c("iso3", "TIME_PERIOD")) |>
+  left_join(Added_value, by = c("iso3", "TIME_PERIOD", "sector")) |>
+  left_join(GDP, by = c("iso3", "TIME_PERIOD")) |>
+  left_join(GHG_Emissions, by = c("iso3", "TIME_PERIOD", "sector")) |>
+  left_join(Warm_Households, by = c("iso3", "TIME_PERIOD")) |>
+  left_join(GII, by = c("iso3", "TIME_PERIOD")) |>
+  left_join(coef_ineq, by = c("iso3", "TIME_PERIOD")) |>
+  select(iso3, TIME_PERIOD, sector, hhtyp, incgrp, Envt_Tax_Revenues_value, AV_value, GDP_value, GHG_Emissions_value, Warm_Households_value, GII_value, coef_ineq_value)
+```
+
+# Descriptive analyzes
+
+Now that we have cleaned our data sets, here are some descriptive analyzes of our main target variables:
+
+## 1. European environmental tax revenues
+
+### Graphical representation
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+ggplot(EU27_Tax, aes(x = TIME_PERIOD, y = Envt_Tax_Revenues_value)) +
+  geom_line(linewidth = 1, color = "darkgreen") +
+  labs(
+    title = "Total European environmental tax revenues",
+    x = "Year",
+    y = "Environmental tax revenues (millions of USD)"
+  ) +
+  theme_minimal()
+```
+
+### Descriptive statistics
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+summary_stats_taxrevenues <- EU27_Tax |>
+  summarise(
+    Min = min(Envt_Tax_Revenues_value, na.rm = TRUE),
+    Max = max(Envt_Tax_Revenues_value, na.rm = TRUE),
+    Mean = mean(Envt_Tax_Revenues_value, na.rm = TRUE),
+    Median = median(Envt_Tax_Revenues_value, na.rm = TRUE),
+    SD = sd(Envt_Tax_Revenues_value, na.rm = TRUE)
+    )
+
+kable(summary_stats_taxrevenues, 
+      caption = "Descriptive statistics of the total European environmental tax revenues (all years combined)")
+```
+
+##### Comment :
+
+The total European environmental tax revenues amounted to roughly 376 billion USD in the late 1990s. Over the 2000s, these revenues grew steadily and nearly doubled, reaching over 700 billion USD by 2010. Since then, the trend has remained broadly upward, though with noticeable fluctuations from year to year.
+
+Revenues peaked at approximately 809 billion USD, while the long-run average (≈ 622 billion USD) reflects sustained and historically high levels of environmental taxation in the European Union. The standard deviation (≈ 152 billion USD) signals substantial variation over time, consistent with cyclical movements, recent economic crisis, and policy adjustments across the Union.
+
+## 2. European GDP
+
+### Graphical representation
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+ggplot(EU27_GDP, aes(x = TIME_PERIOD, y = GDP_value)) +
+  geom_line(linewidth = 1, color = "darkgreen") +
+  labs(
+    title = "European GDP (in millions of USD)",
+    x = "Year",
+    y = "GDP (million USD)"
+  ) +
+  theme_minimal()
+```
+
+### Descriptive statistics
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+summary_stats_GDP <- EU27_GDP |>
+  summarise(
+    Min = min(GDP_value, na.rm = TRUE),
+    Max = max(GDP_value, na.rm = TRUE),
+    Mean = mean(GDP_value, na.rm = TRUE),
+    Median = median(GDP_value, na.rm = TRUE),
+    SD = sd(GDP_value, na.rm = TRUE)
+    )
+
+kable(summary_stats_GDP, 
+      caption = "Descriptive statistics of the European GDP (all years combined)")
+```
+
+##### Comment :
+
+European GDP has increased a lot since the early 1990s. Starting from roughly 6.3 trillion USD, GDP expanded strongly throughout the 2000s, with a brief slowdown around the early 2010s (due to the subprime crisis), before resuming its upward trajectory. By 2024, it reached nearly 19.4 trillion USD, its historical maximum.
+
+The long-run average GDP (≈ 12.2 trillion USD) and the very large standard deviation (≈ 4.1 trillion USD) reflect substantial economic growth over time as well as cyclical fluctuations. The median (≈ 13.7 trillion USD) suggests that GDP has remained consistently high over the last two decades, despite temporary downturns.
+
+## 3. Added Value per economic sector
+
+### Graphical representation
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+p_va <- ggplot(EU27_AV, aes(x = TIME_PERIOD, y = AV_value, color = sector, group = sector)) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "EU27 Total Added Value per Sector",
+    x = "Year",
+    y = "Value Added (million USD)",
+    color = "Sector"
+  ) +
+  theme_minimal()
+
+ggplotly(p_va)
+```
+
+### Descriptive statistics
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+summary_stats_AV <- EU27_AV |>
+  group_by(sector) |>
+  summarise(
+    Min = min(AV_value, na.rm = TRUE),
+    Max = max(AV_value, na.rm = TRUE),
+    Mean = mean(AV_value, na.rm = TRUE),
+    Median = median(AV_value, na.rm = TRUE),
+    SD = sd(AV_value, na.rm = TRUE)
+  )
+
+kable(summary_stats_AV, caption = "Descriptive statistics of EU total gross added value by sector (all years combined)")
+```
+
+##### Comment :
+
+Looking at the EU27 total gross added value by sector, three major sectors dominate and remain close in magnitude: manufacturing, transport, and industry (with energy related industries such as public electricity and heat production). Each of these sectors shows total added values between 610 and 3,410 billion USD, making them the core of the European economy. They all increased quite linearly accross the selected time period (1990 - 2024), with a slightly lower growth rate between 1995 and 2005.
+
+Agriculture, by contrast, contributes much less, with a total added value of only ≈ 215 billion USD on average, which is expected given its smaller role in modern European economies.
+
+## 4. Greenhouse gas emissions per economic sector
+
+### Graphical representation
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+p_GHG <- ggplot(EU27_GHG, aes(x = TIME_PERIOD, y = GHG_Emissions_value, color = sector, group = sector)) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "EU27 Total Greenhouse gas emissions per Sector",
+    x = "Year",
+    y = "Greenhouse gas emissions (thousands of ton of CO2)",
+    color = "Sector"
+  ) +
+  theme_minimal()
+
+ggplotly(p_GHG)
+```
+
+### Descriptive statistics
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+summary_stats_GHG <- EU27_GHG |>
+  group_by(sector) |>                
+  summarise(
+    Min = min(GHG_Emissions_value, na.rm = TRUE),
+    Max = max(GHG_Emissions_value, na.rm = TRUE),
+    Mean = mean(GHG_Emissions_value, na.rm = TRUE),
+    Median = median(GHG_Emissions_value, na.rm = TRUE),
+    SD = sd(GHG_Emissions_value, na.rm = TRUE)
+  )
+
+kable(summary_stats_GHG, caption = "Descriptive statistics of EU total greenhouse gases emissions by sector (all years combined)")
+```
+
+##### Comment :
+
+The EU27 total data show greenhouse gas emissions across four sectors: agriculture, manufacturing, energy industries, and transport. All sectors display a downward trend except transport, which starts rising again after 2010. With the exception of agriculture, all sectors experienced a marked drop in 2020 due to the COVID-19 shock, followed by a partial rebound.
+
+Industrial emissions have declined sharply over the selected time period (from values reaching over 1,441,000 thousand tons of CO₂-eqin 1990 to ≈ 699,000 in 2023). Manufacturing emissions also decreased, though at a more moderate pace, with a mean of ≈ 902,000 thousand tons.
+
+Since around 2009–2012, transport emissions have surpassed those of manufacturing, and in 2023 they even exceeded energy industries emissions.
+
+## 5. Inability to keep home adequately warm per household type
+
+### Graphical representation
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+ggplot(EU27_Warming, 
+       aes(x = TIME_PERIOD, y = Warm_Households_value,
+           color = interaction(hhtyp, incgrp),
+           group = interaction(hhtyp, incgrp))) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "EU27 – inability to Keep the House Warm (by Sex × Income Group)",
+    x = "Year",
+    y = "Percentage of population",
+    color = "Sex × Income"
+  ) +
+  theme_minimal()
+```
+
+### Descriptive statistics
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+summary_stats_Warm <- EU27_Warming |>
+  group_by(hhtyp, incgrp) |>                    
+  summarise(
+    Min = min(Warm_Households_value, na.rm = TRUE),
+    Max = max(Warm_Households_value, na.rm = TRUE),
+    Mean = mean(Warm_Households_value, na.rm = TRUE),
+    Median = median(Warm_Households_value, na.rm = TRUE),
+    SD = sd(Warm_Households_value, na.rm = TRUE), 
+    .groups = "drop"
+  )
+
+kable(summary_stats_Warm, caption = "Descriptive statistics of the inability to keep house adequately warm, by household type (all years combined)")
+```
+
+##### Comment :
+
+For the EU27 average, six curves represent different subgroups defined by sex and income. The values correspond to the percentage of each subgroup unable to keep their home adequately warm. All groups follow roughly the same pattern: a sharp increase between 2003 and 2005, a gradual decline afterward, and two significant shocks: a drop in 2008–2009 and a spike in 2022–2023, which can be linked to rising energy prices following the Russia–EU energy crisis.
+
+Among all subgroups, the total-population categories show the lowest percentages, remaining below 10% since 2015. Conversely, households with incomes below 60% of the national median (below the poverty threshold) consistently show the highest rates, around 20% on average.
+
+Women in low-income single households consistently report slightly higher percentages than men. For instance, low-income women (A1F, B_MD60) have an average inability rate of ≈ 21.1%, compared with ≈ 23.1% for low-income men (A1M, B_MD60), while total-population rates remain much lower at ≈ 10–15% across categories.
+
+## 6. GII per country
+
+### Graphical representation
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+p_GII <- ggplot(GII, aes(x = TIME_PERIOD, y = GII_value, color = iso3, group = iso3)) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "GII per Country (EU27)",
+    x = "Year",
+    y = "Gender inequality index",
+    color = "Country"
+  ) +
+  scale_y_continuous(limits = c(0, 1)) +   
+  theme_minimal()
+
+ggplotly(p_GII)
+```
+
+### Descriptive statistics
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+summary_stats_GII <- GII |>
+  group_by(iso3) |>                        
+  summarise(
+    Min = min(GII_value, na.rm = TRUE),
+    Max = max(GII_value, na.rm = TRUE),
+    Mean = mean(GII_value, na.rm = TRUE),
+    Median = median(GII_value, na.rm = TRUE),
+    SD = sd(GII_value, na.rm = TRUE)
+    )
+
+kable(summary_stats_GII, 
+      caption = "Descriptive statistics of the GII by country (all years combined)")
+```
+
+##### Comment :
+
+The Gender Inequality Index (GII) shows a clear downward trend across all European countries between 1990 and 2024. At the beginning of the period, Romania exhibited by far the highest level of inequality, followed by Cyprus and Estonia, while the EU27 average stood around 0.25. In contrast, the lowest GII levels were found in Sweden, Denmark, Finland, and the Netherlands, a pattern that still holds in 2024.
+
+By 2024, the countries with the highest GII values are Cyprus, Romania, and Hungary, while the EU27 average has fallen to approximately 0.08, reflecting substantial progress over time. This aligns with the descriptive statistics: Romania has the highest mean GII (≈ 0.36), while Sweden and Denmark are among the lowest, with mean values of ≈ 0.05 and ≈ 0.054, respectively.
+
+## 7. Coefficient of human inequality per country
+
+### Graphical representation
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+p_coef <- ggplot(coef_ineq, aes(x = TIME_PERIOD, y = coef_ineq_value, color = iso3, group = iso3)) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "Coefficient of human inequality per Country (EU27)",
+    x = "Year",
+    y = "Coefficient of human inequality",
+    color = "Country"
+  ) +
+  theme_minimal()
+
+ggplotly(p_coef)
+```
+
+### Descriptive statistics
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+summary_stats_coefineq <- coef_ineq |>
+  group_by(iso3) |>                        
+  summarise(
+    Min = min(coef_ineq_value, na.rm = TRUE),
+    Max = max(coef_ineq_value, na.rm = TRUE),
+    Mean = mean(coef_ineq_value, na.rm = TRUE),
+    Median = median(coef_ineq_value, na.rm = TRUE),
+    SD = sd(coef_ineq_value, na.rm = TRUE)
+    )
+
+kable(summary_stats_coefineq, 
+      caption = "Descriptive statistics of the coefficient of human inequality by country (all years combined)")
+```
+
+##### Comment :
+
+The coefficient of human inequality varies widely across Europe. Spain records the highest values overall, with a mean of ≈ 13.48, while Slovenia and the Czech Republic stand out as the countries with the lowest inequality, both with mean values slightly above 5.
+
+The EU27 average sits at ≈ 8.64, but the dispersion across countries is notable. Several Southern and Eastern European countries—such as Portugal (≈ 12.75), Italy (≈ 12.08), and Bulgaria (≈ 11.84)—exhibit consistently high levels of human inequality. In contrast, Nordic and Central European countries such as Denmark (≈ 5.77) and Finland (≈ 5.73) maintain some of the lowest inequality levels across the data set.
+
+
+
+
+
+# Ending message for the 2nd phase
+For this submission, we have removed the analytical sections that go beyond the requirements of Phase 2. Including them here would anticipate the results of our final report. However, the full development of the project can be followed directly on our GitHub repository, whose link is provided at the beginning of this document.
