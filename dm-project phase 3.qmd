@@ -173,13 +173,12 @@ The original datasets contain many variables and dimensions that are irrelevant 
 -   The geographical identifier (ISO2, ISO3, or name).
 -   The reference year.
 -   The relevant economic or social variable (e.g., revenues, GDP, emissions, inequality index).
--   The sector information when relevant.
 
 This ensures a clean, comparable structure across datasets before we perform more complex transformations.
 
 ### 1. Environmental tax revenues (in million of USD)
 
-In this data set, there is no sectoral division, we select only the ISO3 code, the reference year, and the observed numerical value of Environmental related tax revenues.
+In this data set, we select only the ISO3 code, the reference year, and the observed numerical value of Environmental related tax revenues.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -189,13 +188,9 @@ Envt_Tax_Revenues <- Envt_Tax_Revenues |>
   filter(REF_AREA %in% eu_country_key$iso3)
 ```
 
-### 2. GDP and Value Added per capita annual growth per sector (in million of USD)
+### 2. GDP (in million of USD)
 
-In this data set, we have two main variables of interest: the [Gross Domestic Product](#grossdomesticproduct) and the [Gross Added Value](#grossaddedvalue). We create two independent data sets, one for each variable.
-
-#### Gross Domestic product {#grossdomesticproduct}
-
-We keep the ISO3 code, the reference year and the observed numerical value of GDP.
+In this data set, we select only the ISO3 code, the reference year and the observed numerical value of GDP.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -206,54 +201,17 @@ GDP <- GDP_and_AV |>
   select(REF_AREA, TIME_PERIOD, OBS_VALUE)
 ```
 
-#### Gross Added Value {#grossaddedvalue}
+### 3. Greenhouse gas emissions (in million of ton)
 
-We keep the ISO3 code, the reference year, the sectoral label and the numerical value observed of Gross Added Value. 
-We are interested in four sectors (cf. [Justification for the Sector Mapping Between ISIC and CRF Classifications](#justificationforsectormapping)): manufacturing, agriculture, energy production and transport.
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-Added_value <- GDP_and_AV |>
-  filter(Transaction == "Valeur ajoutée, brute", 
-         REF_AREA %in% eu_country_key$iso3, 
-         `Activité économique` %in% c(
-           "Agriculture, sylviculture et pêche",
-           "Activités de fabrication",
-           "Industrie (sauf construction)",
-           "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration"
-           )) |>
-  select(REF_AREA, `Activité économique`, 
-         TIME_PERIOD, OBS_VALUE)
-```
-
-### 3. Greenhouse gas emissions by source sector (in million of ton)
-
-We keep the English name, the reference year, the sectoral label and the observed numerical value of Greenhouse gas emissions by source sector. 
-We keep the same four sectors (cf. [Justification for the Sector Mapping Between ISIC and CRF Classifications](#justificationforsectormapping)): manufacturing, agriculture, energy production and transport.
+We keep the English name, the reference year and the observed numerical value of Greenhouse gas emissions. 
 
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
 GHG_Emissions <- GHG_Emissions |>
-  select(src_crf, geo, TIME_PERIOD, OBS_VALUE) |>
-  filter(geo %in% eu_country_key$name_en, 
-         src_crf != "Total (excluding memo items)")
+  select(geo, TIME_PERIOD, OBS_VALUE) |>
+  filter(geo %in% eu_country_key$name_en)
 ```
-
-#### Justification for the Sector Mapping Between ISIC and CRF Classifications {#justificationforsectormapping}
-
-The reconciliation of sectors across the ISIC-based data set and the CRF (Common Reporting Format) classification relies on aligning economic activities with their dominant emission sources. Although the two systems are not structurally identical—ISIC being an economic activity classification and CRF being an emissions reporting framework—several robust correspondences can be established.
-
-First, Agriculture, forestry and fishing (ISIC A) is mapped to CRF 3 (Agriculture). Both refer to primary-sector biological production and include emissions directly linked to agricultural practices such as enteric fermentation, manure management, and agricultural soils.
-
-Second, Manufacturing (ISIC C) is associated with CRF 1.A.2 (Manufacturing industries and construction) and CRF 2 (Industrial processes and product use). Manufacturing activity generates emissions both from fuel combustion in industrial facilities (covered by 1.A.2) and from process-related sources such as cement, chemicals, or metals production (covered by CRF 2), making this linkage consistent with the structure of industrial emissions.
-
-Third, Electricity, gas, steam and air conditioning supply (ISIC D)—even though aggregated within “Industry (except construction)” in the first data set—logically corresponds to CRF 1.A.1 (Public electricity and heat production). This CRF category captures emissions from power generation and heat production, which are the core activities of ISIC D.
-
-Finally, Transportation and storage (ISIC H)—included in a broader aggregated category in the data set—is aligned with CRF 1.A.3 (Transport). This CRF category encompasses fuel combustion from road, rail, aviation, and navigation transport, which directly reflects the operational scope of ISIC H.
-
-Overall, the mapping follows a principle of dominant emission source equivalence, ensuring that each ISIC activity is linked to the CRF category representing the primary origin of its greenhouse gas emissions. This approach allows the two data sets—despite structural differences—to be compared and integrated in a coherent and meaningful way for our analysis.
 
 ### 4. Inability to keep home adequately warm
 
