@@ -109,7 +109,7 @@ GHG_Emissions <- vroom(here("data", "Eurostat_ghg.csv"))
 
 ### 4. Inability to keep home adequately warm (Eurostat, 2003-2024)
 
-This data set measures the percentage of households unable to keep their home adequately warm. We chose 3 households type: total, single female and single male and 2 income situations: total and below 60% of the median (in situation of poverty). The data set is from Eurostat ([here](https://ec.europa.eu/eurostat/databrowser/view/ILC_MDES01__custom_18945942/default/table)) and covers 2003-2024.
+This data set measures the percentage of households unable to keep their home adequately warm. We chose 3 households type: total, single female and single male and 2 income situations: total and below 60% of the median (in situation of poverty). The data set is from Eurostat ([here](https://ec.europa.eu/eurostat/databrowser/view/ILC_MDES01__custom_18945942/default/table)) and covers 2003-2024. Note that it is a declarative observation of household who report that they are unable to keep their home adequately warm.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -145,13 +145,13 @@ Soc_Indexes <- vroom(here("data", "HDR_indexes.csv"))
 
 # Modifying the data sets
 
-Because the data sets we chose are quite huge, we first need to remove all the variables we will not use, then add missing variables that we think are important for our analysis, and then modify the variables we kept.
+Because of the size of the data sets we chose, we remove all the variables we will not use, then add missing aggregates that we think are important for our analysis, and then modify the variables we kept.
 
 Finally, to simplify our analysis, we will merge all our data sets in one data base.
 
 ## Country keys {#countrykeys}
 
-Our analysis is on the 27 countries in the European Union, in the following list to be precise : Austria, Belgium, Bulgaria, Croatia, Cyprus, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden.
+Our analysis is on the 27 countries in the European Union. We construct a key that filters the EU-27 countries and harmonize the different country identifiers: ISO2 codes, ISO3 codes, or full English and French names, to ensure consistency across datasets and avoid mismatches during merging.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -166,15 +166,9 @@ eu_country_key <- data.frame(name_en = eu_countries) |>
   bind_rows(tibble(name_en = "EU27", name_fr = "EU27", iso2 = "EU27", iso3 = "EU27"))
 ```
 
-Why we construct country keys and filter to EU-27:
-
-Our analysis focuses exclusively on the 27 Member States of the European Union. However, each dataset uses different country identifiers: ISO2 codes, ISO3 codes, or full English names. To ensure consistency across datasets and avoid mismatches during merging, we must first harmonize all country identifiers.
-
-The emissions dataset provides a clean list of country names, from which we build a unified “country key” mapping English names to ISO2, ISO3, and French names. This serves as a reference table for filtering every dataset to the same geographical scope and ensures that only EU-27 countries are retained throughout the cleaning process.
-
 ## Removing unwanted variables
 
-The original datasets contain many variables and dimensions that are irrelevant to our research question (such as measurement units, alternative breakdowns, metadata, or categories outside our scope). Keeping these unnecessary variables would complicate the merging process and make the analysis more difficult to interpret. Therefore, for each dataset, we systematically retain only four essential components:
+The original datasets contain many variables and dimensions that are irrelevant to our research question (such as measurement units, alternative breakdowns, metadata, or categories outside our scope). For each dataset, we systematically retain only four essential components:
 
 -   The geographical identifier (ISO2, ISO3, or name).
 -   The reference year.
@@ -185,11 +179,7 @@ This ensures a clean, comparable structure across datasets before we perform mor
 
 ### 1. Environmental tax revenues (in million of USD)
 
-In this data set, we are only interested in the following variables:
-
--   **REF_AREA**: Identifies the country or reporting area using an ISO3 code (e.g., LVA for Latvia, LTU for Lithuania). This variable is the geographic dimension of the data set.
--   **TIME_PERIOD**: Indicates the reference year of observation (from 1994 to 2023).
--   **OBS_VALUE**: Contains the numerical value of environmentally related tax revenues.
+In this data set, there is no sectoral division, we select only the ISO3 code, the reference year, and the observed numerical value of Environmental related tax revenues.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -201,17 +191,11 @@ Envt_Tax_Revenues <- Envt_Tax_Revenues |>
 
 ### 2. GDP and Value Added per capita annual growth per sector (in million of USD)
 
-In this data set, we have two main variables of interest: the [Gross Domestic Product](#grossdomesticproduct) and the [Gross Added Value](#grossaddedvalue).
-
-They are described by the **Transaction** variable, therefore, we need to create two independent data sets, one for each variable of interest.
+In this data set, we have two main variables of interest: the [Gross Domestic Product](#grossdomesticproduct) and the [Gross Added Value](#grossaddedvalue). We create two independent data sets, one for each variable.
 
 #### Gross Domestic product {#grossdomesticproduct}
 
-In this data set, we are only interested in the following variables:
-
--   **REF_AREA**: Identifies the country or reporting area using an ISO3 code. This variable is the geographic dimension of the data set.
--   **TIME_PERIOD**: Indicates the reference year of observation (from 1990 to 2024).
--   **OBS_VALUE**: Contains the numerical value of the GDP, for a given time and year.
+We keep the ISO3 code, the reference year and the observed numerical value of GDP.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -224,16 +208,8 @@ GDP <- GDP_and_AV |>
 
 #### Gross Added Value {#grossaddedvalue}
 
-In this data set, we are only interested in the following variables:
-
--   **REF_AREA**: Identifies the country or reporting area using an ISO3 code. This variable is the geographic dimension of the data set.
--   **TIME_PERIOD**: Indicates the reference year of observation (from 1990 to 2024).
--   **Activité économique**: A label in French describing the economic activity or industry sector associated with the added value produced. In this data set, we are only interested in four sectors (cf. [Justification for the Sector Mapping Between ISIC and CRF Classifications](#justificationforsectormapping)):
-    -   "Activités de fabrication", i.e., manufacturing.
-    -   "Agriculture, sylviculture et pêche", i.e., agriculture.
-    -   "Industrie (sauf construction)", i.e., public electricity and heat production.
-    -   "Commerce de gros et de détail; réparation de véhicules automobiles et de motocyclettes; transport et stockage; activités d'hébergement et de restauration", i.e., transport.\
--   **OBS_VALUE**: Contains the numerical value of the gross added value.
+We keep the ISO3 code, the reference year, the sectoral label and the numerical value observed of Gross Added Value. 
+We are interested in four sectors (cf. [Justification for the Sector Mapping Between ISIC and CRF Classifications](#justificationforsectormapping)): manufacturing, agriculture, energy production and transport.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -253,16 +229,8 @@ Added_value <- GDP_and_AV |>
 
 ### 3. Greenhouse gas emissions by source sector (in million of ton)
 
-In this data set, we are only interested in the following variables:
-
--   **geo**: Identifies the country or reporting area with its English name. This variable is the geographic dimension of the data set.
--   **TIME_PERIOD**: Indicates the reference year of observation (from 1990 to 2024).
--   **src_crf**: Describes the economic activity or industry sector associated with the greenhouse gases emitted. In this data set, we are only interested in five sectors (cf. [Justification for the Sector Mapping Between ISIC and CRF Classifications](#justificationforsectormapping)):
-    -   "Agriculture".
-    -   "Fuel combustion in energy industries", i.e., public electricity and heat production.
-    -   "Fuel combustion in manufacturing industries and construction" and “Industrial processes and product use”, i.e., manufacturing (we will combine this sectors in the [Renaming some variables](#renamingsomevariables) section).
-    -   "Fuel combustion in transport", i.e., transport.
--   **OBS_VALUE**: Contains the numerical value of the Greenhouse Gases emitted.
+We keep the English name, the reference year, the sectoral label and the observed numerical value of Greenhouse gas emissions by source sector. 
+We keep the same four sectors (cf. [Justification for the Sector Mapping Between ISIC and CRF Classifications](#justificationforsectormapping)): manufacturing, agriculture, energy production and transport.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -289,18 +257,8 @@ Overall, the mapping follows a principle of dominant emission source equivalence
 
 ### 4. Inability to keep home adequately warm
 
-In this data set, we are only interested in the following variables:
-
--   **geo**: Identifies the country or reporting area using a ISO2 code. This variable is the geographic dimension of the data set.
--   **TIME_PERIOD**: Indicates the reference year of observation (from 2003 to 2024).
--   **hhtyp**: Indicates the composition of the household, here we are only interested in:
-    -   "A1F", i.e., the households composed by only one female.
-    -   "A1M", i.e., the households composed by only one male.
-    -   "TOTAL", i.e., all households (whatever their composition).
--   **incrp**: Indicates the income group of the household, here we are only interested in:
-    -   "B_MD60", i.e., the households who have an income below 60% of the median income (meaning they are below the poverty threshold).
-    -   "TOTAL", i.e., all households (whatever their revenue).
--   **OBS_VALUE**: Contains the percentage of household who report that they are unable to keep their home adequately warm, within the designated group.
+In this data set, we keep the ISO2 code, the reference year, the different household types labels as well as the income groups labels, and the observed numerical values (percentage). 
+In precision, the household types are the households composed by only one female, the households composed by only one male,  all households (whatever their composition) and the income groups are the households who have an income below 60% of the median income (meaning they are below the poverty threshold) and all households (whatever their revenue).
 
 ```{r, echo=FALSE}
 #| message: false
@@ -335,11 +293,7 @@ Soc_Indexes <- Soc_Indexes |>
 
 #### Gender inequality Index {#genderinequalityindex}
 
-In this data set, we are only interested in the following variables:
-
--   **iso3**: Identifies the country or reporting area using an ISO3 code. This variable is the geographic dimension of the data set.
--   **TIME_PERIOD**: Indicates the reference year of observation (from 1990 to 2023).
--   **OBS_VALUE**: Contains the numerical value of the GII.
+We keep the ISO3 code, the reference year and the observed numerical value of the GII.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -352,11 +306,7 @@ GII <- Soc_Indexes|>
 
 #### Coefficient of Human inequality {#coefficientofhumaninequality}
 
-In this data set, we are only interested in the following variables:
-
--   **iso3**: Identifies the country or reporting area using an ISO3 code. This variable is the geographic dimension of the data set.
--   **TIME_PERIOD**: Indicates the reference year of observation (from 2010 to 2023).
--   **OBS_VALUE**: Contains the numerical value of the coefficient of human inequality.
+We keep the ISO3 code, the reference year and the observed numerical value of the Coefficient of Human inequality.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -371,7 +321,7 @@ coef_ineq <- Soc_Indexes|>
 
 ### Add European average (across countries)
 
-For the data sets that describe inequality indexes, we compute the European average across countries:
+For the data sets that describe inequality indexes, we compute the European average across countries.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -407,7 +357,7 @@ Warm_Households <- Warm_Households |> select (iso3, TIME_PERIOD, hhtyp, incgrp, 
 
 ### Add European total
 
-For the economic data sets that are not described per economic sector, we compute the European total across countries:
+For the economic data sets that are not described per economic sector (GDP, Taxes), we compute the European total across countries.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -429,7 +379,7 @@ Envt_Tax_Revenues <- bind_rows(Envt_Tax_Revenues, EU27_Tax)
 
 ### Add European total per sector
 
-For the data sets that are described per economic sector, we have to compute the European total sum per sectors:
+For the data sets that are described per economic sector (Added Value, GHG emissions), we have to compute the European total sum per sector.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -460,7 +410,7 @@ GHG_Emissions <- GHG_Emissions  |> select (iso3, TIME_PERIOD, src_crf, OBS_VALUE
 
 ### Changing the type of some variables
 
-For the variables related to the economic sectors, it will be easier to consider them as *factor*, rather than as *character* variables.
+For the variables related to the economic sectors, we consider them as *factor*, rather than as *character* variables.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -471,7 +421,7 @@ Added_value$`Activité économique` <- factor(Added_value$`Activité économique
 EU27_AV$`Activité économique` <- factor(EU27_AV$`Activité économique`)
 ```
 
-Same reasoning for the household types in the Warm_Households data set, and for the tax categories in the Envt_Tax_Revenues data set.
+Same reasoning for the household types, and for the tax categories.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -484,7 +434,7 @@ EU27_Warming$incgrp <- factor(EU27_Warming$incgrp)
 
 ### Renaming some variables {#renamingsomevariables}
 
-To be able to merge our data sets in a data base, we need to modify the name of the variable **OBS_VALUE** that is in every data set to be able to identify which OBS_VALUE is associated to which data set.
+To be able to merge our data sets in a data base, we need to modify the name of the variable "**OBS_VALUE**" contained in several data sets to be able to merge. These variables are renamed as "**dataset_value**".
 
 ```{r, echo=FALSE}
 #| message: false
@@ -505,7 +455,7 @@ names(coef_ineq)[names(coef_ineq) == "OBS_VALUE"] <- "coef_ineq_value"
 names(EU27_Coefineq)[names(EU27_Coefineq) == "OBS_VALUE"] <- "coef_ineq_value"
 ```
 
-To be able to merge the data sets including variables related to the economic sectors, it will be easier to have the same sector names, in English.
+We rename the sectors in the data sets including variables related to the economic sectors.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -557,9 +507,9 @@ EU27_GHG <- EU27_GHG |>
                           "Fuel combustion in transport"="Transport"))
 ```
 
-To be able to merge all the data sets, it will be easier to rename the country codes as the ones in the country key we created in [Country keys](#countrykeys).
+We rename the country codes as the ones in the country key we created in [Country keys](#countrykeys).
 
-We also rename the different sectors in the different data bases as "sector" to be able to merge more easily and have two values for the same sector : one for the Added Value and one for the Greenhouse gases emissions.
+We also rename the variable "sector" itself, because it was different in the different data bases (src_crf and `Activité économique`).
 
 ```{r, echo=FALSE}
 #| message: false
@@ -585,27 +535,11 @@ EU27_GHG <- EU27_GHG |> rename (sector = src_crf)
 
 # Merging all data sets on country-year pairs
 
-After cleaning and harmonizing all datasets, we merge them into a single database combining economic, environmental and social indicators. The environmental tax dataset is used as the base for the merge because it contains only country-year information and no sectoral breakdown; we then enrich it with sector-specific variables (value added and emissions) through matching on (iso3, TIME_PERIOD, sector).
-
-For variables defined only at the country-year level (GDP, inequality indices, households unable to heat their home), the join is performed on (iso3, TIME_PERIOD).
+We cleaned and harmonized all datasets, and can now merge them into a single database combining economic, environmental and social indicators. The environmental tax dataset is used as the base for the merge because it contains only country-year information and no sectoral breakdown; we then enrich it other datasets through matching on iso3 code, reference year and sector when needed. 
 
 All merges use left_join(). This choice ensures that countries or years missing some variables are retained in the dataset rather than dropped — which would happen with inner_join(). Keeping these rows is important for transparency and for allowing later analyses to handle missingness explicitly.
 
-Overall, merging these datasets is meaningful because it allows us to study environmental taxes, emissions, economic structure, and social inequalities jointly within a single analytical framework.
-
-We do this big join to have in only one data set all these variables:
-
--   Country
--   Year of observation
--   Environmentally related tax revenues (aggregated)
--   GHG emissions by economic sector
--   Added value by economic sector (using the same sector as the GHG emissions one)
--   GDP_value
--   Gender inequality index value
--   Income inequality index value
--   Share of households unable to adequately heat their home, by subgroup :
-    -   household type
-    -   income group
+This merge will allow us to study environmental taxes, emissions, economic structure, and social inequalities jointly within a single analytical framework.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -624,7 +558,7 @@ all_merged <- Envt_Tax_Revenues |>
 
 # Descriptive analyzes
 
-Now that we have cleaned our data sets, here are some descriptive analyzes of our main target variables:
+Now that we have cleaned our datasets, we can move on to some descriptive analyses of our main target variables.
 
 ## 1. European environmental tax revenues
 
@@ -2167,6 +2101,7 @@ ggplot(future_av_predictions_linear,
   )
 ```
 
+
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -2251,7 +2186,6 @@ ggplot() +
   )
 ```
 
-
 # Conclusion
 
 In conclusion, this research project has evaluated the effectiveness of environmental taxation as a tool for achieving the European Union’s goal of net-zero emissions by 2050. The study involved cleaning and merging large datasets covering the EU-27 from 1990 to 2024, focusing on four key sectors: Agriculture, Industry (including energy), Manufacturing, and Transport. By integrating indicators such as environmental tax revenues, the Gender Inequality Index (GII), the Coefficient of Human Inequality, and energy poverty, we assessed both environmental efficacy and socioeconomic sustainability.
@@ -2266,29 +2200,3 @@ The impacts of such a massive tax increase on society and the economy would be s
 ## Ouverture
 
 If relying exclusively on environmental taxation proves to be socially regressive or economically unviable, what alternative strategies could the European Union use to fill the gap? Some possibilities could be the use of complementary green technology subsidies, the implementation of stricter sector-specific regulations, or the potential for economic sobriety and degrowth to reduce the overall energy demand.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
