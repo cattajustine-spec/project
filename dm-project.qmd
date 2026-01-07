@@ -2174,43 +2174,84 @@ ggplot(future_av_predictions_linear,
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-future_av_predictions_linear <- future_av_predictions_linear |>
-  rename(TIME_PERIOD = year)
-
-combined_fc <- full_join(
+avcombined_fc <- full_join(
+  avsector_forecasts,
   future_av_predictions_linear,
-  avsector_forecasts ,
   by = c("sector", "TIME_PERIOD")
 )
 
-ggplot(combined_fc, aes(x = TIME_PERIOD)) +
-  
-  # ARIMA confidence interval
+ggplot() +
   geom_ribbon(
-    aes(ymin = lo_95, ymax = hi_95),
-    alpha = 0.2
+    data = avcombined_fc,
+    aes(
+      x = TIME_PERIOD,
+      ymin = lo_95,
+      ymax = hi_95,
+      fill = "95% confidence interval"
+    ),
+    alpha = 0.35
   ) +
-  
-  # ARIMA baseline
+  geom_ribbon(
+    data = avcombined_fc,
+    aes(
+      x = TIME_PERIOD,
+      ymin = lo_80,
+      ymax = hi_80,
+      fill = "80% confidence interval"
+    ),
+    alpha = 0.5
+  ) +
+
+  # ARIMA baseline (no tax policy)
   geom_line(
-    aes(y = forecast),
+    data = avcombined_fc,
+    aes(
+      x = TIME_PERIOD,
+      y = forecast,
+      color = "ARIMA forecast (no tax policy)"
+    ),
     linewidth = 1
   ) +
-  
-  # Linear policy scenario
+
+  # Tax policy scenario (linear model)
   geom_line(
-    aes(y = Predicted_AV),
-    linetype = "dashed",
+    data = avcombined_fc,
+    aes(
+      x = TIME_PERIOD,
+      y = Predicted_AV,
+      color = "Forecasted impact on Sectoral AV"
+    ),
     linewidth = 1
   ) +
-  
+
   facet_wrap(~ sector, scales = "free_y") +
-  
-  theme_minimal() +
+
+  scale_color_manual(
+    name = "Scenarios",
+    values = c(
+      "ARIMA forecast (no tax policy)" = "red",
+      "Forecasted impact on Sectoral AV" = "darkblue"
+    )
+  ) +
+
+  scale_fill_manual(
+    name = "Confidence intervals",
+    values = c(
+      "80% confidence interval" = "grey50",
+      "95% confidence interval" = "grey70"
+    )
+  ) +
+
   labs(
-    title = "Sectoral Added Value Forecasts: ARIMA Baseline vs Tax Policy Scenario",
+    title = "Sectoral Added Value: Tax Policy vs No-Policy Scenario",
     x = "Year",
     y = "Added Value"
+  ) +
+
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    legend.title = element_text(face = "bold")
   )
 ```
 
