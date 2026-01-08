@@ -853,6 +853,8 @@ plot(gdp_fc, main = "Forecast of GDP")
 
 ##### Comment :
 
+The EU27 aggregate GDP is projected to grow steadily from €19.4 trillion in 2024 to €29.5 trillion in 2050, representing approximately 50% growth over the period, though the widening confidence intervals indicate increasing uncertainty in long-term projections.
+
 ### 4. The economy : forecast of the environmental taxes {#forecastofenvttax}
 
 ```{r, echo=FALSE}
