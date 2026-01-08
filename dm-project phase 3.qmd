@@ -1075,8 +1075,7 @@ ggplot(tax_plot_df, aes(x = year)) +
   ) +
   geom_line(
     aes(y = tax_required, color = "Tax path required for net-zero by 2050"),
-    linewidth = 1,
-    linetype = "dashed"
+    linewidth = 1
   ) +
   scale_color_manual(
     name = "Lines",
@@ -1221,21 +1220,24 @@ future_predictions <- tibble(
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-# Plot 1: Warming ability
+# Plot 1: Warming inability
 p_warming <- ggplot(future_predictions, aes(x = year, y = Predicted_Warming)) +
   geom_line(color = "darkgreen", linewidth = 1) +
+  scale_y_continuous(limits = c(0, 100)) +
   labs(title = "Forecasted impact on Average Warming Inability", x = "Year", y = "Warming") +
   theme_minimal()
 
-# Plot 2: Income Inequality
+# Plot 2: Coefficient of Inequality
 p_inequality <- ggplot(future_predictions, aes(x = year, y = Predicted_Inequality)) +
   geom_line(color = "orange", linewidth = 1) +
+    scale_y_continuous(limits = c(0, 50)) +
   labs(title = "Forecasted impact on the Coefficient of Human Inequality", x = "Year", y = "Gini Coefficient") +
   theme_minimal()
 
 # Plot 3: Gender Inequality Index
 p_gii <- ggplot(future_predictions, aes(x = year, y = Predicted_GII)) +
   geom_line(color = "purple", linewidth = 1) +
+    scale_y_continuous(limits = c(0, 1)) +
   labs(title = "Forecasted impact on the Gender Inequality Index (GII)", x = "Year", y = "GII") +
   theme_minimal()
 
