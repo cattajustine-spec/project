@@ -805,7 +805,7 @@ ggplot(clean_tax_data, aes(x = Envt_Tax_Revenues_value, y = GDP_value)) +
 
 We use this forecast to try to predict the impact of environmental taxes on different variables.
 
-### 1. Greenhouse Gas emissions by sector
+### 1. Greenhouse Gas emissions 
 
 #### a. Time series ARIMA forecast of the total Greenhouse Gas emissions (#forecasttotalGHGemissions)
 
@@ -834,60 +834,6 @@ autoplot(fc)
 This ARIMA-based forecast indicates a steady but slow decline in total greenhouse gas emissions for the aggreagte EU27 from 2024 to 2050. The ARIMA(0,1,0) with drift models GHG emissions as a random walk with a linear trend, using first differencing (integrated) but no auto regressive (AR) or moving average (MA) terms. The drift of -39,072 indicates emissions decrease on average by \~39k units per year. Emissions fall from roughly 2.45 million units in 2024 to about 1.43 million units by 2050, representing a long-term downward trajectory.
 
 However, despite this continuous decrease, the decline is far from the EU’s net-zero objective for 2050. Even in the most optimistic confidence interval, projected emissions in 2050 remain well above 0 (around 430 000 units), suggesting that under current trends and without major additional interventions—the EU27 is not on track to reach carbon neutrality.
-
-#### b. Time series ARIMA forecast of the total Greenhouse Gas emissions per sector
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-sector_yearly <- EU27_GHG |>
-  filter(!is.na(GHG_Emissions_value), !is.na(sector)) |>
-  group_by(sector, TIME_PERIOD) |>
-  summarise(GHG_total = sum(GHG_Emissions_value, na.rm = TRUE), .groups = "drop")
-
-# nest per sector to run the same ARIMA model independently
-sector_models <- sector_yearly |> group_by(sector) |>
-  nest() |> mutate(
-    ts_data = map(data, ~ ts(.x$GHG_total, start = min(.x$TIME_PERIOD))),
-    model = map(ts_data, auto.arima),
-    forecast = map(model, ~ forecast(.x, h = 27)))
-
-# unnest forecast results into a tidy dataframe
-sector_forecasts <- sector_models |>
-  mutate(preds_models = map(forecast, ~ {tibble(
-        TIME_PERIOD = (max(sector_yearly$TIME_PERIOD)+1) :
-                       (max(sector_yearly$TIME_PERIOD) + length(.x$mean)),
-        forecast = as.numeric(.x$mean),
-        lo_80 = as.numeric(.x$lower[,1]),
-        hi_80 = as.numeric(.x$upper[,1]),
-        lo_95 = as.numeric(.x$lower[,2]),
-        hi_95 = as.numeric(.x$upper[,2]))})) |>
-  select(sector, preds_models) |>
-  unnest(preds_models)
-
-sector_forecasts
-
-```
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-plots <- map2(
-  sector_models$sector,
-  sector_models$forecast, 
-  ~ autoplot(.y) + ggtitle(paste("Forecast of", .x))
-)
-
-do.call(grid.arrange, c(plots, ncol = 2))
-```
-
-Comments :
-
-Agriculture : compared to the trend before, the forecast does not move so much, but bigger and bigger error terms Industry (including energy) : slope that decreases not sp slowly and error terms not big, and some chance it goes to 0 by 2050 Manufacturing : also goes down pretty fast, poss to have 0 in 2050 Transport : stable bc stable on the last years
-
-==\> the sectors that can be more easily deviated to go to 0 ghg in 2050 = industry and manufacturing
-
-transport pretty stable and normal bc of today's use. we didn't see a big change in mean of transportation (cars, boats,...)
 
 ### 2. social inequalities:
 
