@@ -532,11 +532,9 @@ summary_stats_GHG <- EU27_GHG |>
 kable(summary_stats_GHG, caption = "Descriptive statistics of EU total greenhouse gases emissions (all years combined)")
 ```
 
-The EU27 total data show greenhouse gas emissions across four sectors: agriculture, manufacturing, energy industries, and transport. All sectors display a downward trend except transport, which starts rising again after 2010. With the exception of agriculture, all sectors experienced a marked drop in 2020 due to the COVID-19 shock, followed by a partial rebound.
+The EU27 total data show the total greenhouse gas emissions, displaying a downward trend. Their maximal value, obtained in 1990 is around 4.6 million units *WHAT UNIT ? *, and the lower one in 2023 is around 2.9 million units.
 
-Industrial emissions have declined sharply over the selected time period (from values reaching over 1,441,000 thousand tons of CO₂-eqin 1990 to ≈ 699,000 in 2023). Manufacturing emissions also decreased, though at a more moderate pace, with a mean of ≈ 902,000 thousand tons.
-
-Since around 2009–2012, transport emissions have surpassed those of manufacturing, and in 2023 they even exceeded energy industries emissions.
+To see the descriptive analysis per sector, please refer to the document for the phase 2.
 
 ## 4. Inability to keep home adequately warm per household type
 
