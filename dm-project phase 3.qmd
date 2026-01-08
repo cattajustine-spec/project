@@ -1097,7 +1097,7 @@ ggplot(tax_plot_df, aes(x = year)) +
     x = "Year",
     y = "Tax revenues (millions USD)"
   ) +
-  scale_y_continuous(limits = c(0, 3e6)) +
+  scale_y_continuous(limits = c(0, 1.5e6)) +
   theme_minimal() +
   theme(
     legend.position = "right",
