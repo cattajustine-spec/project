@@ -1223,7 +1223,7 @@ future_predictions <- tibble(
 # Plot 1: Warming inability
 p_warming <- ggplot(future_predictions, aes(x = year, y = Predicted_Warming)) +
   geom_line(color = "darkgreen", linewidth = 1) +
-  scale_y_continuous(limits = c(0, 100)) +
+  scale_y_continuous(limits = c(0, 50)) +
   labs(title = "Forecasted impact on Average Warming Inability", x = "Year", y = "Warming") +
   theme_minimal()
 
@@ -1428,9 +1428,7 @@ ggplot() +
 ```
 
 
-### 3. Is the model viable ? Its impact on the GDP & on added value
-
-#### a. Aggregate GDP: forecast & comparison
+### 3. Is the model viable ? Its impact on the GDP (forecast & comparison)
 
 ```{r, echo=FALSE}
 #| message: false
@@ -1620,160 +1618,6 @@ ggplot() +
 ```
 The thresholds (1%, 3%, 5%) are based on empirical observations from existing tax systems.
 We say that above 5% it would be Very Disruptive: At this scale, capital flight risks increase, sectoral lobbying intensifies, and social acceptance becomes critical. 
-
-#### b. Added value per sector: forecast & comparison
-***AV per sector targeted evolution***
-
-
-###### my forecast and comparison 
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-avlast_year <- max(EU27_AV$TIME_PERIOD)
-
-avlast_obs <- EU27_AV |>
-  filter(TIME_PERIOD == avlast_year) |>
-  group_by(sector) |>
-  summarise(
-    AV_value = sum(AV_value, na.rm = TRUE),
-    .groups = "drop"
-  )
-
-future_av_predictions_linear <- lapply(sector, function(sector) {
-
-  coef_sector <- coef(model_AV_tax[[sector]])
-
-  last_av <- avlast_obs |>
-    filter(sector == !!sector) |>
-    pull(AV_value)
-
-  if (length(last_av) != 1) {
-    stop(paste("last_av for sector", sector, "is not a single value."))
-  }
-
-  yearly_increment <-
-    coef_sector["Envt_Tax_Revenues_value"] * avg_tax_increment +
-    coef_sector["TIME_PERIOD"]
-
-  if (length(yearly_increment) != 1) {
-    stop(paste("yearly_increment for sector", sector, "is not a single value."))
-  }
-
-  predicted_av <- last_av +
-    cumsum(rep(yearly_increment, future_years))
-
-  tibble(
-    year = tax_path$year,
-    sector = sector,
-    Predicted_AV = predicted_av
-  )
-})
-
-future_av_predictions_linear <- bind_rows(future_av_predictions_linear)
-
-
-# Plot
-ggplot(future_av_predictions_linear,
-       aes(x = year, y = Predicted_AV, color = sector)) +
-  geom_line(linewidth = 1) +
-  labs(
-    title = "Forecasted Impact of the Tax Policy on Sectoral Added Value",
-    x = "Year",
-    y = "Added Value",
-    color = "Sector"
-  ) +
-  scale_y_continuous(limits = c(0, NA)) +
-  theme_minimal() +
-  theme(
-    legend.position = "right",
-    legend.title = element_text(face = "bold")
-  )
-```
-
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-avcombined_fc <- full_join(
-  avsector_forecasts,
-  future_av_predictions_linear,
-  by = c("sector", "TIME_PERIOD")
-)
-
-ggplot() +
-  geom_ribbon(
-    data = avcombined_fc,
-    aes(
-      x = TIME_PERIOD,
-      ymin = lo_95,
-      ymax = hi_95,
-      fill = "95% confidence interval"
-    ),
-    alpha = 0.35
-  ) +
-  geom_ribbon(
-    data = avcombined_fc,
-    aes(
-      x = TIME_PERIOD,
-      ymin = lo_80,
-      ymax = hi_80,
-      fill = "80% confidence interval"
-    ),
-    alpha = 0.5
-  ) +
-
-  # ARIMA baseline (no tax policy)
-  geom_line(
-    data = avcombined_fc,
-    aes(
-      x = TIME_PERIOD,
-      y = forecast,
-      color = "ARIMA forecast (no tax policy)"
-    ),
-    linewidth = 1
-  ) +
-
-  # Tax policy scenario (linear model)
-  geom_line(
-    data = avcombined_fc,
-    aes(
-      x = TIME_PERIOD,
-      y = Predicted_AV,
-      color = "Forecasted impact on Sectoral AV"
-    ),
-    linewidth = 1
-  ) +
-
-  facet_wrap(~ sector, scales = "free_y") +
-
-  scale_color_manual(
-    name = "Scenarios",
-    values = c(
-      "ARIMA forecast (no tax policy)" = "red",
-      "Forecasted impact on Sectoral AV" = "darkblue"
-    )
-  ) +
-
-  scale_fill_manual(
-    name = "Confidence intervals",
-    values = c(
-      "80% confidence interval" = "grey50",
-      "95% confidence interval" = "grey70"
-    )
-  ) +
-
-  labs(
-    title = "Sectoral Added Value: Tax Policy vs No-Policy Scenario",
-    x = "Year",
-    y = "Added Value"
-  ) +
-
-  theme_minimal() +
-  theme(
-    legend.position = "right",
-    legend.title = element_text(face = "bold")
-  )
-```
 
 # Conclusion
 
