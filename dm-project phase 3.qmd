@@ -8,7 +8,7 @@ format: pdf
 
 ## Description of our research question
 
-Our research question is the following: “To what extent do environmental taxes reduce Greenhouse Gas Emissions (GHG) in EU countries, and what are their long-term socioeconomic impacts across economic sectors?”. As the European Union commits to achieving net-zero emissions by 2050 under the European Green Deal, we aim to better understand the effectiveness and consequences of environmental taxation, both on emissions and socially.
+Our research question is the following: “To what extent do environmental taxes reduce Greenhouse Gas Emissions (GHG) in EU countries, and what are their long-term socioeconomic impacts across economy?”. As the European Union commits to achieving net-zero emissions by 2050 under the European Green Deal, we aim to better understand the effectiveness and consequences of environmental taxation, both on emissions and socially.
 
 To answer this question, we will use panel data for all EU member states. Our data set includes GHG emissions, GDP, environmental tax revenues, and several indicators of social well-being. These include the Gender Inequality Index (GII), a coefficient of human inequality, and a measure of energy poverty that is the inability to adequately heat one’s home. Together, these variables allow us to evaluate the distributive consequences of taxes.
 
@@ -408,7 +408,7 @@ EU27_GDP <- EU27_GDP |>
 
 # Merging all data sets on country-year pairs
 
-We cleaned and harmonized all datasets, and can now merge them into a single database combining economic, environmental and social indicators. The environmental tax dataset is used as the base for the merge because it contains only country-year information and no sectoral breakdown; we then enrich it other datasets through matching on iso3 code, reference year and sector when needed. 
+We cleaned and harmonized all datasets, and can now merge them into a single database combining economic, environmental and social indicators. The environmental tax dataset is used as the base for the merge; we then enrich it other datasets through matching on iso3 code, reference year. 
 
 All merges use left_join(). This choice ensures that countries or years missing some variables are retained in the dataset rather than dropped — which would happen with inner_join(). Keeping these rows is important for transparency and for allowing later analyses to handle missingness explicitly.
 
@@ -813,7 +813,7 @@ We use this forecast to try to predict the impact of environmental taxes on diff
 #| message: false
 #| warning: false
 EUGHG_agg_yearly <- EU27_GHG |>
-  filter(!is.na(GHG_Emissions_value), !is.na(sector)) |>
+  filter(!is.na(GHG_Emissions_value)) |>
   group_by(TIME_PERIOD) |>
   summarise(GHG_total = sum(GHG_Emissions_value, na.rm = TRUE))
 
