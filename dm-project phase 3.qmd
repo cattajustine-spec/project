@@ -871,7 +871,7 @@ plot(warm_fc, main = "Forecast of Warm Households")
 
 ##### Comment :
 
-### 3.1 The economy : forecast of the GDP
+### 3. The economy : forecast of the GDP
 
 ```{r, echo=FALSE}
 #| message: false
@@ -884,41 +884,6 @@ plot(gdp_fc, main = "Forecast of GDP")
 ```
 
 ##### Comment :
-
-### 3.2 The economy : forecast of the Added Values (GDP per sector)
-```{r}
-# nest per sector to run the same ARIMA model independently
-avsector_models <- EU27_AV |> group_by(sector) |>
-  nest() |> mutate(
-    ts_data = map(data, ~ ts(.x$AV_value, start = min(.x$TIME_PERIOD))),
-    model = map(ts_data, auto.arima),
-    forecast = map(model, ~ forecast(.x, h = 27)))
-
-# unnest forecast results into a tidy dataframe
-avsector_forecasts <- avsector_models |>
-  mutate(avpreds_models = map(forecast, ~ {tibble(
-        TIME_PERIOD = (max(EU27_AV$TIME_PERIOD)+1) :
-                       (max(EU27_AV$TIME_PERIOD) + length(.x$mean)),
-        forecast = as.numeric(.x$mean),
-        lo_80 = as.numeric(.x$lower[,1]),
-        hi_80 = as.numeric(.x$upper[,1]),
-        lo_95 = as.numeric(.x$lower[,2]),
-        hi_95 = as.numeric(.x$upper[,2]))})) |>
-  select(sector, avpreds_models) |>
-  unnest(avpreds_models)
-
-avsector_forecasts
-plots <- map2(
-  avsector_models$sector,
-  avsector_models$forecast, 
-  ~ autoplot(.y) + ggtitle(paste("Forecast of", .x))
-)
-
-do.call(grid.arrange, c(plots, ncol = 2))
-```
-
-
-
 
 ### 4. The economy : forecast of the environmental taxes {#forecastofenvttax}
 
@@ -963,7 +928,7 @@ tax_all_2050 <- ggplot() +
     x = "Year",
     y = "Tax revenues"
   )+
-  scale_y_continuous(limits = c(0, 1.5e+06)) 
+  scale_y_continuous(limits = c(0, 1e+06)) 
 
 ggplotly(tax_all_2050)
 ```
