@@ -8,7 +8,7 @@ format: pdf
 
 ## Description of our research question
 
-Our research question is the following: “To what extent do environmental taxes reduce Greenhouse Gas Emissions (GHG) in EU countries, and what are their long-term socioeconomic impacts across economic sectors?”. As the European Union commits to achieving net-zero emissions by 2050 under the European Green Deal, we aim to better understand the effectiveness and consequences of environmental taxation, both on emissions and socially.
+Our research question is the following: “To what extent do environmental taxes reduce Greenhouse Gas Emissions (GHG) in EU countries, and what are their long-term socioeconomic impacts across economy?”. As the European Union commits to achieving net-zero emissions by 2050 under the European Green Deal, we aim to better understand the effectiveness and consequences of environmental taxation, both on emissions and socially.
 
 To answer this question, we will use panel data for all EU member states. Our data set includes GHG emissions, GDP, environmental tax revenues, and several indicators of social well-being. These include the Gender Inequality Index (GII), a coefficient of human inequality, and a measure of energy poverty that is the inability to adequately heat one’s home. Together, these variables allow us to evaluate the distributive consequences of taxes.
 
@@ -408,7 +408,7 @@ EU27_GDP <- EU27_GDP |>
 
 # Merging all data sets on country-year pairs
 
-We cleaned and harmonized all datasets, and can now merge them into a single database combining economic, environmental and social indicators. The environmental tax dataset is used as the base for the merge because it contains only country-year information and no sectoral breakdown; we then enrich it other datasets through matching on iso3 code, reference year and sector when needed. 
+We cleaned and harmonized all datasets, and can now merge them into a single database combining economic, environmental and social indicators. The environmental tax dataset is used as the base for the merge; we then enrich it other datasets through matching on iso3 code, reference year. 
 
 All merges use left_join(). This choice ensures that countries or years missing some variables are retained in the dataset rather than dropped — which would happen with inner_join(). Keeping these rows is important for transparency and for allowing later analyses to handle missingness explicitly.
 
@@ -532,11 +532,9 @@ summary_stats_GHG <- EU27_GHG |>
 kable(summary_stats_GHG, caption = "Descriptive statistics of EU total greenhouse gases emissions (all years combined)")
 ```
 
-The EU27 total data show greenhouse gas emissions across four sectors: agriculture, manufacturing, energy industries, and transport. All sectors display a downward trend except transport, which starts rising again after 2010. With the exception of agriculture, all sectors experienced a marked drop in 2020 due to the COVID-19 shock, followed by a partial rebound.
+The EU27 total data show the total greenhouse gas emissions, displaying a downward trend. Their maximal value, obtained in 1990 is around 4.6 million units *WHAT UNIT ? *, and the lower one in 2023 is around 2.9 million units.
 
-Industrial emissions have declined sharply over the selected time period (from values reaching over 1,441,000 thousand tons of CO₂-eqin 1990 to ≈ 699,000 in 2023). Manufacturing emissions also decreased, though at a more moderate pace, with a mean of ≈ 902,000 thousand tons.
-
-Since around 2009–2012, transport emissions have surpassed those of manufacturing, and in 2023 they even exceeded energy industries emissions.
+To see the descriptive analysis per sector, please refer to the document for the phase 2.
 
 ## 4. Inability to keep home adequately warm per household type
 
@@ -678,13 +676,11 @@ summary(model)
 ```
 We estimated a linear regression to examine the relationship between environmental tax revenues and greenhouse gas emissions, while controlling for GDP and year. The model explains about 84% of the variation in emissions (Adjusted $R^2$ = 0.8456).
 
-The coefficient on environmental tax revenues is -1.029, and it is highly statistically significant (p \< 0.001). This suggests that, holding GDP and time constant, higher environmental tax revenues are associated with slightly lower greenhouse gas emissions. However, the magnitude of the effect remains very small, implying a limited practical impact.
+The coefficient on environmental tax revenues is -1.029, and it is highly statistically significant (p \< 0.001). This suggests that, holding GDP and time constant, higher environmental tax revenues are associated with slightly lower greenhouse gas emissions. However, the magnitude of the effect remains very small.
 
-GDP has a positive and small significant effect on emissions, with a coefficient of 0.2355 (p \< 0.001). This indicates that countries with higher economic output tend to emit more, consistent with scale effects: larger economies produce more goods and services, and thus more emissions.
+GDP has a positive and small significant effect on emissions, with a coefficient of 0.2355 (p \< 0.001). This indicates that countries with higher economic output tend to emit more, consistent with scale effects: larger economies produce more, and thus emit more.
 
-The coefficient on the time variable is -4,484, highly significant (p \< 0.001), indicating a robust downward trend in emissions over time. This is consistent with what we saw before in the descriptive data.
-
-Overall, the results suggest that GDP remains the dominant driver of emissions. Environmental tax revenues show a statistically significant negative association with emissions, but the magnitude of the effect is small. The pronounced negative time trend indicates that greenhouse gas emissions have declined over the period independently of the direct influence of environmental tax revenues.
+The coefficient on the time variable is -4,484, highly significant (p \< 0.001), indicating a robust downward trend in emissions over time. 
 
 We do not calculate a log - level regression, because our following analysis and tax proposition will be made accordingly to levels of GHG.
 
@@ -725,7 +721,7 @@ We estimated a series of linear regressions to examine whether environmental tax
 
 Across the five specifications, the coefficient on environmental tax revenues is negative, statistically significant, and remarkably stable. It increases from –1.516 at horizon n+1 to -2.083 at n+4, and then slightly decreases to -2.012 at n+5. This pattern suggests that higher environmental tax revenues are systematically associated with lower future GHG emissions. Statistical significance is very strong in all models (p \< 0.001).
 
-All other coefficients are close to the ones saw before (GDP around 0.25, and time has coefficients between –4,320 and –4,552, all highly significant)
+All other coefficients are close to the ones saw before (GDP around 0.25, and time has coefficients between –4,320 and –4,552, all highly significant).
 
 ## 2. Between taxes and social inequalities
 
@@ -737,28 +733,26 @@ model_warm_tax <- lm(Warm_Households_value ~ Envt_Tax_Revenues_value +  GII_valu
 summary(model_warm_tax)
 
 # taxes on the coefficient of inequalities
-model_ineq_tax <- lm(coef_ineq_value ~ Envt_Tax_Revenues_value + hhtyp + incgrp + log(GDP_value) + TIME_PERIOD, data = all_merged)
+model_ineq_tax <- lm(coef_ineq_value ~ Envt_Tax_Revenues_value + log(GDP_value) + TIME_PERIOD, data = all_merged)
 summary(model_ineq_tax)
 
 # taxes on the gender inequality index
-model_gii_tax <- lm(GII_value ~ Envt_Tax_Revenues_value + hhtyp + incgrp + log(GDP_value) + TIME_PERIOD, data = all_merged)
+model_gii_tax <- lm(GII_value ~ Envt_Tax_Revenues_value + log(GDP_value) + TIME_PERIOD, data = all_merged)
 summary(model_gii_tax)
 
 ```
 
 We estimate three regressions to evaluate the association between environmental tax revenues and three social outcomes, in percentage: energy poverty, income inequality, and gender inequality. In all models, we also add GDP and time (years). We chose to not include the Gender Inequality index and the Income inequality coefficient in one each others regression because of collinearity problems. Also, the coefficient of energy poverty is rather a consequence of both than a cause, so we do not include it in each as well.
 
-In the model explaining energy poverty (log Warm_Households), we include the income-inequality coefficient. The resulting model has strong explanatory power (Adjusted $R^2$ ≈ 0.6). The coefficient on environmental tax revenues remains small, positive, stable (+3.719e-05) and significant. Also, the income-inequality coefficient shows strong positive and significant associations with energy poverty.
+In the model explaining energy poverty, we include the income-inequality coefficient. The resulting model has strong explanatory power (Adjusted $R^2$ ≈ 0.60). The coefficient on environmental tax revenues remains small, positive, stable (+3.7e-05) and significant. Also, the income-inequality coefficient shows strong positive and significant associations with energy poverty.
 
-For income inequality (log coef_ineq), the model remains statistically valid but with limited explanatory power (Adjusted $R^2$ ≈ 0.034), indicating that environmental taxes explain only a small part of the variation in inequality (+2.1e-06) once GDP and time effects are controlled for.
+For income inequality, the model remains statistically valid but with limited explanatory power (Adjusted $R^2$ ≈ 0.05), indicating that environmental taxes explain only a small part of the variation in inequality (+3.0e-05 ) once GDP and time effects are controlled for.
 
-Similarly, in the gender-inequality model (log GII) again, the inclusion of GDP and time fixed effects strengthens the model substantially (Adjusted $R^2$ ≈ 0.365), and the environmental-tax coefficient remains positive (+4.8e-06) and highly significant.
+Similarly, in the gender-inequality model (log GII) again, the inclusion of GDP and time fixed effects strengthens the model substantially (Adjusted $R^2$ ≈ 0.40), and the environmental-tax coefficient remains positive (+6.9e-07) and highly significant.
 
 ## 3. Between tax and economy
 
 We try to answer the following question: "What is the impact of environmental taxes on the economy ?"
-
-#### Regression
 
 ```{r, echo=FALSE}
 #| message: false
@@ -767,39 +761,9 @@ model_gdp_tax <- lm(log(GDP_value) ~ Envt_Tax_Revenues_value + TIME_PERIOD, data
 summary(model_gdp_tax)
 ```
 
-The regression of GDP on environmental tax revenues and year fixed effects shows a strong positive and statistically significant association between the two variables.The coefficient on environmental tax revenues is 6.02 × 10⁻⁵ and is significant at the 1% level (p \< 0.001); an increase of one unit in environmental tax revenues is associated with an increase of approximately 0.006% in GDP, holding the time trend constant.
+The regression of GDP on environmental tax revenues and year fixed effects shows a strong positive and statistically significant association between the two variables.The coefficient on environmental tax revenues is 6.02 × 10⁻⁵ and is significant at the 1% level (p \< 0.001), holding the time trend constant.
 
 The model has substantial explanatory power (Adjusted $R^2$ ≈ 0.63). The year coefficient is also positive and significant, reflecting general GDP growth over the period. But this relationship is correlational and does not imply causation, it indicates that environmental tax revenues tend to increase alongside GDP, consistent with the idea that wealthier economies can collect more from climate-related taxes.
-
-#### Graphical representation
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-clean_tax_data <- all_merged |>
-  filter(
-    !is.na(GDP_value),
-    !is.na(Envt_Tax_Revenues_value),
-    is.finite(GDP_value),
-    is.finite(Envt_Tax_Revenues_value)
-  )
-
-ggplot(clean_tax_data, aes(x = Envt_Tax_Revenues_value, y = GDP_value)) +
-  geom_point(aes(color = "Observations"), alpha = 0.1, size = 1.2) +
-  geom_smooth(aes(color = "Regression line"), method = "lm", se = TRUE) +
-  scale_color_manual(
-    name = "Legend",
-    values = c("Observations" = "darkgreen", "Regression line" = "darkred")
-  ) +
-  labs(
-    title = "Relationship between Environmental Tax Revenues and GDP",
-    x = "Environmental Tax Revenues",
-    y = "GDP"
-  ) +
-  theme_minimal() +
-  theme(legend.title = element_text(size = 10, face = "bold"))
-
-```
 
 # Forecasting : no-policy
 
@@ -831,7 +795,7 @@ This ARIMA-based forecast indicates a steady but slow decline in total greenhous
 
 However, despite this continuous decrease, the decline is far from the EU’s net-zero objective for 2050. Even in the most optimistic confidence interval, projected emissions in 2050 remain well above 0 (about 363 million tons of CO₂-equivalent), suggesting that under current trends and without major additional interventions—the EU27 is not on track to reach carbon neutrality.
 
-### 2. social inequalities:
+### 2. Social inequalities:
 
 ```{r, echo=FALSE}
 #| message: false
@@ -871,6 +835,10 @@ plot(warm_fc, main = "Forecast of Warm Households")
 
 ##### Comment :
 
+GII (Gender Inequality Index): The forecast projects a decline from 0.085 in 2023 to 0 (it goes in the negative but the index is between 0 and 1) in 2050.
+Coefficient of Inequality: Inequality is expected to decrease from 7.73 in 2023 to 5.04 in 2050, reflecting a gradual improvement in income distribution with moderate uncertainty bands widening over time.
+Warm Households: The proportion of households unable to heat properly is forecast to remain relatively stable, rising slightly from 14.65% in 2024 to 16.41% in 2050, though with considerable uncertainty as shown by the wide confidence intervals.
+
 ### 3. The economy : forecast of the GDP
 
 ```{r, echo=FALSE}
@@ -884,6 +852,8 @@ plot(gdp_fc, main = "Forecast of GDP")
 ```
 
 ##### Comment :
+
+The EU27 aggregate GDP is projected to grow steadily from €19.4 trillion in 2024 to €29.5 trillion in 2050, representing approximately 50% growth over the period, though the widening confidence intervals indicate increasing uncertainty in long-term projections.
 
 ### 4. The economy : forecast of the environmental taxes {#forecastofenvttax}
 
@@ -906,36 +876,46 @@ tax_pred <- predict(
   level = 0.95
 )
 
-tax_fc_lm <- bind_cols(future_years, as.data.frame(tax_pred))
+tax_pred_80 <- predict(
+  tax_lm,
+  newdata = future_years,
+  interval = "confidence", 
+  level = 0.80
+)
+
+tax_fc_lm <- bind_cols(
+  future_years, 
+  as.data.frame(tax_pred_95),
+  lwr_80 = as.data.frame(tax_pred_80)$lwr,
+  upr_80 = as.data.frame(tax_pred_80)$upr
+)
+
 ```
 
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
+```{r}
 tax_all_2050 <- ggplot() +
   geom_line(data=EU27_Tax, aes(x = TIME_PERIOD, y = Envt_Tax_Revenues_value, color = "Observations")) +
+  geom_ribbon(data=tax_fc_lm, aes(x = TIME_PERIOD, ymin = lwr, ymax = upr), fill = "#C8C8C8", alpha = 0.5) +
+  geom_ribbon(data=tax_fc_lm, aes(x = TIME_PERIOD, ymin = lwr_80, ymax = upr_80), fill = "#9999CC", alpha = 0.5) +
   geom_line(data=tax_fc_lm, aes(x = TIME_PERIOD, y = fit, color = "Forecast")) +
-  geom_point(data=tax_fc_lm, aes(x = TIME_PERIOD, y = lwr, color = "Low 95%")) +
-  geom_point(data=tax_fc_lm, aes(x = TIME_PERIOD, y = upr, color = "High 95%")) +
   scale_color_manual(name = "Legend",
-                     values = c("Observations" = "steelblue", 
-                               "Forecast" = "orangered3", 
-                               "Low 95%" = "salmon1", 
-                               "High 95%" = "salmon1")) +
+                     values = c("Observations" = "black", 
+                               "Forecast" = "steelblue")) +
   theme_minimal() +
   labs(
     title = "Forecast of Environmental Tax Revenues (95% CI)",
     x = "Year",
     y = "Tax revenues"
-  )+
+  ) +
   scale_y_continuous(limits = c(0, 1e+06)) 
 
 ggplotly(tax_all_2050)
 ```
 
-##### Comment (redo) :
 
-this is an extrapolation from current trend
+##### Comment :
+
+Environmental tax revenues in the EU27 are projected to increase from €362.4 billion in 2023 to €617.4 billion in 2050, representing a 70% growth based on an extrapolation of current trends. This steady upward trajectory suggests continued expansion of green taxation policies, however, it's important to note that this forecast assumes the continuation of existing trends under a no-change-in-policy scenario.
 
 # Forecasting: if we plan to get to the 0 net emission by 2050
 
