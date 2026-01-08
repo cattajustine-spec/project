@@ -721,7 +721,7 @@ We estimated a series of linear regressions to examine whether environmental tax
 
 Across the five specifications, the coefficient on environmental tax revenues is negative, statistically significant, and remarkably stable. It increases from –1.516 at horizon n+1 to -2.083 at n+4, and then slightly decreases to -2.012 at n+5. This pattern suggests that higher environmental tax revenues are systematically associated with lower future GHG emissions. Statistical significance is very strong in all models (p \< 0.001).
 
-All other coefficients are close to the ones saw before (GDP around 0.25, and time has coefficients between –4,320 and –4,552, all highly significant)
+All other coefficients are close to the ones saw before (GDP around 0.25, and time has coefficients between –4,320 and –4,552, all highly significant).
 
 ## 2. Between taxes and social inequalities
 
@@ -744,11 +744,11 @@ summary(model_gii_tax)
 
 We estimate three regressions to evaluate the association between environmental tax revenues and three social outcomes, in percentage: energy poverty, income inequality, and gender inequality. In all models, we also add GDP and time (years). We chose to not include the Gender Inequality index and the Income inequality coefficient in one each others regression because of collinearity problems. Also, the coefficient of energy poverty is rather a consequence of both than a cause, so we do not include it in each as well.
 
-In the model explaining energy poverty (log Warm_Households), we include the income-inequality coefficient. The resulting model has strong explanatory power (Adjusted $R^2$ ≈ 0.61). The coefficient on environmental tax revenues remains small, positive, stable (+8.5e-06) and significant. Also, the income-inequality coefficient shows strong positive and significant associations with energy poverty.
+In the model explaining energy poverty, we include the income-inequality coefficient. The resulting model has strong explanatory power (Adjusted $R^2$ ≈ 0.60). The coefficient on environmental tax revenues remains small, positive, stable (+3.7e-05) and significant. Also, the income-inequality coefficient shows strong positive and significant associations with energy poverty.
 
-For income inequality (log coef_ineq), the model remains statistically valid but with limited explanatory power (Adjusted $R^2$ ≈ 0.03), indicating that environmental taxes explain only a small part of the variation in inequality (+6.5e-08) once GDP and time effects are controlled for.
+For income inequality, the model remains statistically valid but with limited explanatory power (Adjusted $R^2$ ≈ 0.05), indicating that environmental taxes explain only a small part of the variation in inequality (+3.0e-05 ) once GDP and time effects are controlled for.
 
-Similarly, in the gender-inequality model (log GII) again, the inclusion of GDP and time fixed effects strengthens the model substantially (Adjusted $R^2$ ≈ 0.40), and the environmental-tax coefficient remains positive (+1.7e-07) and highly significant.
+Similarly, in the gender-inequality model (log GII) again, the inclusion of GDP and time fixed effects strengthens the model substantially (Adjusted $R^2$ ≈ 0.40), and the environmental-tax coefficient remains positive (+6.9e-07) and highly significant.
 
 ## 3. Between tax and economy
 
