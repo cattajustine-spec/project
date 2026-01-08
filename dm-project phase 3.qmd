@@ -676,13 +676,11 @@ summary(model)
 ```
 We estimated a linear regression to examine the relationship between environmental tax revenues and greenhouse gas emissions, while controlling for GDP and year. The model explains about 84% of the variation in emissions (Adjusted $R^2$ = 0.8456).
 
-The coefficient on environmental tax revenues is -1.029, and it is highly statistically significant (p \< 0.001). This suggests that, holding GDP and time constant, higher environmental tax revenues are associated with slightly lower greenhouse gas emissions. However, the magnitude of the effect remains very small, implying a limited practical impact.
+The coefficient on environmental tax revenues is -1.029, and it is highly statistically significant (p \< 0.001). This suggests that, holding GDP and time constant, higher environmental tax revenues are associated with slightly lower greenhouse gas emissions. However, the magnitude of the effect remains very small.
 
-GDP has a positive and small significant effect on emissions, with a coefficient of 0.2355 (p \< 0.001). This indicates that countries with higher economic output tend to emit more, consistent with scale effects: larger economies produce more goods and services, and thus more emissions.
+GDP has a positive and small significant effect on emissions, with a coefficient of 0.2355 (p \< 0.001). This indicates that countries with higher economic output tend to emit more, consistent with scale effects: larger economies produce more, and thus emit more.
 
-The coefficient on the time variable is -4,484, highly significant (p \< 0.001), indicating a robust downward trend in emissions over time. This is consistent with what we saw before in the descriptive data.
-
-Overall, the results suggest that GDP remains the dominant driver of emissions. Environmental tax revenues show a statistically significant negative association with emissions, but the magnitude of the effect is small. The pronounced negative time trend indicates that greenhouse gas emissions have declined over the period independently of the direct influence of environmental tax revenues.
+The coefficient on the time variable is -4,484, highly significant (p \< 0.001), indicating a robust downward trend in emissions over time. 
 
 We do not calculate a log - level regression, because our following analysis and tax proposition will be made accordingly to levels of GHG.
 
