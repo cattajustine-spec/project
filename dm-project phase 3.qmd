@@ -756,8 +756,6 @@ Similarly, in the gender-inequality model (log GII) again, the inclusion of GDP 
 
 We try to answer the following question: "What is the impact of environmental taxes on the economy ?"
 
-#### Regression
-
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -768,36 +766,6 @@ summary(model_gdp_tax)
 The regression of GDP on environmental tax revenues and year fixed effects shows a strong positive and statistically significant association between the two variables.The coefficient on environmental tax revenues is 6.02 × 10⁻⁵ and is significant at the 1% level (p \< 0.001); an increase of one unit in environmental tax revenues is associated with an increase of approximately 0.006% in GDP, holding the time trend constant.
 
 The model has substantial explanatory power (Adjusted $R^2$ ≈ 0.63). The year coefficient is also positive and significant, reflecting general GDP growth over the period. But this relationship is correlational and does not imply causation, it indicates that environmental tax revenues tend to increase alongside GDP, consistent with the idea that wealthier economies can collect more from climate-related taxes.
-
-#### Graphical representation
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-clean_tax_data <- all_merged |>
-  filter(
-    !is.na(GDP_value),
-    !is.na(Envt_Tax_Revenues_value),
-    is.finite(GDP_value),
-    is.finite(Envt_Tax_Revenues_value)
-  )
-
-ggplot(clean_tax_data, aes(x = Envt_Tax_Revenues_value, y = GDP_value)) +
-  geom_point(aes(color = "Observations"), alpha = 0.1, size = 1.2) +
-  geom_smooth(aes(color = "Regression line"), method = "lm", se = TRUE) +
-  scale_color_manual(
-    name = "Legend",
-    values = c("Observations" = "darkgreen", "Regression line" = "darkred")
-  ) +
-  labs(
-    title = "Relationship between Environmental Tax Revenues and GDP",
-    x = "Environmental Tax Revenues",
-    y = "GDP"
-  ) +
-  theme_minimal() +
-  theme(legend.title = element_text(size = 10, face = "bold"))
-
-```
 
 # Forecasting : no-policy
 
