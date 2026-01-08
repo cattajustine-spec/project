@@ -829,7 +829,7 @@ This ARIMA-based forecast indicates a steady but slow decline in total greenhous
 
 However, despite this continuous decrease, the decline is far from the EU’s net-zero objective for 2050. Even in the most optimistic confidence interval, projected emissions in 2050 remain well above 0 (about 363 million tons of CO₂-equivalent), suggesting that under current trends and without major additional interventions—the EU27 is not on track to reach carbon neutrality.
 
-### 2. social inequalities:
+### 2. Social inequalities:
 
 ```{r, echo=FALSE}
 #| message: false
