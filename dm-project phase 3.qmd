@@ -835,6 +835,10 @@ plot(warm_fc, main = "Forecast of Warm Households")
 
 ##### Comment :
 
+GII (Gender Inequality Index): The forecast projects a decline from 0.085 in 2023 to 0 (it goes in the negative but the index is between 0 and 1) in 2050.
+Coefficient of Inequality: Inequality is expected to decrease from 7.73 in 2023 to 5.04 in 2050, reflecting a gradual improvement in income distribution with moderate uncertainty bands widening over time.
+Warm Households: The proportion of households unable to heat properly is forecast to remain relatively stable, rising slightly from 14.65% in 2024 to 16.41% in 2050, though with considerable uncertainty as shown by the wide confidence intervals.
+
 ### 3. The economy : forecast of the GDP
 
 ```{r, echo=FALSE}
