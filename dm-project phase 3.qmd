@@ -1210,6 +1210,8 @@ The projections suggest that the aggressive increase in environmental taxation i
 
 #### b. Comparing with the no-policy forecast
 
+To assess how the proposed environmental tax policy may affect social inequalities relative to a baseline scenario without the tax, we compare the projected evolution of our three indicators—average warming inability, the coefficient of human inequality, and the Gender Inequality Index—with their ARIMA-based forecasts in the absence of policy intervention. For each indicator, we construct a dataset of the no-policy forecast, including 80% and 95% confidence intervals, and plot these alongside the tax policy projections. This approach allows us to visually and quantitatively evaluate the divergence between the two scenarios over time, highlighting potential amplifications of social disparities linked to the tax policy.
+
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
