@@ -1178,40 +1178,13 @@ future_predictions <- tibble(
       )))
 ```
 
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-# Plot 1: Warming inability
-p_warming <- ggplot(future_predictions, aes(x = year, y = Predicted_Warming)) +
-  geom_line(color = "darkgreen", linewidth = 1) +
-  scale_y_continuous(limits = c(0, 50)) +
-  labs(title = "Forecasted impact on Average Warming Inability", x = "Year", y = "Warming") +
-  theme_minimal()
-
-# Plot 2: Coefficient of Inequality
-p_inequality <- ggplot(future_predictions, aes(x = year, y = Predicted_Inequality)) +
-  geom_line(color = "orange", linewidth = 1) +
-    scale_y_continuous(limits = c(0, 50)) +
-  labs(title = "Forecasted impact on the Coefficient of Human Inequality", x = "Year", y = "Gini Coefficient") +
-  theme_minimal()
-
-# Plot 3: Gender Inequality Index
-p_gii <- ggplot(future_predictions, aes(x = year, y = Predicted_GII)) +
-  geom_line(color = "purple", linewidth = 1) +
-    scale_y_continuous(limits = c(0, 1)) +
-  labs(title = "Forecasted impact on the Gender Inequality Index (GII)", x = "Year", y = "GII") +
-  theme_minimal()
-
-# Stack vertically using grid.arrange
-grid.arrange(p_warming, p_inequality, p_gii, ncol = 1)
-```
-
-
 #### b. Comparing with the no-policy forecast
 
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
+
+## WARM PLOT
 warm_fc_df <- data.frame(
   year = as.numeric(time(warm_fc$mean)),
   mean = as.numeric(warm_fc$mean),
@@ -1221,7 +1194,7 @@ warm_fc_df <- data.frame(
   upper95 = as.numeric(warm_fc$upper[, 2])
 )
 
-ggplot() +
+p_warming <- ggplot() +
   geom_ribbon(
     data = warm_fc_df,
     aes(x = year, ymin = lower95, ymax = upper95, fill = "95% confidence interval"),
@@ -1266,12 +1239,10 @@ ggplot() +
     legend.position = "right",
     legend.title = element_text(face = "bold")
   )
-```
 
 
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
+
+## INEQ PLOT 
 ineq_fc_df <- data.frame(
   year = as.numeric(time(coefineq_fc$mean)),
   mean = as.numeric(coefineq_fc$mean),
@@ -1281,7 +1252,7 @@ ineq_fc_df <- data.frame(
   upper95 = as.numeric(coefineq_fc$upper[, 2])
 )
 
-ggplot() +
+p_inequality <- ggplot() +
   geom_ribbon(
     data = ineq_fc_df,
     aes(x = year, ymin = lower95, ymax = upper95, fill = "95% confidence interval"),
@@ -1326,12 +1297,9 @@ ggplot() +
     legend.position = "right",
     legend.title = element_text(face = "bold")
   )
-```
 
 
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
+## GII PLOT
 gii_fc_df <- data.frame(
   year = as.numeric(time(gii_fc$mean)),
   mean = as.numeric(gii_fc$mean),
@@ -1341,7 +1309,7 @@ gii_fc_df <- data.frame(
   upper95 = as.numeric(gii_fc$upper[, 2])
 )
 
-ggplot() +
+p_gii <- ggplot() +
   geom_ribbon(
     data = gii_fc_df,
     aes(x = year, ymin = lower95, ymax = upper95, fill = "95% confidence interval"),
@@ -1389,6 +1357,13 @@ ggplot() +
 ```
 
 
+```{r}
+p_warming
+p_inequality
+p_gii
+```
+
+
 ### 3. Is the model viable ? Its impact on the GDP (forecast & comparison)
 
 ```{r, echo=FALSE}
@@ -1432,7 +1407,6 @@ ggplot(future_gdp_predictions,
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-
 gdp_fc_df <- data.frame(
   year = as.numeric(time(gdp_fc$mean)),
   mean = as.numeric(gdp_fc$mean),
