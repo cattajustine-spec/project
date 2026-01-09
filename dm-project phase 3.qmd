@@ -1131,6 +1131,8 @@ As shown in the figure, achieving the targeted GHG emissions trajectory would re
 
 #### a. The forecast model
 
+To assess the social implications of the tax trajectory required to achieve net-zero emissions, we project the future evolution of our three inequality indicators: average warming inability, the coefficient of human inequality, and the Gender Inequality Index (GII). Starting from their last observed values, we simulate forward paths up to 2050 by combining the estimated marginal effects of environmental tax revenues and time trends obtained from reduced-form regressions. The required environmental tax path is summarized by its average annual increase, which is then treated as an exogenous policy shock applied uniformly over time. The projected indicators are constructed by cumulatively applying these marginal effects year by year, under the assumption that the estimated historical relationships remain stable in the future. For the GII, predicted values are constrained to remain within their theoretical bounds between 0 and 1.
+
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
