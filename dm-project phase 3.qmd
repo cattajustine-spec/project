@@ -869,7 +869,7 @@ future_years <- tibble(
   TIME_PERIOD = (max(EU27_Tax$TIME_PERIOD)+1):(max(EU27_Tax$TIME_PERIOD)+27)
 )
 
-tax_pred <- predict(
+tax_pred_95 <- predict(
   tax_lm,
   newdata = future_years,
   interval = "confidence", 
@@ -1013,28 +1013,9 @@ To assess the adequacy of current environmental tax trends, we now compare the f
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-tax_pred_95 <- predict(
-  tax_lm,
-  newdata = future_years,
-  interval = "confidence",
-  level = 0.95
-)
-tax_pred_80 <- predict(
-  tax_lm,
-  newdata = future_years,
-  interval = "confidence",
-  level = 0.80
-)
-tax_fc_lm_ci <- future_years |>
-  mutate(
-    mean = tax_pred_95[, "fit"],
-    lower95 = tax_pred_95[, "lwr"],
-    upper95 = tax_pred_95[, "upr"],
-    lower80 = tax_pred_80[, "lwr"],
-    upper80 = tax_pred_80[, "upr"]
-  ) |>
-  rename(year = TIME_PERIOD)
-tax_plot_df <- tax_fc_lm_ci |>
+tax_fc_lm <- tax_fc_lm |> rename(year = TIME_PERIOD)
+
+tax_plot_df <- tax_fc_lm |>
   left_join(
     tax_path |> select(year, tax_required),
     by = "year"
@@ -1042,15 +1023,15 @@ tax_plot_df <- tax_fc_lm_ci |>
 
 ggplot(tax_plot_df, aes(x = year)) +
   geom_ribbon(
-    aes(ymin = lower95, ymax = upper95, fill = "95% confidence interval"),
+    aes(ymin = lwr, ymax = upr, fill = "95% confidence interval"),
     alpha = 0.35
   ) +
   geom_ribbon(
-    aes(ymin = lower80, ymax = upper80, fill = "80% confidence interval"),
+    aes(ymin = lwr_80, ymax = upr_80, fill = "80% confidence interval"),
     alpha = 0.5
   ) +
   geom_line(
-    aes(y = mean, color = "Forecasted tax revenues (trend continuation)"),
+    aes(y = fit, color = "Forecasted tax revenues (trend continuation)"),
     linewidth = 1
   ) +
   geom_line(
