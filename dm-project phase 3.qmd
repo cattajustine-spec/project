@@ -1431,7 +1431,7 @@ ggplot(future_gdp_predictions,
   ) +
   theme_minimal()
 ```
-
+The projected GDP under the tax policy shows a very gradual increase from 19,434,512 millions USD in 2024 to 19,434,558 millions USD in 2050, suggesting that the policy would have a minimal direct impact on overall economic growth over the period.
 
 
 ```{r, echo=FALSE}
@@ -1493,7 +1493,7 @@ ggplot() +
     legend.title = element_text(face = "bold")
   )
 ```
-
+The comparison shows that the GDP forecast without the tax policy is consistently higher than the GDP projected under the tax scenario, with the no-policy path rising from 19,820,071 millions USD in 2025 to 29,459,091 in 2050, while the tax policy scenario remains nearly flat around 19,434,500 millions USD. This indicates that, according to our model, implementing the environmental tax would largely slow the growth of aggregate GDP compared with the baseline. However, the tax-induced impact is relatively small in absolute terms early on, suggesting limited short-term economic disruption.
 
 ##### Ratio Tax/GDP
 
