@@ -930,52 +930,32 @@ To identify a tax trajectory consistent with the European Union’s goal of net-
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-# --- DATA PREP ---
 data_forecast_tax_0net <- EUGHG_agg_yearly |>
   left_join(EU27_Tax, by = "TIME_PERIOD") |>
   filter(!is.na(GHG_total), !is.na(Envt_Tax_Revenues_value)) |>
   mutate(year = as.numeric(TIME_PERIOD))
 
+# Estimate level-level model 
 mod_LL <- lm(GHG_total ~ Envt_Tax_Revenues_value, data = data_forecast_tax_0net)
 summary(mod_LL)
-alpha <- coef(mod_LL)[1]
-beta <- coef(mod_LL)[2]
 
-if(beta >= 0) stop("Regression slope >= 0: tax does not reduce GHG.")
+# If beta >= 0, stop (no reduction possible by raising tax)
+if(coef(mod_LL)[2] >= 0) stop("Model does not indicate that raising tax reduces GHG.")
 
-# --- PARAMETERS ---
-years <- 2023:2050
-n_years <- length(years) # length = 28
-
+# Build linear target path (absolute decline) as before
+years <- seq((max(data_forecast_tax_0net$year)+1), 2050)
 GHG_last <- tail(data_forecast_tax_0net$GHG_total, 1)
-tax_2023_obs <- tail(data_forecast_tax_0net$Envt_Tax_Revenues_value, 1)
-alpha_star <- GHG_last - beta * tax_2023_obs
-tax_2050 <- (0 - alpha_star) / beta
+target_GHG <- seq(GHG_last, 1e-6, length.out = length(years))
+ 
+# Invert model: Tax_t = (target - alpha) / beta
+tax_required <- (target_GHG - coef(mod_LL)[1]) / coef(mod_LL)[2]
+tax_required <- ifelse(tax_required < 0 | tax_required > 1e12, NA_real_, tax_required)
 
-# Convexity parameter
-gamma <- 2
-
-# Normalized time for 2024→2050
-t_norm <- 0:(n_years - 2) / (n_years - 2)  # length = 27
-
-# Compute 2024 tax to start trajectory
-tax_2024 <- tax_2023_obs + (tax_2050 - tax_2023_obs)/2  # large jump
-
-# Build smooth convex path for 2024→2050 (length = 27)
-tax_smooth <- tax_2024 + (tax_2050 - tax_2024) * t_norm^gamma
-
-# Combine 2023 + 2024→2050
-tax_required <- c(tax_2023_obs, tax_smooth)  # length = 28, matches years
-
-# Predicted GHG
-pred_GHG <- alpha_star + beta * tax_required
-
-# Build tibble
 tax_path <- tibble(
   year = years,
-  target_GHG = seq(GHG_last, 0, length.out = n_years),
+  target_GHG = target_GHG,
   tax_required = tax_required,
-  pred_GHG = pred_GHG
+  pred_GHG = predict(mod_LL, newdata = tibble(Envt_Tax_Revenues_value = tax_required))
 )
 
 # check
@@ -993,7 +973,6 @@ ggplot(tax_path, aes(x = year)) +
   geom_line(aes(y = pred_GHG), color = "darkblue") +
   labs(title="Targeted GHG (level-level)", y="GHG", x="Year") +
   theme_minimal()
-
 ```
 
 The estimated regression reveals a statistically significant negative relationship between environmental tax revenues and total GHG emissions. The coefficient on environmental tax revenues is −3.864 (p-value < 0.001), indicating that, historically, an increase of one million USD in environmental tax revenues is associated with a reduction of approximately 3.9 thousand tonnes of CO₂-equivalent in aggregate emissions. The intercept suggests a baseline emissions level of about 5,027,000 thousand tonnes of CO₂-equivalent in the absence of environmental taxation. While the model is intentionally parsimonious, it explains a meaningful share of the observed variation in emissions, with an Adjusted $R^2$ of 0.49.
