@@ -844,9 +844,9 @@ Warm Households: The proportion of households unable to heat properly is forecas
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-gdp_ts <- ts(EU27_GDP$GDP_value, start = min(EU27_GDP$TIME_PERIOD))
+gdp_ts <- ts(EU27_GDP$GDP_value, start = min(EU27_GDP$TIME_PERIOD)-1)
 gdp_model <- auto.arima(gdp_ts)
-gdp_fc <- forecast(gdp_model, h = 27)
+gdp_fc <- forecast(gdp_model, h = 28)
 
 plot(gdp_fc, main = "Forecast of GDP")
 ```
