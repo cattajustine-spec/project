@@ -1394,6 +1394,8 @@ The comparison between the tax and no-policy scenarios highlights a clear trade-
 
 ### 3. Is the model viable ? Its impact on the GDP (forecast & comparison)
 
+To evaluate the potential economic impact of the proposed environmental tax policy, we first forecast EU27 GDP under the tax scenario using the estimated coefficients from our GDP regression model. We construct the future path by applying the average annual increase in environmental tax revenues, combined with the underlying time trend, cumulatively on the last observed GDP level. This projected GDP path is then plotted alongside the ARIMA-based GDP forecast in the absence of any tax policy, allowing us to visually and quantitatively compare how the tax might influence aggregate economic growth over the 2024–2050 period.
+
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
