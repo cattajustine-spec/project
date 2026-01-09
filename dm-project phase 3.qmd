@@ -979,7 +979,7 @@ The estimated regression reveals a statistically significant negative relationsh
 
 Using this estimated relationship, we construct a counterfactual emissions trajectory from approximately 2,907,204 thousand tonnes in 2023 to net-zero emissions in 2050. To ensure that predicted emissions reach net zero, the 2023 tax level is anchored to the observed value (362,363 million USD), while a substantial increase in 2024 is introduced. After 2024, the tax path follows a convex trajectory toward 2050, reflecting the progressively stronger fiscal effort needed to reduce emissions to zero. Without this initial jump, predicted emissions would plateau around 719,773 thousand tonnes of CO₂-equivalent by 2050, far above net zero.
 
-According to the tax path, environmental tax revenues would need to rise from 362,363 million USD in 2023 to 738,542 millions USD in 2024, to about 1,114,722 million USD in 2050, producing the targeted emissions trajectory illustrated in the GHG emissions path graph. These results highlight both the scale of the fiscal effort required and the limitations of relying solely on environmental taxation, given the modest explanatory power of the reduced-form regression.
+According to the tax path, environmental tax revenues would need to rise from 362,363 million USD in 2023 to 548,634 millions USD in 2024, to about 1,300,993 million USD in 2050, producing the targeted emissions trajectory illustrated in the GHG emissions path graph. These results highlight both the scale of the fiscal effort required and the limitations of relying solely on environmental taxation, given the modest explanatory power of the reduced-form regression.
 
 #### b. Comparing with the no-policy forecast
 
