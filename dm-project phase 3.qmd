@@ -1594,7 +1594,7 @@ ggplot() +
     legend.position = "right"
   )
 ```
-
+The comparison of tax-to-GDP ratios across the three scenarios indicates that, while the required and forecasted ratios remain mostly in the Viable or Caution zones (1–3%) in the early years, the ratio calculated using GDP under the tax scenario steadily rises, crossing the 5% High Risk threshold around 2039, suggesting that implementing the policy could become very disruptive for the economy due to increased capital flight risk, sectoral lobbying, and social acceptance challenges.
 
 # Conclusion
 
