@@ -1497,17 +1497,19 @@ ggplot() +
 
 ##### Ratio Tax/GDP
 
+To further assess the economic viability of the tax policy, we calculate the ratio of the environmental tax to GDP under different scenarios. Specifically, we compute: (i) the required tax as a share of GDP, (ii) the forecasted tax assuming the policy is not implemented, and (iii) the tax as a share of GDP using the GDP forecast under the tax scenario itself. Plotting these three lines against empirically informed viability thresholds (1%, 3%, 5%) highlights periods where the tax could be economically feasible, require caution, or pose significant risks, including potential disruption to growth, capital flight, or social acceptance challenges.
+
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-# Build GDP forecast dataframe
+# Build GDP forecast dataframe (without tax)
 gdp_forecast_df <- tibble(
   year = seq(max(EU27_GDP$TIME_PERIOD) + 1,
              max(EU27_GDP$TIME_PERIOD) + 27),
   GDP_forecast = as.numeric(gdp_fc$mean)
 )
 
-# Required tax path → tax / GDP
+# Required tax path → tax / GDP (baseline GDP)
 required_data <- tax_path |>
   left_join(gdp_forecast_df, by = "year") |>
   mutate(
@@ -1516,9 +1518,9 @@ required_data <- tax_path |>
   ) |>
   select(year, tax_gdp_ratio, scenario)
 
-# Forecasted tax path → tax / GDP
+# Forecasted tax path → tax / GDP (baseline GDP)
 forecasted_data <- as.data.frame(tax_pred) |>
-  mutate(year = tax_path$year[-1]) |>
+  mutate(year = tax_path$year) |>  
   select(year, fit) |>
   left_join(gdp_forecast_df, by = "year") |>
   mutate(
@@ -1527,19 +1529,30 @@ forecasted_data <- as.data.frame(tax_pred) |>
   ) |>
   select(year, tax_gdp_ratio, scenario)
 
+# Tax/GDP using GDP under the tax scenario
+future_gdp_df <- future_gdp_predictions |>
+  rename(GDP_with_tax = Predicted_GDP) |>
+  select(year, GDP_with_tax)
 
+tax_gdp_with_taxGDP <- tax_path |>
+  left_join(future_gdp_df, by = "year") |>
+  mutate(
+    tax_gdp_ratio = (tax_required / GDP_with_tax) * 100,
+    scenario = "Tax/GDP using GDP with tax"
+  ) |>
+  select(year, tax_gdp_ratio, scenario)
 
-# Combine both paths
-comparison_data <- bind_rows(required_data, forecasted_data)
+# Combine all three scenarios
+comparison_data <- bind_rows(required_data, forecasted_data, tax_gdp_with_taxGDP)
 
-#Viability zones
+# Viability zones
 zones <- tibble(
   ymin = c(0, 1, 3, 5),
   ymax = c(1, 3, 5, Inf),
   zone = c("Viable", "Caution", "Risk", "High Risk")
 )
 
-# Plot: Required vs Forecasted Tax as % of GDP
+# Plot: Tax/GDP comparison with three scenarios
 ggplot() +
   geom_rect(data = zones,
             aes(xmin = -Inf, xmax = Inf, ymin = ymin, ymax = ymax, fill = zone),
@@ -1554,8 +1567,9 @@ ggplot() +
              linetype = "dashed", color = "gray40") +
   scale_color_manual(
     values = c(
-      "Required tax-GDP ratio"   = "darkblue",
-      "Forecasted tax-GDP ratio" = "firebrick"
+      "Required tax-GDP ratio" = "darkblue",
+      "Forecasted tax-GDP ratio" = "firebrick",
+      "Tax/GDP using GDP with tax" = "purple"
     ),
     name = "Scenario"
   ) +
@@ -1568,22 +1582,19 @@ ggplot() +
     ),
     name = "Viability zone"
   ) +
-
   labs(
     title = "Economic Viability of Environmental Tax Policy",
-    subtitle = "Required vs Forecasted Environmental Tax as % of GDP",
+    subtitle = "Tax as % of GDP under three scenarios",
     x = "Year",
     y = "Tax as % of GDP"
   ) +
-
   scale_y_continuous(breaks = seq(0, 10, 1)) +
   theme_minimal(base_size = 12) +
   theme(
     legend.position = "right"
   )
 ```
-The thresholds (1%, 3%, 5%) are based on empirical observations from existing tax systems.
-We say that above 5% it would be Very Disruptive: At this scale, capital flight risks increase, sectoral lobbying intensifies, and social acceptance becomes critical. 
+
 
 # Conclusion
 
