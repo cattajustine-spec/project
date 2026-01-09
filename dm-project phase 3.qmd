@@ -1205,6 +1205,7 @@ p_gii <- ggplot(future_predictions, aes(x = year, y = Predicted_GII)) +
 # Stack vertically using grid.arrange
 grid.arrange(p_warming, p_inequality, p_gii, ncol = 1)
 ```
+The projections suggest that the aggressive increase in environmental taxation implied by the net-zero pathway is associated with a steady rise in all three inequality indicators over the period 2024–2050. Average warming inability increases from about 15.8% of the population to 44.8%, while the coefficient of human inequality rises from roughly 8.5 to 29.2, indicating a non-negligible widening of social disparities. Similarly, the Gender Inequality Index follows an upward trajectory, increasing from approximately 0.10 in 2024 to around 0.53 by 2050. While these results do not imply causality, they highlight a potential trade-off between ambitious climate policy implemented through taxation alone and social equity outcomes. This underscores the importance of accompanying redistributive or compensatory measures if environmental taxation is to be scaled up substantially without exacerbating existing inequalities.
 
 
 #### b. Comparing with the no-policy forecast
