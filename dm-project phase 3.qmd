@@ -16,7 +16,7 @@ Our research question is the following: “To what extent do environmental taxes
 
 To answer this question, we will use panel data for all EU member states. Our data set includes GHG emissions, GDP, environmental tax revenues, and several indicators of social well-being. These include the Gender Inequality Index (GII), a coefficient of human inequality, and a measure of energy poverty that is the inability to adequately heat one’s home. Together, these variables allow us to evaluate the distributive consequences of taxes.
 
-After cleaning, harmonizing, and describing the data sets, we aim to estimate several relationships. First, we will measure the link between environmental taxation and GHG emissions. Do higher taxes lead to statistically significant reductions in emissions at both the EU and country levels? **DO WE KEEP THAT QUESTION ? BECAUSE NO REF TO COUNTRY LVL AFTER**
+After cleaning, harmonizing, and describing the data sets, we aim to estimate several relationships. First, we will measure the link between environmental taxation and GHG emissions. Do higher taxes lead to statistically significant reductions in emissions at EU level? 
 
 We will then investigate the association between environmental taxes and social inequality indicators. Our core question here can be summarized as: “Is there a social cost associated with environmental taxation, and if so, how large is it?” Specifically, we will analyse whether environmental taxes correlate with increases or decreases in gender inequality, income inequality, and energy poverty. This step is essential because policies that are environmentally effective but socially regressive may have a reduced long-term viability.
 
