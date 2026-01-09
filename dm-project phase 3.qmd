@@ -839,8 +839,6 @@ plot(coefineq_fc, main = "Forecast of Coefficient of Inequality")
 plot(warm_fc, main = "Forecast of Warm Households")
 ```
 
-##### Comment :
-
 GII (Gender Inequality Index): The forecast projects a decline from 0.085 in 2023 to 0 (it goes in the negative but the index is between 0 and 1) in 2050.
 Coefficient of Inequality: Inequality is expected to decrease from 7.73 in 2023 to 5.04 in 2050, reflecting a gradual improvement in income distribution with moderate uncertainty bands widening over time.
 Warm Households: The proportion of households unable to heat properly is forecast to remain relatively stable, rising slightly from 14.65% in 2024 to 16.41% in 2050, though with considerable uncertainty as shown by the wide confidence intervals.
@@ -856,8 +854,6 @@ gdp_fc <- forecast(gdp_model, h = 28)
 
 plot(gdp_fc, main = "Forecast of GDP")
 ```
-
-##### Comment :
 
 The EU27 aggregate GDP is projected to grow steadily from €19.4 trillion in 2024 to €29.5 trillion in 2050, representing approximately 50% growth over the period, though the widening confidence intervals indicate increasing uncertainty in long-term projections.
 
@@ -919,9 +915,6 @@ tax_all_2050 <- ggplot() +
 
 if (knitr::is_html_output()) {plotly::ggplotly(tax_all_2050)} else {tax_all_2050}
 ```
-
-
-##### Comment :
 
 Environmental tax revenues in the EU27 are projected to increase from €362.4 billion in 2023 to €617.4 billion in 2050, representing a 70% growth based on an extrapolation of current trends. This steady upward trajectory suggests continued expansion of green taxation policies, however, it's important to note that this forecast assumes the continuation of existing trends under a no-change-in-policy scenario.
 
