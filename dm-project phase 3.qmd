@@ -792,6 +792,8 @@ auto.arima(ts_data)
 ```
 
 ```{r}
+#| message: false
+#| warning: false
 autoplot(fc)
 ```
 
@@ -897,6 +899,8 @@ tax_fc_lm <- bind_cols(
 ```
 
 ```{r}
+#| message: false
+#| warning: false
 tax_all_2050 <- ggplot() +
   geom_line(data=EU27_Tax, aes(x = TIME_PERIOD, y = Envt_Tax_Revenues_value, color = "Observations")) +
   geom_ribbon(data=tax_fc_lm, aes(x = TIME_PERIOD, ymin = lwr, ymax = upr), fill = "#C8C8C8", alpha = 0.5) +
@@ -1360,8 +1364,9 @@ p_gii <- ggplot() +
   )
 ```
 
-
 ```{r}
+#| message: false
+#| warning: false
 p_warming
 p_inequality
 p_gii
