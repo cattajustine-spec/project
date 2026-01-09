@@ -1,5 +1,5 @@
 ---
-title: "dm project - Phase 3"
+title: "Environmental taxes and the path to net-zero in the EU"
 author: "Daphne Perry and Justine Catta"
 format:
   html:
