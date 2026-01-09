@@ -447,7 +447,8 @@ ggplot(EU27_Tax, aes(x = TIME_PERIOD, y = Envt_Tax_Revenues_value)) +
     x = "Year",
     y = "Environmental tax revenues (millions of USD)"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  scale_y_continuous(limits = c(0, 410000))
 ```
 
 ```{r, echo=FALSE}
@@ -482,7 +483,9 @@ ggplot(EU27_GDP, aes(x = TIME_PERIOD, y = GDP_value)) +
     x = "Year",
     y = "GDP (million USD)"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  
+  scale_y_continuous(limits = c(0, 2e07))
 ```
 
 ```{r, echo=FALSE}
@@ -517,7 +520,8 @@ ggplot(EU27_GHG, aes(x = TIME_PERIOD, y = GHG_Emissions_value)) +
     x = "Year",
     y = "Greenhouse gas emissions (thousands of ton of CO2)"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  scale_y_continuous(limits = c(0, 4600000))
 ```
 
 
@@ -556,7 +560,8 @@ ggplot(EU27_Warming,
     y = "Percentage of population",
     color = "Sex × Income"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  scale_y_continuous(limits = c(0, 30))
 ```
 
 ```{r, echo=FALSE}
@@ -635,7 +640,9 @@ p_coef <- ggplot(coef_ineq, aes(x = TIME_PERIOD, y = coef_ineq_value, color = is
     y = "Coefficient of human inequality",
     color = "Country"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  
+  scale_y_continuous(limits = c(0, 15))
 
 if (knitr::is_html_output()) {plotly::ggplotly(p_coef)} else {p_coef}
 ```
@@ -931,7 +938,6 @@ To identify a tax trajectory consistent with the European Union’s goal of net-
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-# --- DATA PREP ---
 data_forecast_tax_0net <- EUGHG_agg_yearly |>
   left_join(EU27_Tax, by = "TIME_PERIOD") |>
   filter(!is.na(GHG_total), !is.na(Envt_Tax_Revenues_value)) |>
@@ -944,7 +950,7 @@ beta <- coef(mod_LL)[2]
 
 if(beta >= 0) stop("Regression slope >= 0: tax does not reduce GHG.")
 
-# --- PARAMETERS ---
+#parameters
 years <- 2023:2050
 n_years <- length(years) # length = 28
 
