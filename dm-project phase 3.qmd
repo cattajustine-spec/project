@@ -1567,3 +1567,13 @@ The impacts of such a massive tax increase on society and the economy would be s
 • Economic Viability: Although tax revenues tend to increase alongside GDP, the required fiscal burden would likely reach between 6% and 10% of the total GDP. This exceeds empirical thresholds for economic stability and could be highly disruptive.
 
 If relying exclusively on environmental taxation proves to be socially regressive or economically unviable, what alternative strategies could the European Union use to fill the gap? Some possibilities could be the use of complementary green technology subsidies, the implementation of stricter sector-specific regulations, or the potential for economic sobriety and degrowth to reduce the overall energy demand.
+
+# Limitations
+
+This study has some limitations that should be considered when interpreting the results; mainly, the analysis deliberately focuses on environmental taxation as if it were the only policy instrument available, knowing this does not reflect the full range of EU climate policies. 
+
+Second, data availability limits the depth of the inequality analysis for The Coefficient of Human Inequality that is only available for the period 2010–2023.
+
+Also our worked could have been pushed further : the energy poverty dataset includes detailed information by household type and income group we did not use, and our analysis at the aggregate EU level may mask heterogeneity across member states. 
+
+Finally, sector-level analysis was excluded due to inconsistencies in sector classifications between Eurostat and OECD datasets. 
