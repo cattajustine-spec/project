@@ -153,13 +153,13 @@ Soc_Indexes <- vroom(here("data", "HDR_indexes.csv"))
 
 # Modifying the data sets
 
-Because of the size of the data sets we chose, we remove all the variables we will not use, then add missing aggregates that we think are important for our analysis, and then modify the variables we kept.
+The data sets being quite large, we remove variables we will not use and add aggregates that we think are important, before characterizing the variables we kept.
 
-Finally, to simplify our analysis, we will merge all our data sets in one data base.
+Finally, to simplify our analysis, we merge all our sets in one data base.
 
 ## Country keys {#countrykeys}
 
-Our analysis is on the 27 countries in the European Union. We construct a key that filters the EU-27 countries and harmonize the different country identifiers: ISO2 codes, ISO3 codes, or full English and French names, to ensure consistency across datasets and avoid mismatches during merging.
+We construct a key that filtering the EU-27 countries and harmonizing the different identifiers, to ensure consistency.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -176,13 +176,11 @@ eu_country_key <- data.frame(name_en = eu_countries) |>
 
 ## Removing unwanted variables
 
-The original datasets contain many variables and dimensions that are irrelevant to our research question (such as measurement units, alternative breakdowns, metadata, or categories outside our scope). For each dataset, we systematically retain only four essential components:
+For each dataset, we remove units, metadata, etc and systematically retain four essential components:
 
--   The geographical identifier (ISO2, ISO3, or name).
--   The reference year.
--   The relevant economic or social variable (e.g., revenues, GDP, emissions, inequality index).
-
-This ensures a clean, comparable structure across datasets before we perform more complex transformations.
+-   Geographical identifier (ISO2, ISO3, or name).
+-   Reference year.
+-   Observed value (e.g., revenues, emissions, ...).
 
 ### 1. Environmental tax revenues (in million of USD)
 
