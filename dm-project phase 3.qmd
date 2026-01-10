@@ -1168,6 +1168,8 @@ future_predictions <- tibble(
       )))
 ```
 
+Under this framework, the projections indicate that the tax trajectory consistent with the net-zero objective is associated with a marked increase in all three inequality indicators over the period 2024–2050. Average warming inability rises from approximately 15.8% of the population in 2024 to about 44.8% by 2050, while the coefficient of human inequality increases from roughly 8.5 to 29.2, pointing to a substantial widening of social disparities. Similarly, the Gender Inequality Index follows a pronounced upward trend, increasing from around 0.10 to approximately 0.53 over the same period. While these projections should not be interpreted as causal effects, they suggest a potential trade-off between ambitious climate policy implemented through environmental taxation alone and social equity outcomes, highlighting the importance of complementary redistributive or compensatory measures.
+
 #### b. Comparing with the no-policy forecast
 
 ```{r, echo=FALSE}
