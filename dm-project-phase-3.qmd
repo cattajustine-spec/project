@@ -755,9 +755,13 @@ EUGHG_agg_yearly <- EU27_GHG |>
 ts_data <- ts(EUGHG_agg_yearly$GHG_total, start=min(EUGHG_agg_yearly$TIME_PERIOD))
 model <- auto.arima(ts_data)
 fc <- forecast(model, h=27)
-fc
 
-auto.arima(ts_data)
+fc_df <- as.data.frame(fc)
+head(fc_df, 1)
+tail(fc_df, 1)
+
+print(model)
+
 ```
 
 ```{r, echo=FALSE}
