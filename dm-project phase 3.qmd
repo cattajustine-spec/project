@@ -732,7 +732,6 @@ cat("Residual standard error:", summary(model_gdp_tax)$sigma, "on", summary(mode
 cat("R-squared:", summary(model_gdp_tax)$r.squared, ", Adjusted:", summary(model_gdp_tax)$adj.r.squared, "\n")
 ```
 
-
 The model shows that Environmental tax revenues are strongly and positively associated with GDP (+6.0e-0.5), with a very low p-value. The time trend is also positive and highly significant, reflecting general GDP growth over the period.
 
 It also has substantial explanatory power (Adjusted $R^2 ≈$ 0.63). However, the relationship of GDP with taxes is correlational and does not imply causation, it indicates that environmental tax revenues tend to increase alongside GDP, consistent with the idea that wealthier economies can collect more from climate-related taxes.
@@ -741,9 +740,9 @@ It also has substantial explanatory power (Adjusted $R^2 ≈$ 0.63). However, th
 
 # Forecasting: no-policy
 
-We use this forecast to try to predict the impact of environmental taxes on different variables.
+We forecast the impact of environmental taxes on various variables, in a scenario where no policy is implemented.
 
-### 1. Greenhouse Gas emissions (#forecasttotalGHGemissions)
+### 1. Greenhouse Gas emissions
 
 ```{r, echo=FALSE}
 #| message: false
@@ -767,9 +766,9 @@ auto.arima(ts_data)
 autoplot(fc)
 ```
 
-This ARIMA-based forecast indicates a steady but slow decline in total greenhouse gas emissions for the aggreagte EU27 from 2024 to 2050. The ARIMA(0,1,0) with drift models GHG emissions as a random walk with a linear trend, using first differencing (integrated) but no auto regressive (AR) or moving average (MA) terms. The drift of -52,365 indicates emissions decrease on average by \~52 million tonnes of CO$₂$-equivalent per year. Emissions fall from roughly 2.85 billion tonnes in 2024 to about 1.49 billion tonnes by 2050, representing a long-term downward trajectory.
+This ARIMA-based forecast suggests a slow but steady decline in total EU27 greenhouse gas emissions from 2024 to 2050. The ARIMA(0,1,0) with drift implies an average annual reduction of about 52 million tonnes of CO$₂$-equivalent, with emissions falling from roughly 2.85 billion tonnes in 2024 to around 1.49 billion tonnes in 2050. 
 
-However, despite this continuous decrease, the decline is far from the EU’s net-zero objective for 2050. Even in the most optimistic confidence interval, projected emissions in 2050 remain well above 0 (about 363 million tonnes of CO$₂$-equivalent), suggesting that under current trends and without major additional interventions—the EU27 is not on track to reach carbon neutrality.
+Despite this downward trend, projected emissions in 2050 remain far above zero—even in the most optimistic scenario—indicating that current trends are insufficient to reach EU net-zero targets (about 363 million tonnes of CO$₂$-equivalent).
 
 ### 2. Social inequalities:
 
