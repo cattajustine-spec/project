@@ -1114,11 +1114,14 @@ ggplot(tax_path, aes(x = year)) +
     legend.title = element_text(face = "bold")
   )
 ```
+
 As shown in the figure, achieving the targeted GHG emissions trajectory would require a substantial change in current taxing practices. The target path consistently lies at the lower bound of the forecast confidence intervals for emissions, and from around 2035 onwards it even falls outside the 95% confidence interval. This suggests that, under the continuation of current trends captured by the ARIMA forecast, the probability of reaching the targeted emissions level is low, highlighting the need for stronger or additional policy interventions.
 
 ### 2. Impact on social inequalities
 
 #### a. The forecast model
+
+To assess the social implications of the tax trajectory required to achieve net-zero emissions, we project the future evolution of our three inequality indicators: average warming inability, the coefficient of human inequality, and the Gender Inequality Index (GII). Starting from their last observed values, we simulate forward paths up to 2050 by combining the estimated marginal effects of environmental tax revenues and time trends obtained from reduced-form regressions. The required environmental tax path is summarized by its average annual increase, which is then treated as an exogenous policy shock applied uniformly over time. The projected indicators are constructed by cumulatively applying these marginal effects year by year, under the assumption that the estimated historical relationships remain stable in the future. For the GII, predicted values are constrained to remain within their theoretical bounds between 0 and 1.
 
 ```{r, echo=FALSE}
 #| message: false
