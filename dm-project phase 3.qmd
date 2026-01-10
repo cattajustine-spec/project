@@ -1358,6 +1358,8 @@ p_inequality
 p_gii
 ```
 
+The comparison between the tax and no-policy scenarios highlights a clear trade-off. With the environmental tax, average warming inability rises from 15.8% to 44.8%, the coefficient of human inequality from 8.5% to 29.2%, and the Gender Inequality Index from 0.10 to 0.53. In contrast, without the tax, warming inability remains around 16–17%, human inequality gradually declines, and gender inequality decreases over time. This suggests that aggressive taxation alone could exacerbate social disparities, underscoring the need for complementary redistributive measures.
+
 ### 3. Is the model viable ? Its impact on the GDP (forecast & comparison)
 
 ```{r, echo=FALSE}
