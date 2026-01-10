@@ -1,11 +1,7 @@
 ---
-title: "Environmental taxes and the path to net-zero in the EU"
+title: "dm project - Phase 3"
 author: "Daphne Perry and Justine Catta"
-format:
-  html:
-    toc: true
-  pdf:
-    toc: true
+format: pdf
 ---
 
 # Introduction
@@ -16,7 +12,7 @@ Our research question is the following: “To what extent do environmental taxes
 
 To answer this question, we will use panel data for all EU member states. Our data set includes GHG emissions, GDP, environmental tax revenues, and several indicators of social well-being. These include the Gender Inequality Index (GII), a coefficient of human inequality, and a measure of energy poverty that is the inability to adequately heat one’s home. Together, these variables allow us to evaluate the distributive consequences of taxes.
 
-After cleaning, harmonizing, and describing the data sets, we aim to estimate several relationships. First, we will measure the link between environmental taxation and GHG emissions. Do higher taxes lead to statistically significant reductions in emissions at EU level? 
+After cleaning, harmonizing, and describing the data sets, we aim to estimate several relationships. First, we will measure the link between environmental taxation and GHG emissions. Do higher taxes lead to statistically significant reductions in emissions at both the EU and country levels? **DO WE KEEP THAT QUESTION ? BECAUSE NO REF TO COUNTRY LVL AFTER**
 
 We will then investigate the association between environmental taxes and social inequality indicators. Our core question here can be summarized as: “Is there a social cost associated with environmental taxation, and if so, how large is it?” Specifically, we will analyse whether environmental taxes correlate with increases or decreases in gender inequality, income inequality, and energy poverty. This step is essential because policies that are environmentally effective but socially regressive may have a reduced long-term viability.
 
@@ -447,8 +443,7 @@ ggplot(EU27_Tax, aes(x = TIME_PERIOD, y = Envt_Tax_Revenues_value)) +
     x = "Year",
     y = "Environmental tax revenues (millions of USD)"
   ) +
-  theme_minimal() +
-  scale_y_continuous(limits = c(0, 410000))
+  theme_minimal()
 ```
 
 ```{r, echo=FALSE}
@@ -519,8 +514,7 @@ ggplot(EU27_GHG, aes(x = TIME_PERIOD, y = GHG_Emissions_value)) +
     x = "Year",
     y = "Greenhouse gas emissions (thousands of ton of CO2)"
   ) +
-  theme_minimal() +
-  scale_y_continuous(limits = c(0, 4600000))
+  theme_minimal()
 ```
 
 
@@ -559,8 +553,7 @@ ggplot(EU27_Warming,
     y = "Percentage of population",
     color = "Sex × Income"
   ) +
-  theme_minimal() +
-  scale_y_continuous(limits = c(0, 30))
+  theme_minimal()
 ```
 
 ```{r, echo=FALSE}
@@ -602,7 +595,7 @@ p_GII <- ggplot(GII, aes(x = TIME_PERIOD, y = GII_value, color = iso3, group = i
   scale_y_continuous(limits = c(0, 1)) +   
   theme_minimal()
 
-if (knitr::is_html_output()) {plotly::ggplotly(p_GII)} else {p_GII}
+ggplotly(p_GII)
 ```
 
 ```{r, echo=FALSE}
@@ -639,11 +632,9 @@ p_coef <- ggplot(coef_ineq, aes(x = TIME_PERIOD, y = coef_ineq_value, color = is
     y = "Coefficient of human inequality",
     color = "Country"
   ) +
-  theme_minimal() +
-  
-  scale_y_continuous(limits = c(0, 15))
+  theme_minimal()
 
-if (knitr::is_html_output()) {plotly::ggplotly(p_coef)} else {p_coef}
+ggplotly(p_coef)
 ```
 
 ```{r, echo=FALSE}
@@ -844,6 +835,8 @@ plot(coefineq_fc, main = "Forecast of Coefficient of Inequality")
 plot(warm_fc, main = "Forecast of Warming Inability")
 ```
 
+##### Comment :
+
 GII (Gender Inequality Index): The forecast projects a decline from 0.085 in 2023 to 0 (it goes in the negative but the index is between 0 and 1) in 2050.
 Coefficient of Inequality: Inequality is expected to decrease from 7.73 in 2023 to 5.04 in 2050, reflecting a gradual improvement in income distribution with moderate uncertainty bands widening over time.
 Warming Inability: The proportion of households unable to heat properly is forecast to remain relatively stable, rising slightly from 14.65% in 2024 to 16.41% in 2050, though with considerable uncertainty as shown by the wide confidence intervals.
@@ -853,12 +846,14 @@ Warming Inability: The proportion of households unable to heat properly is forec
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-gdp_ts <- ts(EU27_GDP$GDP_value, start = min(EU27_GDP$TIME_PERIOD)-1)
+gdp_ts <- ts(EU27_GDP$GDP_value, start = min(EU27_GDP$TIME_PERIOD))
 gdp_model <- auto.arima(gdp_ts)
-gdp_fc <- forecast(gdp_model, h = 28)
+gdp_fc <- forecast(gdp_model, h = 27)
 
 plot(gdp_fc, main = "Forecast of GDP")
 ```
+
+##### Comment :
 
 The EU27 aggregate GDP is projected to grow steadily from €19.4 trillion in 2024 to €29.5 trillion in 2050, representing approximately 50% growth over the period, though the widening confidence intervals indicate increasing uncertainty in long-term projections.
 
@@ -876,7 +871,7 @@ future_years <- tibble(
   TIME_PERIOD = (max(EU27_Tax$TIME_PERIOD)+1):(max(EU27_Tax$TIME_PERIOD)+27)
 )
 
-tax_pred_95 <- predict(
+tax_pred <- predict(
   tax_lm,
   newdata = future_years,
   interval = "confidence", 
@@ -888,6 +883,13 @@ tax_pred_80 <- predict(
   newdata = future_years,
   interval = "confidence", 
   level = 0.80
+)
+
+tax_pred_95 <- predict(
+  tax_lm, 
+  newdata = future_years, 
+  interval = "confidence", 
+  level = 0.95
 )
 
 tax_fc_lm <- bind_cols(
@@ -918,8 +920,11 @@ tax_all_2050 <- ggplot() +
   ) +
   scale_y_continuous(limits = c(0, 0.75e+06)) 
 
-if (knitr::is_html_output()) {plotly::ggplotly(tax_all_2050)} else {tax_all_2050}
+ggplotly(tax_all_2050)
 ```
+
+
+##### Comment :
 
 Environmental tax revenues in the EU27 are projected to increase from €362.4 billion in 2023 to €617.4 billion in 2050, representing a 70% growth based on an extrapolation of current trends. This steady upward trajectory suggests continued expansion of green taxation policies, however, it's important to note that this forecast assumes the continuation of existing trends under a no-change-in-policy scenario.
 
@@ -1000,9 +1005,28 @@ To assess the adequacy of current environmental tax trends, we now compare the f
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-tax_fc_lm <- tax_fc_lm |> rename(year = TIME_PERIOD)
-
-tax_plot_df <- tax_fc_lm |>
+tax_pred_95 <- predict(
+  tax_lm,
+  newdata = future_years,
+  interval = "confidence",
+  level = 0.95
+)
+tax_pred_80 <- predict(
+  tax_lm,
+  newdata = future_years,
+  interval = "confidence",
+  level = 0.80
+)
+tax_fc_lm_ci <- future_years |>
+  mutate(
+    mean = tax_pred_95[, "fit"],
+    lower95 = tax_pred_95[, "lwr"],
+    upper95 = tax_pred_95[, "upr"],
+    lower80 = tax_pred_80[, "lwr"],
+    upper80 = tax_pred_80[, "upr"]
+  ) |>
+  rename(year = TIME_PERIOD)
+tax_plot_df <- tax_fc_lm_ci |>
   left_join(
     tax_path |> select(year, tax_required),
     by = "year"
@@ -1010,15 +1034,15 @@ tax_plot_df <- tax_fc_lm |>
 
 ggplot(tax_plot_df, aes(x = year)) +
   geom_ribbon(
-    aes(ymin = lwr, ymax = upr, fill = "95% confidence interval"),
+    aes(ymin = lower95, ymax = upper95, fill = "95% confidence interval"),
     alpha = 0.35
   ) +
   geom_ribbon(
-    aes(ymin = lwr_80, ymax = upr_80, fill = "80% confidence interval"),
+    aes(ymin = lower80, ymax = upper80, fill = "80% confidence interval"),
     alpha = 0.5
   ) +
   geom_line(
-    aes(y = fit, color = "Forecasted tax revenues (trend continuation)"),
+    aes(y = mean, color = "Forecasted tax revenues (trend continuation)"),
     linewidth = 1
   ) +
   geom_line(
@@ -1353,6 +1377,182 @@ p_gii <- ggplot() +
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
+
+## WARM PLOT
+warm_fc_df <- data.frame(
+  year = as.numeric(time(warm_fc$mean)),
+  mean = as.numeric(warm_fc$mean),
+  lower80 = as.numeric(warm_fc$lower[, 1]),
+  upper80 = as.numeric(warm_fc$upper[, 1]),
+  lower95 = as.numeric(warm_fc$lower[, 2]),
+  upper95 = as.numeric(warm_fc$upper[, 2])
+)
+
+p_warming <- ggplot() +
+  geom_ribbon(
+    data = warm_fc_df,
+    aes(x = year, ymin = lower95, ymax = upper95, fill = "95% confidence interval"),
+    alpha = 0.35
+  ) +
+  geom_ribbon(
+    data = warm_fc_df,
+    aes(x = year, ymin = lower80, ymax = upper80, fill = "80% confidence interval"),
+    alpha = 0.5
+  ) +
+  geom_line(
+    data = warm_fc_df,
+    aes(x = year, y = mean, color = "ARIMA forecast (no tax policy)"),
+    linewidth = 1
+  ) +
+  geom_line(
+    data = future_predictions,
+    aes(x = year, y = Predicted_Warming, color = "Forecasted impact on Average Warming Inability"),
+    linewidth = 1
+  ) +
+  scale_color_manual(
+    name = "Scenarios",
+    values = c(
+      "ARIMA forecast (no tax policy)" = "red",
+      "Forecasted impact on Average Warming Inability" = "darkgreen"
+    )
+  ) +
+  scale_fill_manual(
+    name = "Confidence intervals",
+    values = c(
+      "80% confidence interval" = "grey50",
+      "95% confidence interval" = "grey70"
+    )
+  ) +
+  labs(
+    title = "Average Warming Inability: Tax Policy vs No-Policy Scenario",
+    x = "Year",
+    y = "Average Warming Inability"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    legend.title = element_text(face = "bold")
+  )
+
+
+
+## INEQ PLOT 
+ineq_fc_df <- data.frame(
+  year = as.numeric(time(coefineq_fc$mean)),
+  mean = as.numeric(coefineq_fc$mean),
+  lower80 = as.numeric(coefineq_fc$lower[, 1]),
+  upper80 = as.numeric(coefineq_fc$upper[, 1]),
+  lower95 = as.numeric(coefineq_fc$lower[, 2]),
+  upper95 = as.numeric(coefineq_fc$upper[, 2])
+)
+
+p_inequality <- ggplot() +
+  geom_ribbon(
+    data = ineq_fc_df,
+    aes(x = year, ymin = lower95, ymax = upper95, fill = "95% confidence interval"),
+    alpha = 0.35
+  ) +
+  geom_ribbon(
+    data = ineq_fc_df,
+    aes(x = year, ymin = lower80, ymax = upper80, fill = "80% confidence interval"),
+    alpha = 0.5
+  ) +
+  geom_line(
+    data = ineq_fc_df,
+    aes(x = year, y = mean, color = "ARIMA forecast (no tax policy)"),
+    linewidth = 1
+  ) +
+  geom_line(
+    data = future_predictions,
+    aes(x = year, y = Predicted_Inequality, color = "Forecasted impact on the Coefficient of Human Inequality"),
+    linewidth = 1
+  ) +
+  scale_color_manual(
+    name = "Scenarios",
+    values = c(
+      "ARIMA forecast (no tax policy)" = "red",
+      "Forecasted impact on the Coefficient of Human Inequality" = "orange"
+    )
+  ) +
+  scale_fill_manual(
+    name = "Confidence intervals",
+    values = c(
+      "80% confidence interval" = "grey50",
+      "95% confidence interval" = "grey70"
+    )
+  ) +
+  labs(
+    title = "Coefficient of Human Inequality: Tax Policy vs No-Policy Scenario",
+    x = "Year",
+    y = "Coefficient of Human Inequality"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    legend.title = element_text(face = "bold")
+  )
+
+
+## GII PLOT
+gii_fc_df <- data.frame(
+  year = as.numeric(time(gii_fc$mean)),
+  mean = as.numeric(gii_fc$mean),
+  lower80 = as.numeric(gii_fc$lower[, 1]),
+  upper80 = as.numeric(gii_fc$upper[, 1]),
+  lower95 = as.numeric(gii_fc$lower[, 2]),
+  upper95 = as.numeric(gii_fc$upper[, 2])
+)
+
+p_gii <- ggplot() +
+  geom_ribbon(
+    data = gii_fc_df,
+    aes(x = year, ymin = lower95, ymax = upper95, fill = "95% confidence interval"),
+    alpha = 0.35
+  ) +
+  geom_ribbon(
+    data = gii_fc_df,
+    aes(x = year, ymin = lower80, ymax = upper80, fill = "80% confidence interval"),
+    alpha = 0.5
+  ) +
+  geom_line(
+    data = gii_fc_df,
+    aes(x = year, y = mean, color = "ARIMA forecast (no tax policy)"),
+    linewidth = 1
+  ) +
+  geom_line(
+    data = future_predictions,
+    aes(x = year, y = Predicted_GII, color = "Forecasted impact on the GII"),
+    linewidth = 1
+  ) +
+  scale_color_manual(
+    name = "Scenarios",
+    values = c(
+      "ARIMA forecast (no tax policy)" = "red",
+      "Forecasted impact on the GII" = "purple"
+    )
+  ) +
+  scale_fill_manual(
+    name = "Confidence intervals",
+    values = c(
+      "80% confidence interval" = "grey50",
+      "95% confidence interval" = "grey70"
+    )
+  ) +
+  labs(
+    title = "Gender Inequality Index: Tax Policy vs No-Policy Scenario",
+    x = "Year",
+    y = "GII"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    legend.title = element_text(face = "bold")
+  )
+```
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
 p_warming
 p_inequality
 p_gii
@@ -1406,6 +1606,7 @@ Under the tax policy scenario, projected GDP exhibits an almost flat trajectory 
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
+
 gdp_fc_df <- data.frame(
   year = as.numeric(time(gdp_fc$mean)),
   mean = as.numeric(gdp_fc$mean),
@@ -1471,14 +1672,14 @@ To further assess the economic viability of the environmental tax policy, we exa
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-# Build GDP forecast dataframe
+# Build GDP forecast dataframe (without tax)
 gdp_forecast_df <- tibble(
-  year = seq(max(EU27_GDP$TIME_PERIOD),
+  year = seq(max(EU27_GDP$TIME_PERIOD) + 1,
              max(EU27_GDP$TIME_PERIOD) + 27),
   GDP_forecast = as.numeric(gdp_fc$mean)
 )
 
-# Required tax path → tax / GDP
+# Required tax path → tax / GDP (baseline GDP)
 required_data <- tax_path |>
   left_join(gdp_forecast_df, by = "year") |>
   mutate(
@@ -1487,7 +1688,7 @@ required_data <- tax_path |>
   ) |>
   select(year, tax_gdp_ratio, scenario)
 
-# Forecasted tax path → tax / GDP
+# Forecasted tax path → tax / GDP (baseline GDP)
 forecasted_data <- as.data.frame(tax_pred_95) |>
   mutate(year = tax_path$year) |>
   select(year, fit) |>
@@ -1521,7 +1722,7 @@ zones <- tibble(
   zone = c("Viable", "Risk", "High Risk")
 )
 
-# Plot: Required vs Forecasted Tax as % of GDP
+# Plot: Tax/GDP comparison with all three scenarios
 ggplot() +
   geom_rect(data = zones,
             aes(xmin = -Inf, xmax = Inf, ymin = ymin, ymax = ymax, fill = zone),
@@ -1575,8 +1776,9 @@ Our analysis revealed that the current forecasted tax trajectory is insufficient
 To determine the tax level required for the 2050 target, we inverted a level-level linear regression of total GHG emissions against tax revenues. This model allowed us to find a "required tax path" that would theoretically drive emissions to zero by itself. We found that environmental tax revenues would need to scale up to roughly 2.9 trillion USD by 2050, (1.7 trillion USD more than predicted historical trends).
 
 The impacts of such a massive tax increase on society and the economy would be severe:
-• Social Inequality: The regressions show that environmental taxes are positively correlated with energy poverty, income inequality, and gender inequality. Implementing the required tax path would likely exacerbate these social costs, and increase these indicators largely above the levels expected in a no-policy scenario.
-• Economic Viability: Although tax revenues tend to increase alongside GDP, the required fiscal burden would likely reach between 6% and 10% of the total GDP. This exceeds empirical thresholds for economic stability and could be highly disruptive.
+
+- Social Inequality: The regressions show that environmental taxes are positively correlated with energy poverty, income inequality, and gender inequality. Implementing the required tax path would likely exacerbate these social costs, and increase these indicators largely above the levels expected in a no-policy scenario.
+- Economic Viability: Although tax revenues tend to increase alongside GDP, the required fiscal burden would likely reach between 6% and 10% of the total GDP. This exceeds empirical thresholds for economic stability and could be highly disruptive.
 
 If relying exclusively on environmental taxation proves to be socially regressive or economically unviable, what alternative strategies could the European Union use to fill the gap? Some possibilities could be the use of complementary green technology subsidies, the implementation of stricter sector-specific regulations, or the potential for economic sobriety and degrowth to reduce the overall energy demand.
 
