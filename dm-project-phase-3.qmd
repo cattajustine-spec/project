@@ -967,7 +967,7 @@ We evaluate the gap between historical trends and climate targets before assessi
 
 ##### Tax policy: targeted vs predicted
 
-To assess the adequacy of current environmental tax trends, we compare the forecasted path of total environmental tax revenues based on historical trends, with the one required to reach net-zero emissions by 2050.
+To assess the adequacy of the policy, we compare the forecasted path of total environmental tax revenues based on historical trends, with the one required to reach net-zero emissions by 2050.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -1024,7 +1024,7 @@ ggplot(tax_plot_df, aes(x = year)) +
   )
 ```
 
-Comparing the two paths shows a significant and growing shortfall. The historical trend regression predicts that total environmental tax revenues would increase by approximately 7,384 million USD per year (intercept = −14,520,000; $R^2$ = 0.73), corresponding to a continuation of past trends. In contrast, the tax path required to achieve net-zero emissions calls for a steep and consistent annual increase of roughly 28,937 million USD per year, starting from about 549 billion USD in 2024 and reaching 1,3 trillion USD by 2050. Already in 2024, forecasted revenues ($≈$ 425 billion USD) fall well below the required level ($≈$ 549 billion USD), and by 2050 the gap widens to roughly 684 billion USD, indicating that current policy trajectories imply structural under-taxation. These results underscore that meeting the net-zero target would require a substantial policy departure from historical trends and a rapid scaling up of environmental taxation.
+Comparing the two paths shows a significant and growing shortfall. The historical trend regression predicts that total environmental tax revenues would increase by approximately 7.3 billion USD per year and in contrast, the required one to achieve net-zero calls for an annual increase of roughly 28.9 billion USD per year. From the first year (2024), forecasted revenues fall well below the required level, and by 2050 the gap widens to roughly 684 billion USD. These results highlight that in order to achieve the net-zero emissions target, environmental taxation would need to be increased rapidly.
 
 ##### GHG emissions: targeted vs predicted
 
