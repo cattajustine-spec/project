@@ -1403,7 +1403,6 @@ ggplot(future_gdp_predictions,
 
 Under the tax policy scenario, projected GDP exhibits an almost flat trajectory over the period 2024–2050, increasing from approximately 19,434,512 million USD to 19,434,558 million USD. This corresponds to an average annual growth rate close to zero (around 0.00001%), indicating a near-complete stagnation of economic activity over the projection horizon. Given that baseline GDP is typically expected to grow steadily over such a long period, this result suggests that the environmental tax trajectory consistent with the net-zero objective could substantially constrain aggregate economic growth. While these projections should not be interpreted as causal estimates, they point to a potentially significant macroeconomic cost associated with implementing the tax policy in the absence of offsetting growth-enhancing or redistributive measures.
 
-
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -1463,6 +1462,7 @@ ggplot() +
   )
 ```
 
+The comparison shows that the GDP forecast without the tax policy is consistently higher than the GDP projected under the tax scenario, with the no-policy path rising from 19,820,071 millions USD in 2025 to 29,459,091 in 2050, while the tax policy scenario remains nearly flat around 19.4 billions USD. This indicates that, according to our model, implementing the environmental tax would largely slow the growth of aggregate GDP compared with the baseline. However, the tax-induced impact is relatively small in absolute terms early on, suggesting limited short-term economic disruption.
 
 ##### Ratio Tax/GDP
 
@@ -1487,7 +1487,7 @@ required_data <- tax_path |>
 
 # Forecasted tax path → tax / GDP
 forecasted_data <- as.data.frame(tax_pred_95) |>
-  mutate(year = tax_path$year[-1]) |>
+  mutate(year = tax_path$year) |>
   select(year, fit) |>
   left_join(gdp_forecast_df, by = "year") |>
   mutate(
