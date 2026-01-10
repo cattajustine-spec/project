@@ -2,7 +2,9 @@
 title: "Environmental taxes and the path to net-zero in the EU"
 author: "Daphne Perry and Justine Catta"
 format:
-  html:
+  html: 
+    toc: true
+  wordcount-html:
     toc: true
   pdf:
     toc: true
@@ -30,9 +32,9 @@ Building on these empirical relationships, we will construct forecasts for the p
 
 By combining environmental effectiveness, economic feasibility, and social impact, we can then address our overarching question: Is it socially and economically optimal for the EU to rely exclusively on environmental taxation to achieve net-zero emissions by 2050? If taxation alone proves insufficient or too socially costly, our results may highlight the need for complementary policies such as subsidies for green technologies or targeted social transfers to ensure a fair and effective ecological transition.
 
-## Link to the github project
+## Link to Github
 
-Our project is available on github [here](https://github.com/cattajustine-spec/project).
+Our project is on [Github](https://github.com/cattajustine-spec/project).
 
 ## Setup
 
