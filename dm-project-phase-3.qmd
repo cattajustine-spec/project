@@ -1091,7 +1091,9 @@ As the graph shows, achieving the GHG emissions target would require significant
 
 #### a. The forecast model
 
-To assess the social implications of the tax trajectory required to achieve net-zero emissions, we project the future evolution of our three inequality indicators: average warming inability, the coefficient of human inequality, and the Gender Inequality Index (GII). Starting from their last observed values, we simulate forward paths up to 2050 by combining the estimated marginal effects of environmental tax revenues and time trends obtained from reduced-form regressions. The required environmental tax path is summarized by its average annual increase, which is then treated as an exogenous policy shock applied uniformly over time. The projected indicators are constructed by cumulatively applying these marginal effects year by year, under the assumption that the estimated historical relationships remain stable in the future. For the GII, predicted values are constrained to remain within their theoretical bounds between 0 and 1.
+We project the future evolution of our three inequality indicators: average warming inability, the coefficient of human inequality, and the Gender Inequality Index (GII). 
+
+Starting from their last observed values, we simulate paths up to 2050 by combining the estimated marginal effects of environmental tax revenues and time trends obtained from the regressions. The required path is expressed as an average annual increase, applied uniformly over time. The projections are established by applying these marginal effects cumulatively year after year. For the GII, predicted values are constrained to remain within 0 and 1.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -1138,7 +1140,11 @@ future_predictions <- tibble(
       )))
 ```
 
-Under this framework, the projections indicate that the tax trajectory consistent with the net-zero objective is associated with a marked increase in all three inequality indicators over the period 2024–2050. Average warming inability rises from approximately 15.8% of the population in 2024 to about 44.8% by 2050, while the coefficient of human inequality increases from roughly 8.5 to 29.2, pointing to a substantial widening of social disparities. Similarly, the Gender Inequality Index follows a pronounced upward trend, increasing from around 0.10 to approximately 0.53 over the same period. While these projections should not be interpreted as causal effects, they suggest a potential trade-off between ambitious climate policy implemented through environmental taxation alone and social equity outcomes, highlighting the importance of complementary redistributive or compensatory measures.
+Projections show that the required trajectory significantly increases the three inequality indicators over the period 2024-2050 :
+The average warming inability rises from 15.8% of the population in 2024 to 44.8% in 2050, the human inequality coefficient increases from around 8.5 to 29.2, indicating a considerable widening of social disparities. Similarly, the gender inequality index will increase from around 0.10 to around 0.53.
+
+These projections suggest a potential trade-off between ambitious climate policy and social equity outcomes. Complementary redistributive or compensatory measures should be considered.
+
 
 #### b. Comparing with the no-policy forecast
 
