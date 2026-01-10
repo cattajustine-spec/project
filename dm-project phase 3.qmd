@@ -1466,6 +1466,8 @@ The comparison shows that the GDP forecast without the tax policy is consistentl
 
 ##### Ratio Tax/GDP
 
+To further assess the economic viability of the tax policy, we calculate the ratio of the environmental tax to GDP under different scenarios. Specifically, we compute: (i) the required tax as a share of GDP, (ii) the forecasted tax assuming the policy is not implemented, and (iii) the tax as a share of GDP using the GDP forecast under the tax scenario itself. Plotting these three lines against empirically informed viability thresholds (1%, 3%, 5%) highlights periods where the tax could be economically feasible, require caution, or pose significant risks, including potential disruption to growth, capital flight, or social acceptance challenges.
+
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
