@@ -379,9 +379,9 @@ all_merged <- Envt_Tax_Revenues |>
 
 {{< pagebreak >}}
 
-# Descriptive analyzes
+# Descriptive analyses
 
-Now that we have cleaned our datasets, we can move on to some descriptive analyses of our main target variables.
+For extensive analyses, please refer to the *"dm-project phase 2"* document.
 
 ## 1. European environmental tax revenues
 
@@ -415,9 +415,7 @@ kable(summary_stats_taxrevenues,
       caption = "Descriptive statistics of the total European environmental tax revenues (all years combined)")
 ```
 
-The total European environmental tax revenues amounted to roughly 376 billion USD in the late 1990s. Over the 2000s, these revenues grew steadily and nearly doubled, reaching over 700 billion USD by 2010. Since then, the trend has remained broadly upward, though with noticeable fluctuations from year to year.
-
-Revenues peaked at approximately 809 billion USD, while the long-run average ($≈$ 622 billion USD) reflects sustained and historically high levels of environmental taxation in the European Union. The standard deviation ($≈$ 152 billion USD) signals substantial variation over time, consistent with cyclical movements, recent economic crisis, and policy adjustments across the Union.
+The total tax revenues increased from 190 billion USD in the late 1990s to 350 billion USD by 2010. Since then, the trend seems broadly stable, with noticeable fluctuations from year to year.
 
 ## 2. European GDP
 
@@ -451,9 +449,7 @@ kable(summary_stats_GDP,
       caption = "Descriptive statistics of the European GDP (all years combined)")
 ```
 
-European GDP has increased a lot since the early 1990s. Starting from roughly 6.3 trillion USD, GDP expanded strongly throughout the 2000s, with a brief slowdown around the early 2010s (due to the subprime crisis), before resuming its upward trajectory. By 2024, it reached nearly 19.4 trillion USD, its historical maximum.
-
-The long-run average GDP ($≈$ 12.2 trillion USD) and the very large standard deviation ($≈$ 4.1 trillion USD) reflect substantial economic growth over time as well as cyclical fluctuations. The median ($≈$ 13.7 trillion USD) suggests that GDP has remained consistently high over the last two decades, despite temporary downturns.
+European GDP has increased significantly from 6.3 trillion USD in 1990 to 19.4 trillion USD in 2024.
 
 ## 3. Greenhouse gas emissions 
 
@@ -487,9 +483,7 @@ summary_stats_GHG <- EU27_GHG |>
 kable(summary_stats_GHG, caption = "Descriptive statistics of EU total greenhouse gases emissions (all years combined)")
 ```
 
-The EU27 total data show the total greenhouse gas emissions, displaying a downward trend. Their maximal value, obtained in 1990 is around 4.6 billion tonnes of CO$₂$-equivalent, and the lower one in 2023 is around 2.9 billion tonnes of CO$₂$-equivalent.
-
-To see the descriptive analysis per sector, please refer to the document for the phase 2.
+The data shows a clear a downward trend for the GHG: their maximum in 1990 is around 4.6 billion tonnes of CO$₂$-equivalent, and their minimum one in 2023 is around 2.9 billion tonnes of CO$₂$-equivalent.
 
 ## 4. Inability to keep home adequately warm per household type
 
@@ -528,11 +522,9 @@ summary_stats_Warm <- EU27_Warming |>
 kable(summary_stats_Warm, caption = "Descriptive statistics of the inability to keep house adequately warm, by household type (all years combined)")
 ```
 
-For the EU27 average, six curves represent different subgroups defined by sex and income. The values correspond to the percentage of each subgroup unable to keep their home adequately warm. All groups follow roughly the same pattern: a sharp increase between 2003 and 2005, a gradual decline afterward, and two significant shocks: a drop in 2008–2009 and a spike in 2022–2023, which can be linked to rising energy prices following the Russia–EU energy crisis.
+The six curves, defined by sex and income, follow a similar pattern: a sharp rise around 2003, a gradual decline, and notable increases around 2009 and 2021.
 
-Among all subgroups, the total-population categories show the lowest percentages, remaining below 10% since 2015. Conversely, households with incomes below 60% of the national median (below the poverty threshold) consistently show the highest rates, around 20% on average.
-
-Women in low-income single households consistently report slightly higher percentages than men. For instance, low-income women (A1F, B_MD60) have an average inability rate of $≈$ 21.1%, compared with $≈$ 23.1% for low-income men (A1M, B_MD60), while total-population rates remain much lower at $≈$ 10% across categories.
+Overall, the total population shows the lowest percentages, while households below 60% of the national median income show the highest. Among low-income single households, women report slightly higher rates than men (about 23.1% versus 21.1%).
 
 ## 5. GII per country
 
@@ -556,8 +548,11 @@ if (knitr::is_html_output()) {plotly::ggplotly(p_GII)} else {p_GII}
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-summary_stats_GII <- GII |>
-  group_by(iso3) |>                        
+```
+
+
+```{r, echo=FALSE}
+summary_stats_GII <- EU27_GII |>
   summarise(
     Min = min(GII_value, na.rm = TRUE),
     Max = max(GII_value, na.rm = TRUE),
@@ -567,12 +562,10 @@ summary_stats_GII <- GII |>
     )
 
 kable(summary_stats_GII, 
-      caption = "Descriptive statistics of the GII by country (all years combined)")
+      caption = "Descriptive statistics of the GII average")
 ```
 
-The Gender Inequality Index (GII) shows a clear downward trend across all European countries between 1990 and 2024. At the beginning of the period, Romania exhibited by far the highest level of inequality, followed by Cyprus and Estonia, while the EU27 average stood around 0.25. In contrast, the lowest GII levels were found in Sweden, Denmark, Finland, and the Netherlands, a pattern that still holds in 2024.
-
-By 2024, the countries with the highest GII values are Cyprus, Romania, and Hungary, while the EU27 average has fallen to approximately 0.08, reflecting substantial progress over time. This aligns with the descriptive statistics: Romania has the highest mean GII ($≈$ 0.36), while Sweden and Denmark are among the lowest, with mean values of $≈$ 0.05 and $≈$ 0.054, respectively.
+The Gender Inequality Index (GII) shows a clear downward trend across all European countries between 1990 and 2024. The EU27 average decreased from 25,7% to 0,08%, with a mean of 16,6% overall. 
 
 ## 6. Coefficient of human inequality per country
 
@@ -597,8 +590,11 @@ if (knitr::is_html_output()) {plotly::ggplotly(p_coef)} else {p_coef}
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
-summary_stats_coefineq <- coef_ineq |>
-  group_by(iso3) |>                        
+```
+
+
+```{r, echo=FALSE}
+summary_stats_coefineq <- EU27_Coefineq |>
   summarise(
     Min = min(coef_ineq_value, na.rm = TRUE),
     Max = max(coef_ineq_value, na.rm = TRUE),
@@ -608,12 +604,10 @@ summary_stats_coefineq <- coef_ineq |>
     )
 
 kable(summary_stats_coefineq, 
-      caption = "Descriptive statistics of the coefficient of human inequality by country (all years combined)")
+      caption = "Descriptive statistics of the coefficient of human inequality average")
 ```
 
-The coefficient of human inequality varies widely across Europe. Spain records the highest values overall, with a mean of $≈$ 13.48, while Slovenia and the Czech Republic stand out as the countries with the lowest inequality, both with mean values slightly above 5.
-
-The EU27 average sits at $≈$ 8.64, but the dispersion across countries is notable. Several Southern and Eastern European countries—such as Portugal ($≈$ 12.75), Italy ($≈$ 12.08), and Bulgaria ($≈$ 11.84)—exhibit consistently high levels of human inequality. In contrast, Nordic and Central European countries such as Denmark ($≈$ 5.77) and Finland ($≈$ 5.73) maintain some of the lowest inequality levels across the data set.
+The coefficient of human inequality varies widely across Europe. The EU27 average sits at $≈$ 8.64%.
 
 {{< pagebreak >}}
 
