@@ -1172,6 +1172,8 @@ Under this framework, the projections indicate that the tax trajectory consisten
 
 #### b. Comparing with the no-policy forecast
 
+To assess how the proposed environmental tax policy affects social inequalities relative to a baseline scenario without policy intervention, we compare the projected evolution of each indicator under the tax trajectory with their ARIMA-based forecasts in the absence of environmental taxation. For average warming inability, the coefficient of human inequality, and the Gender Inequality Index, we construct no-policy forecast paths together with 80% and 95% confidence intervals, and plot them alongside the corresponding tax-policy projections. This comparison allows for a direct visual and quantitative assessment of the divergence between the two scenarios over time, thereby illustrating how the environmental tax trajectory may amplify or alter existing inequality trends relative to their expected evolution in the absence of policy action.
+
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -1355,7 +1357,6 @@ p_warming
 p_inequality
 p_gii
 ```
-
 
 ### 3. Is the model viable ? Its impact on the GDP (forecast & comparison)
 
