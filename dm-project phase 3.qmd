@@ -613,20 +613,21 @@ The coefficient of human inequality varies widely across Europe. The EU27 averag
 
 # Linear Regressions
 
-## 1. Between taxes and Greenhouse Gases emissions
+## 1. Between taxes and GHG emissions
 
-We try to answer one of our fundamental question: "Do taxes reduce emissions ?".
+We answer one of our fundamental question: "Do taxes reduce GHG emissions ?".
 
-### a. Between taxes (n) and GHG (n)
-
-First we try to evaluate the coefficient between an increase in taxes in the year n and the impact on Greenhouse gases emissions in the same year n.
+First we evaluate the coefficient between an increase in environmental taxes in the year n and the impact on GHG emissions in the same year n.
 
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
 model <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value + GDP_value + TIME_PERIOD, data = all_merged)
 
-summary(model)
+summary(model)$call  # shows model
+summary(model)$coefficients  # only coefficients
+cat("Residual standard error:", summary(model)$sigma, "on", summary(model)$df[2], "df\n")
+cat("R-squared:", summary(model)$r.squared, ", Adjusted:", summary(model)$adj.r.squared, "\n")
 ```
 We estimated a linear regression to examine the relationship between environmental tax revenues and greenhouse gas emissions, while controlling for GDP and year. The model explains about 84% of the variation in emissions (Adjusted $R^2$ = 0.8456).
 
@@ -668,7 +669,17 @@ reg_results <- lapply(1:5, function(k) {formula_k <- as.formula(
            " ~ Envt_Tax_Revenues_value + GDP_value + TIME_PERIOD"))
   lm(formula_k, data = all_merged_plus_leads)})
 
-lapply(reg_results, summary)
+my_summary <- function(model) {
+  s <- summary(model)
+  cat("Model:", deparse(formula(model)), "\n\n")
+  cat("Coefficients:\n")
+  print(s$coefficients, signif.stars = FALSE)
+cat("Multiple R-squared:", round(s$r.squared, 4), 
+      ", Adjusted R-squared:", round(s$adj.r.squared, 4), "\n")
+  cat("------------------------------------\n")
+}
+
+invisible(lapply(reg_results, my_summary))
 ```
 
 We estimated a series of linear regressions to examine whether environmental tax revenues in year n have an effect on greenhouse gas emissions in subsequent years, from n+1 to n+5. Across the five models, the number of observations decreases gradually as the lead increases, because later lead variables contain more missing data. Despite this reduction in sample size, all models explain roughly 84% of the variation in emissions ($R^2$ between 0.8444 and 0.835), which is highly consistent across specifications.
@@ -684,15 +695,27 @@ All other coefficients are close to the ones saw before (GDP around 0.25, and ti
 #| warning: false
 # taxes on inability to warm house (economic inequalities)
 model_warm_tax <- lm(Warm_Households_value ~ Envt_Tax_Revenues_value +  GII_value + coef_ineq_value + hhtyp + incgrp + log(GDP_value) + TIME_PERIOD, data = all_merged)
-summary(model_warm_tax)
+
+summary(model_warm_tax)$call  # shows model
+summary(model_warm_tax)$coefficients  # only coefficients
+cat("Residual standard error:", summary(model_warm_tax)$sigma, "on", summary(model_warm_tax)$df[2], "df\n")
+cat("R-squared:", summary(model_warm_tax)$r.squared, ", Adjusted:", summary(model_warm_tax)$adj.r.squared, "\n")
 
 # taxes on the coefficient of inequalities
 model_ineq_tax <- lm(coef_ineq_value ~ Envt_Tax_Revenues_value + log(GDP_value) + TIME_PERIOD, data = all_merged)
-summary(model_ineq_tax)
+
+summary(model_ineq_tax)$call  # shows model
+summary(model_ineq_tax)$coefficients  # only coefficients
+cat("Residual standard error:", summary(model_ineq_tax)$sigma, "on", summary(model_ineq_tax)$df[2], "df\n")
+cat("R-squared:", summary(model_ineq_tax)$r.squared, ", Adjusted:", summary(model_ineq_tax)$adj.r.squared, "\n")
 
 # taxes on the gender inequality index
 model_gii_tax <- lm(GII_value ~ Envt_Tax_Revenues_value + log(GDP_value) + TIME_PERIOD, data = all_merged)
-summary(model_gii_tax)
+
+summary(model_gii_tax)$call  # shows model
+summary(model_gii_tax)$coefficients  # only coefficients
+cat("Residual standard error:", summary(model_gii_tax)$sigma, "on", summary(model_gii_tax)$df[2], "df\n")
+cat("R-squared:", summary(model_gii_tax)$r.squared, ", Adjusted:", summary(model_gii_tax)$adj.r.squared, "\n")
 ```
 
 We estimate three regressions to evaluate the association between environmental tax revenues and three social outcomes, in percentage: energy poverty, income inequality, and gender inequality. In all models, we also add GDP and time (years). We chose to not include the Gender Inequality index and the Income inequality coefficient in one each others regression because of collinearity problems. Also, the coefficient of energy poverty is rather a consequence of both than a cause, so we do not include it in each as well.
@@ -711,7 +734,11 @@ We try to answer the following question: "What is the impact of environmental ta
 #| message: false
 #| warning: false
 model_gdp_tax <- lm(log(GDP_value) ~ Envt_Tax_Revenues_value + TIME_PERIOD, data = all_merged)
-summary(model_gdp_tax)
+
+summary(model_gdp_tax)$call  # shows model
+summary(model_gdp_tax)$coefficients  # only coefficients
+cat("Residual standard error:", summary(model_gdp_tax)$sigma, "on", summary(model_gdp_tax)$df[2], "df\n")
+cat("R-squared:", summary(model_gdp_tax)$r.squared, ", Adjusted:", summary(model_gdp_tax)$adj.r.squared, "\n")
 ```
 
 The regression of GDP on environmental tax revenues and year fixed effects shows a strong positive and statistically significant association between the two variables.The coefficient on environmental tax revenues is 6.02 × 10$⁻⁵$ and is significant at the 1% level (p \< 0.001), holding the time trend constant.
