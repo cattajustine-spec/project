@@ -826,7 +826,7 @@ gdp_fc <- forecast(gdp_model, h = 28)
 plot(gdp_fc, main = "Forecast of GDP")
 ```
 
-The EU27 aggregate GDP is projected to grow steadily from €19.4 trillion in 2024 to €29.5 trillion in 2050, representing approximately 50% growth over the period, though the widening confidence intervals indicate increasing uncertainty in long-term projections.
+The EU27 aggregate GDP is projected to grow steadily from 19.4 trillion USD in 2024 to 29.5 trillion USD in 2050, representing approximately 50% growth over the period, though the widening confidence intervals indicate increasing uncertainty in long-term projections.
 
 ### 4. The economy: forecast of the environmental taxes {#forecastofenvttax}
 
@@ -1446,7 +1446,7 @@ ggplot() +
   )
 ```
 
-The comparison shows that the GDP forecast without the tax policy is consistently higher than the GDP projected under the tax scenario, with the no-policy path rising from 19,820,071 millions USD in 2025 to 29,459,091 in 2050, while the tax policy scenario remains nearly flat around 19.4 billions USD. This indicates that, according to our model, implementing the environmental tax would largely slow the growth of aggregate GDP compared with the baseline. However, the tax-induced impact is relatively small in absolute terms early on, suggesting limited short-term economic disruption.
+The comparison shows that the GDP forecast without the tax policy is consistently higher than the GDP projected under the tax scenario, with the no-policy path rising to 29.5 trillion USD in 2050, while the tax policy scenario remains nearly flat around 19.4 trillion USD. This indicates that, according to our model, implementing the environmental tax would largely slow the growth of aggregate GDP compared with the baseline. However, the tax-induced impact is relatively small in absolute terms early on, suggesting limited short-term economic disruption.
 
 ##### Ratio Tax/GDP
 
