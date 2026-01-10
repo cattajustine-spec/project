@@ -182,70 +182,40 @@ For each dataset, we remove units, metadata, etc and systematically retain four 
 -   Reference year.
 -   Observed value (e.g., revenues, emissions, ...).
 
-### 1. Environmental tax revenues (in million of USD)
-
-In this data set, we select only the ISO3 code, the reference year, and the observed numerical value of Environmental related tax revenues.
+For the HDR index, we  create two independent data sets, one for the Coefficient of Human inequality and another for the GII.
 
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
+
+### 1. Environmental tax revenues
 Envt_Tax_Revenues <- Envt_Tax_Revenues |>
   filter(REF_AREA %in% eu_country_key$iso3,
          CATEGORY == "_T") |>
   select(REF_AREA, TIME_PERIOD, OBS_VALUE)
-```
 
 ### 2. GDP (in million of USD)
-
-In this data set, we select only the ISO3 code, the reference year and the observed numerical value of GDP.
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
 GDP <- GDP_and_AV |>
   filter(Transaction == "Produit intérieur brut", 
          REF_AREA %in% eu_country_key$iso3) |>
   select(REF_AREA, TIME_PERIOD, OBS_VALUE)
-```
 
 ### 3. Greenhouse gas emissions (in million of ton)
-
-We keep the English name, the reference year and the observed numerical value of Greenhouse gas emissions. 
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
 GHG_Emissions <- GHG_Emissions |>
   filter(geo %in% eu_country_key$name_en, 
          src_crf == "Total (excluding memo items)")|>
     select(geo, TIME_PERIOD, OBS_VALUE)
-```
-
+    
 ### 4. Inability to keep home adequately warm
-
-In this data set, we keep the ISO2 code, the reference year, the different household types labels as well as the income groups labels, and the observed numerical values (percentage). 
-In precision, the household types are the households composed by only one female, the households composed by only one male,  all households (whatever their composition) and the income groups are the households who have an income below 60% of the median income (meaning they are below the poverty threshold) and all households (whatever their revenue).
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
 Warm_Households <- Warm_Households |>
   select(geo, TIME_PERIOD, hhtyp, incgrp, OBS_VALUE) |>
   filter(geo %in% eu_country_key$iso2, 
          hhtyp %in% c("A1F", "A1M", "TOTAL"))
-```
-
+         
 ### 5. HDR index
-
-In this data set, we have two main variables of interest: the [Gender Inequality Index](#genderinequalityindex) and the [Coefficient of Human Inequality](#coefficientofhumaninequality).
-
-They are described per year as different variables (meaning we have a gii_2020, gii_2021, ..., coef_ineq_2003, coef_ineq_2004, etc.). Therefore, we need to pivot our database, and then create two independent data sets, one for each variable of interest.
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
+# described per year as different variables (meaning we have a gii_2020, gii_2021, ..., coef_ineq_2003, coef_ineq_2004, etc.). Therefore, we need to pivot our database, and then create two independent data sets, one for each variable of interest.
 Soc_Indexes <- Soc_Indexes |>
-  pivot_longer(
+  pivot_longer(                           
     cols = matches("_[0-9]{4}$"),   
     names_to = c("Indicator", "TIME_PERIOD"),
     names_pattern = "^(.*)_(\\d{4})$",
@@ -255,28 +225,14 @@ Soc_Indexes <- Soc_Indexes |>
     OBS_VALUE = as.numeric(OBS_VALUE),
     TIME_PERIOD = as.integer(TIME_PERIOD)
   )
-```
 
-#### Gender inequality Index {#genderinequalityindex}
-
-We keep the ISO3 code, the reference year and the observed numerical value of the GII.
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
+#### Gender inequality Index
 GII <- Soc_Indexes|>
   filter(iso3 %in% eu_country_key$iso3,
          Indicator == "gii") |>
   select(iso3, TIME_PERIOD, OBS_VALUE)
-```
 
-#### Coefficient of Human inequality {#coefficientofhumaninequality}
-
-We keep the ISO3 code, the reference year and the observed numerical value of the Coefficient of Human inequality.
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
+#### Coefficient of Human inequality 
 coef_ineq <- Soc_Indexes|>
   filter(iso3 %in% eu_country_key$iso3,
          Indicator == "coef_ineq")|>
