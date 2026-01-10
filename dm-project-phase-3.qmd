@@ -1028,9 +1028,7 @@ Comparing the two paths shows a significant and growing shortfall. The historica
 
 ##### GHG emissions: targeted vs predicted
 
-Having analyzed the environmental tax paths, we now turn to the environmental outcome they aim to influence: greenhouse gas (GHG) emissions. This subsection compares the emissions trajectory implied by a continuation of historical tax trends with the counter factual path required to achieve net-zero emissions by 2050.
-
-Using the ARIMA model (cf. [Time series ARIMA forecast of the total Greenhouse Gas emissions](#forecasttotalGHGemissions)), we forecast total emissions under a continuation of historical trends and compute confidence intervals (80% and 95%) to capture uncertainty in the projection. We then overlay the **targeted emissions trajectory**, which represents the linear decline needed to reach net-zero by 2050, as derived from the inverted tax–GHG relationship. The resulting graph allows a visual comparison between the likely path of emissions if current policies continue and the ambitious reduction trajectory required by the EU’s climate objectives.
+We can compare the emissions trajectory implied by a continuation of historical tax trends (ARIMA seen before) with the counter-factual path required to achieve net-zero emissions by 2050.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -1087,7 +1085,7 @@ ggplot(tax_path, aes(x = year)) +
   )
 ```
 
-As shown in the figure, achieving the targeted GHG emissions trajectory would require a substantial change in current taxing practices. The target path consistently lies at the lower bound of the forecast confidence intervals for emissions, and from around 2035 onwards it even falls outside the 95% confidence interval. This suggests that, under the continuation of current trends captured by the ARIMA forecast, the probability of reaching the targeted emissions level is low, highlighting the need for stronger or additional policy interventions.
+As the graph shows, achieving the GHG emissions target would require significant, but not dramatic, changes to current tax practices. From around 2035 onwards, the required tax-path falls outside the 95% confidence interval, indicating that the probability of reaching the targeted emissions level is very low.
 
 ### 2. Impact on social inequalities
 
