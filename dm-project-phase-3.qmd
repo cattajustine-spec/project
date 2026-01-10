@@ -1138,17 +1138,16 @@ future_predictions <- tibble(
     pmax(0, pmin(1,last_obs$GII +
         cumsum(rep(b_gii_tax * avg_tax_increment + b_gii_time, future_years))
       )))
+
+tail(future_predictions, 1)
 ```
 
 Projections show that the required trajectory significantly increases the three inequality indicators over the period 2024-2050 :
 The average warming inability rises from 15.8% of the population in 2024 to 44.8% in 2050, the human inequality coefficient increases from around 8.5 to 29.2, indicating a considerable widening of social disparities. Similarly, the gender inequality index will increase from around 0.10 to around 0.53.
 
-These projections suggest a potential trade-off between ambitious climate policy and social equity outcomes. Complementary redistributive or compensatory measures should be considered.
-
-
 #### b. Comparing with the no-policy forecast
 
-To assess how the proposed environmental tax policy affects social inequalities relative to a baseline scenario without policy intervention, we compare the projected evolution of each indicator under the tax trajectory with their ARIMA-based forecasts in the absence of environmental taxation. For average warming inability, the coefficient of human inequality, and the Gender Inequality Index, we construct no-policy forecast paths together with 80% and 95% confidence intervals, and plot them alongside the corresponding tax-policy projections. This comparison allows for a direct visual and quantitative assessment of the divergence between the two scenarios over time, thereby illustrating how the environmental tax trajectory may amplify or alter existing inequality trends relative to their expected evolution in the absence of policy action.
+To assess how the proposed environmental tax policy affects social inequalities relative to a baseline scenario without policy intervention, we compare the projected evolution of each indicator under the tax trajectory with their ARIMA-based forecasts in the absence of environmental taxation.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -1334,11 +1333,16 @@ p_inequality
 p_gii
 ```
 
-The comparison between the net-zero target and no-policy scenarios highlights a clear trade-off. With the environmental tax, average warming inability rises from 15.8% to 44.8%, the coefficient of human inequality from 8.5% to 29.2%, and the Gender Inequality Index from 0.10 to 0.53. In contrast, without the tax, warming inability remains around 16–17%, human inequality gradually declines, and gender inequality decreases over time. This suggests that aggressive taxation alone could exacerbate social disparities, underscoring the need for complementary redistributive measures.
+The comparison between the net-zero target and no-policy scenarios highlights a clear trade-off. By contrast of the sharp increases seen before, without the required tax policy, warming inability remains around 16–17%, human inequality gradually declines, and gender inequality decreases over time. 
+
+These projections suggest a potential trade-off between ambitious climate policy and social equity outcomes. Complementary redistributive or compensatory measures should be considered.
+
 
 ### 3. Is the model viable ? Its impact on the GDP (forecast & comparison)
 
-To evaluate the potential economic impact of the proposed environmental tax policy, we first forecast EU27 GDP under the tax scenario using the estimated coefficients from our GDP regression model. We construct the future path by applying the average annual increase in environmental tax revenues, combined with the underlying time trend, cumulatively on the last observed GDP level. This projected GDP path is then plotted alongside the ARIMA-based GDP forecast in the absence of any tax policy, allowing us to visually and quantitatively compare how the tax might influence aggregate economic growth over the 2024–2050 period.
+To evaluate the potential economic impact of the proposed environmental tax policy, we forecast EU27 GDP under the tax scenario using the estimated coefficients from our GDP regression model. We construct the future path by applying the average annual increase in environmental tax revenues, combined with the underlying time trend, cumulatively on the last observed GDP level.
+
+#### a. The forecast model
 
 ```{r, echo=FALSE}
 #| message: false
@@ -1377,7 +1381,11 @@ ggplot(future_gdp_predictions,
   scale_y_continuous(limits = c(1.9434e+07, 1.9435e+07))
 ```
 
-Under the tax policy scenario, projected GDP exhibits an almost flat trajectory over the period 2024–2050, increasing from approximately 19,434,512 million USD to 19,434,558 million USD. This corresponds to an average annual growth rate close to zero (around 0.00001%), indicating a near-complete stagnation of economic activity over the projection horizon. Given that baseline GDP is typically expected to grow steadily over such a long period, this result suggests that the environmental tax trajectory consistent with the net-zero objective could substantially constrain aggregate economic growth. While these projections should not be interpreted as causal estimates, they point to a potentially significant macroeconomic cost associated with implementing the tax policy in the absence of offsetting growth-enhancing or redistributive measures.
+Under the tax policy scenario, projected GDP exhibits an almost flat trajectory over the period 2024–2050, increasing from approximately 19,434,512 million USD to 19,434,558 million USD. This corresponds to an average annual growth rate close to zero, indicating a near-complete stagnation of economic activity over the projection horizon. This result suggests that the required tax trajectory would substantially constrain aggregate economic growth. While these projections should not be interpreted as causal estimates, they point to a potentially significant macroeconomic cost associated to the the tax policy.
+
+#### b. Comparing with the no-policy forecast
+
+We then project this GDP path alongside the ARIMA-based GDP forecast in the absence of any tax policy, allowing us to visually and quantitatively compare how the tax might influence aggregate econ
 
 ```{r, echo=FALSE}
 #| message: false
