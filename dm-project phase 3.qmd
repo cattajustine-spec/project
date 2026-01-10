@@ -360,13 +360,9 @@ EU27_GDP <- EU27_GDP |>
   rename(iso3 = REF_AREA)
 ```
 
-## Merging all data sets on country-year pairs
+## Merging
 
-We cleaned and harmonized all datasets, and can now merge them into a single database combining economic, environmental and social indicators. The environmental tax dataset is used as the base for the merge; we then enrich it other datasets through matching on iso3 code, reference year. 
-
-All merges use left_join(). This choice ensures that countries or years missing some variables are retained in the dataset rather than dropped — which would happen with inner_join(). Keeping these rows is important for transparency and for allowing later analyses to handle missingness explicitly.
-
-This merge will allow us to study environmental taxes, emissions, economic structure, and social inequalities jointly within a single analytical framework.
+We can now merge all datasets into a single analytical framework on a country-year pair basis : we match on iso3 code, reference year, with *left_join()*. 
 
 ```{r, echo=FALSE}
 #| message: false
