@@ -1450,7 +1450,11 @@ The comparison shows that the GDP forecast without the tax policy is consistentl
 
 ##### Ratio Tax/GDP
 
-To further assess the economic viability of the environmental tax policy, we examine the evolution of the tax burden relative to aggregate economic output by computing the environmental tax as a share of GDP under three distinct scenarios. First, we calculate the required tax-to-GDP ratio, obtained by dividing the tax trajectory consistent with the net-zero objective by the baseline GDP forecast. Then, we compute a forecasted tax-to-GDP ratio, based on the predicted environmental tax path in the absence of the policy, again expressed relative to forecasted GDP. Finally, we construct a tax-to-GDP ratio using GDP projected under the tax policy itself, which accounts for the potential macroeconomic feedback of the tax on economic activity. These three trajectories are plotted against empirically motivated viability thresholds at 3% and 5% of GDP, defining zones of relative economic feasibility, heightened risk, and high risk. This framework allows us to assess not only the magnitude of the tax burden over time, but also how the interaction between taxation and economic output may affect the policy’s sustainability, including risks of growth disruption, reduced political acceptability, or broader macroeconomic instability.
+To further assess the economic viability of the environmental tax policy, we examine the evolution of the tax burden relative to aggregate economic output by computing the environmental tax as a share of GDP under three distinct scenarios. 
+
+First, we calculate the required-tax-to-GDP ratio, obtained by dividing the required tax trajectory to reach the net-zero objective by the baseline GDP forecast. 
+Secondly, we compute a predicted-tax-to-GDP ratio, based on the forecasted environmental tax path in the absence of the policy, again expressed relative to forecasted GDP. 
+Finally, we construct a tax-to-GDP ratio using GDP projected under the tax policy itself, which accounts for the potential macroeconomic feedback of the tax on economic activity. 
 
 ```{r, echo=FALSE}
 #| message: false
@@ -1548,8 +1552,11 @@ ggplot() +
     legend.position = "right"
   )
 ```
+These three trajectories are plotted against viability thresholds at 3% and 5% of GDP, defining zones of relative economic feasibility or risk. 
 
-The comparison of tax-to-GDP ratios across the three scenarios shows that both the required and forecasted ratios generally remain within the Viable (0–3%) or Risk (3–5%) zones during the early years of the projection period. In contrast, the tax-to-GDP ratio computed using GDP under the tax policy itself gradually increases over time, eventually exceeding the High Risk (>5%) threshold around 2039. This pattern indicates that, as the policy progresses, the effective tax burden relative to economic output could reach levels that pose substantial challenges to economic stability, including potential constraints on growth, increased pressures from capital reallocation, sectoral lobbying, and broader social acceptance concerns.
+The comparison of tax-to-GDP ratios across the three scenarios shows the forecasted-tax ratio remains in the viable zone, while the required and the ratio with the GDP-under-policy increase over time respectively in the Risk and High risk zones. 
+
+This framework allows us to assess how the interaction between taxation and economic output may affect the policy’s sustainability, including risks of growth disruption, reduced political acceptability, or broader macroeconomic instability.
 
 {{< pagebreak >}}
 
