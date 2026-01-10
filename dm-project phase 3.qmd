@@ -239,11 +239,9 @@ coef_ineq <- Soc_Indexes|>
   select(iso3, TIME_PERIOD, OBS_VALUE)
 ```
 
-## Adding some entities
+## Adding aggregates
 
-### Add European average (across countries)
-
-For the data sets that describe inequality indexes, we compute the European average across countries.
+First, for the data sets that describe inequality indexes, we compute the European average across countries.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -279,9 +277,7 @@ Warm_Households <- Warm_Households |>
   select (iso3, TIME_PERIOD, hhtyp, incgrp, OBS_VALUE)
 ```
 
-### Add European total
-
-For other economic data sets (GDP, Taxes, GHG emissions), we compute the European total across countries.
+Secondly, for other economic data sets (GDP, Taxes, GHG emissions), we compute the European total across countries.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -318,9 +314,7 @@ GHG_Emissions <- GHG_Emissions  |> select (iso3, TIME_PERIOD, OBS_VALUE)
 
 ## Modifiying the characteristics of the variables
 
-### Changing the type of some variables
-
-For the inability to keep home adequately warm variable, we consider the household type variable and the income group variable as *factor*, rather than as *character* variables.
+For the inability to keep housing adequately warm variable, we consider the household type variable and the income group variable as *factor*.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -331,9 +325,7 @@ Warm_Households$incgrp <- factor(Warm_Households$incgrp)
 EU27_Warming$incgrp <- factor(EU27_Warming$incgrp)
 ```
 
-### Renaming some variables {#renamingsomevariables}
-
-To be able to merge our data sets in a data base, we need to modify the name of the variable "**OBS_VALUE**" contained in several data sets to be able to merge. These variables are renamed as "**dataset_value**".
+We rename variables to be able to merge our data sets; from "**OBS_VALUE**" appearing in several data sets to "**name-of-dataset_value**".
 
 ```{r, echo=FALSE}
 #| message: false
@@ -352,7 +344,7 @@ names(coef_ineq)[names(coef_ineq) == "OBS_VALUE"] <- "coef_ineq_value"
 names(EU27_Coefineq)[names(EU27_Coefineq) == "OBS_VALUE"] <- "coef_ineq_value"
 ```
 
-We rename the country codes as the ones in the country key we created in [Country keys](#countrykeys).
+We also rename the country identifiers as the ones in the country key we created.
 
 ```{r, echo=FALSE}
 #| message: false
