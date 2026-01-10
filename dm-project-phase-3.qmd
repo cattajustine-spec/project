@@ -891,15 +891,15 @@ Environmental tax revenues in the EU27 are projected to increase from €362.4 b
 
 {{< pagebreak >}}
 
-# Forecasting: if we plan to get to the 0 net emission by 2050
+# Forecasting: Zero net emission
 
-In this project, we are trying to look at the level of tax that would be necessary to reach the 0 net emissions by 2050 required by the European Union. To do so, we should first look at the level of tax that allows for this evolution, and then check the impact of this level of tax on the social inequalities and on the economy.
+We are trying to evaluate the needed level of tax to reach the Zero net emissions by 2050 desired by the European Union, as if there only was a tax policy available; then we check the impact of this level of tax on the social inequalities and on the economy.
 
 ### 1. Deriving a realistic tax path to reach net-zero by 2050
 
 #### a. The forecast model
 
-To identify a tax trajectory consistent with the European Union’s goal of net-zero greenhouse gas emissions by 2050, we first estimate a linear regression relating aggregate GHG emissions to environmental tax revenues at the EU-27 level. The 2023 tax level is anchored to the last observed value, while a large increase in 2024 is introduced to ensure that predicted emissions reach zero by 2050. After 2024, the tax path follows a convex trajectory, meaning that annual tax increases accelerate over time, reflecting the progressively stronger measures needed to achieve net-zero emissions. Without this initial jump, emissions would remain far above zero (around 719,773 thousand tonnes of CO$₂$ equivalent). This method produces a stylized tax path under the assumption that environmental taxation is the primary policy instrument driving emissions reductions.
+We use a linear regression relating aggregate GHG emissions to Environmental tax revenues at the EU-27 level. The 2023 tax level is anchored to the last observed value. 
 
 ```{r, echo=FALSE}
 #| message: false
@@ -911,7 +911,11 @@ data_forecast_tax_0net <- EUGHG_agg_yearly |>
 
 # Estimate level-level model 
 mod_LL <- lm(GHG_total ~ Envt_Tax_Revenues_value, data = data_forecast_tax_0net)
-summary(mod_LL)
+
+summary(mod_LL)$call  # shows model
+summary(mod_LL)$coefficients  # only coefficients
+cat("Residual standard error:", summary(mod_LL)$sigma, "on", summary(mod_LL)$df[2], "df\n")
+cat("R-squared:", summary(mod_LL)$r.squared, ", Adjusted:", summary(mod_LL)$adj.r.squared, "\n")
 
 # If beta >= 0, stop (no reduction possible by raising tax)
 if(coef(mod_LL)[2] >= 0) stop("Model does not indicate that raising tax reduces GHG.")
@@ -951,19 +955,19 @@ ggplot(tax_path, aes(x = year)) +
   scale_y_continuous(limits = c(0, 4e+06))
 ```
 
-The estimated regression reveals a statistically significant negative relationship between environmental tax revenues and total GHG emissions. The coefficient on environmental tax revenues is −3.864 (p-value < 0.001), indicating that, historically, an increase of one million USD in environmental tax revenues is associated with a reduction of approximately 3.9 thousand tonnes of CO$₂$-equivalent in aggregate emissions. The intercept suggests a baseline emissions level of about 5,027,000 thousand tonnes of CO$₂$-equivalent in the absence of environmental taxation. While the model is intentionally parsimonious, it explains a meaningful share of the observed variation in emissions, with an Adjusted $R^2$ of 0.49.
+The estimated regression reveals a statistically significant negative relationship between environmental tax revenues and total GHG emissions (−3.86, p-value < 0.001). This indicates that, historically, an increase of one million USD in environmental tax revenues is associated with a reduction of approximately 3.9 thousand tonnes of CO$₂$-equivalent in aggregate emissions. The model explains a meaningful share of the observed variation in emissions, with an Adjusted $R^2$ of 0.49.
 
-Using this estimated relationship, we construct a counterfactual emissions trajectory from approximately 2.9 billion tonnes in 2023 to net-zero emissions in 2050. To ensure that predicted emissions reach net zero, the 2023 tax level is anchored to the observed value (362,363 million USD), while a substantial increase in 2024 is introduced. After 2024, the tax path follows a linear trajectory toward 2050, reflecting the progressively stronger fiscal effort needed to reduce emissions to zero. Without this initial jump, predicted emissions would plateau around 719,773 thousand tonnes of CO$₂$-equivalent by 2050, far above net zero.
+Using this estimated relationship, we construct a counterfactual emissions trajectory from approximately 2.9 billion tonnes in 2023 to net-zero in 2050. After 2024, the tax path follows a linear trajectory toward 2050, reflecting the progressively stronger fiscal effort needed to reduce emissions to zero.
 
-According to the tax path, environmental tax revenues would need to rise from 362,363 million USD in 2023 to 548,634 millions USD in 2024, to about 1,300,993 million USD in 2050, producing the targeted emissions trajectory illustrated in the GHG emissions path graph. These results highlight both the scale of the fiscal effort required and the limitations of relying solely on environmental taxation, given the modest explanatory power of the reduced-form regression.
+According to the tax path, environmental tax revenues would need to rise from 550 billion USD in 2024 to about 1.3 trillion USD in 2050, highlighting both the scale of the fiscal effort required and the limitations of relying solely on environmental taxation, given the modest explanatory power of the reduced-form regression.
 
 #### b. Comparing with the no-policy forecast
 
-Having established the tax path required to reach net-zero emissions by 2050, we now turn to a systematic comparison of forecasted and targeted trajectories. First, we will examine the total environmental tax revenues to highlight the gap between historical trends and climate targets. Next, we will assess the implications of these tax paths for aggregate GHG emissions, and finally, we will explore sector-level GHG emissions to identify which sectors require the most significant reductions. This stepwise analysis provides a comprehensive view of the fiscal and environmental adjustments necessary to meet the EU’s net-zero objectives.
+We evaluate the gap between historical trends and climate targets before assessing the implications of the required tax paths.
 
 ##### Tax policy: targeted vs predicted
 
-To assess the adequacy of current environmental tax trends, we now compare the forecasted path of total EU-27 environmental tax revenues, based on historical trends (the “forecast model” from the section: [The economy: forecast of the environmental taxes](#forecastofenvttax)), with the tax path required to reach net-zero emissions by 2050. This comparison highlights the gap between the continuation of past tax policies and the ambitious fiscal effort necessary to achieve the EU’s climate target. The code below generates the forecasted confidence intervals and overlays them with the required tax path.
+To assess the adequacy of current environmental tax trends, we compare the forecasted path of total environmental tax revenues based on historical trends, with the one required to reach net-zero emissions by 2050.
 
 ```{r, echo=FALSE}
 #| message: false
