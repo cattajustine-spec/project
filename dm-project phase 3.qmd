@@ -1,7 +1,11 @@
 ---
-title: "dm project - Phase 3"
+title: "Environmental taxes and the path to net-zero in the EU"
 author: "Daphne Perry and Justine Catta"
-format: pdf
+format:
+  html:
+    toc: true
+  pdf:
+    toc: true
 ---
 
 # Introduction
@@ -595,7 +599,7 @@ p_GII <- ggplot(GII, aes(x = TIME_PERIOD, y = GII_value, color = iso3, group = i
   scale_y_continuous(limits = c(0, 1)) +   
   theme_minimal()
 
-ggplotly(p_GII)
+if (knitr::is_html_output()) {plotly::ggplotly(p_GII)} else {p_GII}
 ```
 
 ```{r, echo=FALSE}
@@ -634,7 +638,7 @@ p_coef <- ggplot(coef_ineq, aes(x = TIME_PERIOD, y = coef_ineq_value, color = is
   ) +
   theme_minimal()
 
-ggplotly(p_coef)
+if (knitr::is_html_output()) {plotly::ggplotly(p_coef)} else {p_coef}
 ```
 
 ```{r, echo=FALSE}
@@ -920,7 +924,7 @@ tax_all_2050 <- ggplot() +
   ) +
   scale_y_continuous(limits = c(0, 0.75e+06)) 
 
-ggplotly(tax_all_2050)
+if (knitr::is_html_output()) {plotly::ggplotly(tax_all_2050)} else {tax_all_2050}
 ```
 
 
