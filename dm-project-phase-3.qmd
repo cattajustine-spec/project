@@ -1562,14 +1562,15 @@ This framework allows us to assess how the interaction between taxation and econ
 
 # Conclusion
 
-In conclusion, this research project has evaluated the effectiveness of environmental taxation as a tool for achieving the European Union’s goal of net-zero emissions by 2050. The study involved cleaning and merging large datasets covering the EU-27 from 1990 to 2024, focusing on four key sectors: Agriculture, Industry (including energy), Manufacturing, and Transport. By integrating indicators such as environmental tax revenues, the Gender Inequality Index (GII), the Coefficient of Human Inequality, and energy poverty, we assessed both environmental efficacy and socioeconomic sustainability.
-Our findings indicate that while environmental taxes have a statistically significant negative association with GHG emissions, the impact has been small. 
-Our analysis revealed that the current forecasted tax trajectory is insufficient to reach the European Green Deal’s objectives. Under current trends as GHG emissions are projected to fall only to approximately 1.43 million units by 2050. 
+In conclusion, this research project has evaluated the effectiveness of environmental taxation as a tool for achieving the European Union’s goal of net-zero emissions by 2050. The study involved cleaning and merging large datasets covering the EU-27 from 1990 to 2024. By integrating indicators such as environmental tax revenues, the Gender Inequality Index (GII), the Coefficient of Human Inequality, and energy poverty, we assessed both environmental efficacy and socioeconomic sustainability.
+
+Our findings indicate that while environmental taxes have a statistically significant negative association with GHG emissions, the impact has been small and we revealed that the current forecasted tax trajectory is insufficient to reach the European Green Deal’s objectives. 
+
 To determine the tax level required for the 2050 target, we inverted a level-level linear regression of total GHG emissions against tax revenues. This model allowed us to find a "required tax path" that would theoretically drive emissions to zero by itself. We found that environmental tax revenues would need to scale up to roughly 2.9 trillion USD by 2050, (1.7 trillion USD more than predicted historical trends).
 
 The impacts of such a massive tax increase on society and the economy would be severe:
 • Social Inequality: The regressions show that environmental taxes are positively correlated with energy poverty, income inequality, and gender inequality. Implementing the required tax path would likely exacerbate these social costs, and increase these indicators largely above the levels expected in a no-policy scenario.
-• Economic Viability: Although tax revenues tend to increase alongside GDP, the required fiscal burden would likely reach between 6% and 10% of the total GDP. This exceeds empirical thresholds for economic stability and could be highly disruptive.
+• Economic Viability: Although tax revenues tend to increase alongside GDP, the required fiscal burden would likely reach above 3% of the total GDP. This exceeds empirical thresholds for economic stability and could be highly disruptive.
 
 If relying exclusively on environmental taxation proves to be socially regressive or economically unviable, what alternative strategies could the European Union use to fill the gap? Some possibilities could be the use of complementary green technology subsidies, the implementation of stricter sector-specific regulations, or the potential for economic sobriety and degrowth to reduce the overall energy demand.
 
