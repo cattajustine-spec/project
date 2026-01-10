@@ -37,7 +37,6 @@ By combining environmental effectiveness, economic feasibility, and social impac
 Our project is on [Github](https://github.com/cattajustine-spec/project).
 
 ## Setup
-
 ```{r echo=FALSE}
 #| message: false
 #| warning: false
@@ -59,10 +58,10 @@ library(forecast)
 here::i_am("project.Rproj")
 ```
 
-## Presenting our data:
-### 1. Environmental tax revenues (OECD, 1994–2023)
+## Our data:
+### 1. Environmental tax revenues
 
-This data set reports annual environmentally related tax revenues for EU countries from the OECD ([link](https://data-explorer.oecd.org/vis?lc=en&tm=DF_ERTR&pg=0&snb=1&vw=tb&df%5Bds%5D=dsDisseminateFinalDMZ&df%5Bid%5D=DSD_ERTR%40DF_ERTR&df%5Bag%5D=OECD.ENV.EPI&df%5Bvs%5D=&pd=1994%2C2023&dq=A.HRV%2BLVA%2BLTU%2BLUX%2BMLT%2BNLD%2BCYP%2BAUT%2BBEL%2BCZE%2BDNK%2BEST%2BFIN%2BFRA%2BDEU%2BGRC%2BHUN%2BIRL%2BITA%2BPOL%2BPRT%2BSVK%2BSVN%2BESP%2BSWE%2BBGR%2BROU.TAXREV.CAT_ENE%2BCAT_TRA%2BCAT_POL%2BCAT_RES%2B_T._T.USD.&ly%5Brw%5D=REF_AREA&ly%5Bcl%5D=TIME_PERIOD&to%5BTIME_PERIOD%5D=false)). Values are expressed in millions of USD and they cover a time period from 1994 to 2023.
+This data set reports annual environmentally related tax revenues for EU countries from the ([OECD](https://data-explorer.oecd.org/vis?lc=en&tm=DF_ERTR&pg=0&snb=1&vw=tb&df%5Bds%5D=dsDisseminateFinalDMZ&df%5Bid%5D=DSD_ERTR%40DF_ERTR&df%5Bag%5D=OECD.ENV.EPI&df%5Bvs%5D=&pd=1994%2C2023&dq=A.HRV%2BLVA%2BLTU%2BLUX%2BMLT%2BNLD%2BCYP%2BAUT%2BBEL%2BCZE%2BDNK%2BEST%2BFIN%2BFRA%2BDEU%2BGRC%2BHUN%2BIRL%2BITA%2BPOL%2BPRT%2BSVK%2BSVN%2BESP%2BSWE%2BBGR%2BROU.TAXREV.CAT_ENE%2BCAT_TRA%2BCAT_POL%2BCAT_RES%2B_T._T.USD.&ly%5Brw%5D=REF_AREA&ly%5Bcl%5D=TIME_PERIOD&to%5BTIME_PERIOD%5D=false)), with values in millions of USD covering from 1994 to 2023.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -78,9 +77,9 @@ Envt_Tax_Revenues <- vroom(here("data", "OECD_envt_tax.csv"))
 | Number of columns | `r ncol(Envt_Tax_Revenues)` |
 :::
 
-### 2. GDP (OECD, 1990-2024)
+### 2. GDP
 
-This data set provides annual GDP figures for EU countries from the OECD ([link](https://data-explorer.oecd.org/vis?df%5Bds%5D=dsDisseminateFinalDMZ&df%5Bid%5D=DSD_NAMAIN10%40DF_TABLE1_OUTPUT&df%5Bag%5D=OECD.SDD.NAD&df%5Bvs%5D=&dq=A.BEL%2BAUT%2BCZE%2BDNK%2BEST%2BFIN%2BFRA%2BDEU%2BGRC%2BHUN%2BIRL%2BITA%2BLVA%2BLTU%2BLUX%2BNLD%2BPOL%2BPRT%2BSVK%2BSVN%2BESP%2BSWE%2BBGR%2BHRV%2BCYP%2BMLT%2BROU...B1G%2BB1GQ.._Z%2B_T%2BC%2BA%2BBTE%2BF%2BGTI%2BJ%2BK%2BL%2BM_N%2BOTQ%2BRTU..USD_EXC.V..&to%5BTIME_PERIOD%5D=false&pd=1990%2C2024&vw=tb)), measured in millions of USD, using exchange rate and they cover the time period 1990 to 2024.
+This data set provides annual GDP figures for EU countries from the ([OECD](https://data-explorer.oecd.org/vis?df%5Bds%5D=dsDisseminateFinalDMZ&df%5Bid%5D=DSD_NAMAIN10%40DF_TABLE1_OUTPUT&df%5Bag%5D=OECD.SDD.NAD&df%5Bvs%5D=&dq=A.BEL%2BAUT%2BCZE%2BDNK%2BEST%2BFIN%2BFRA%2BDEU%2BGRC%2BHUN%2BIRL%2BITA%2BLVA%2BLTU%2BLUX%2BNLD%2BPOL%2BPRT%2BSVK%2BSVN%2BESP%2BSWE%2BBGR%2BHRV%2BCYP%2BMLT%2BROU...B1G%2BB1GQ.._Z%2B_T%2BC%2BA%2BBTE%2BF%2BGTI%2BJ%2BK%2BL%2BM_N%2BOTQ%2BRTU..USD_EXC.V..&to%5BTIME_PERIOD%5D=false&pd=1990%2C2024&vw=tb)), measured in millions of USD, using exchange rate and covering from 1990 to 2024.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -96,9 +95,9 @@ GDP_and_AV <- vroom(here("data", "OECD_GDP_and_AV.csv"))
 | Number of columns | `r ncol(GDP_and_AV)` |
 :::
 
-### 3. Greenhouse gas emissions (Eurostat, 1990-2023)
+### 3. Greenhouse gas emissions
 
-This data set reports total greenhouse gas emissions for the 27 EU countries. Values are expressed in thousand tonnes of CO$₂$-equivalent. The data set is from Eurostat ([link](https://ec.europa.eu/eurostat/databrowser/view/env_air_gge__custom_18942108/default/table)) and covers the time period 1990 to 2023.
+This data set reports total greenhouse gas emissions for the 27 EU countries, in thousand tonnes of CO$₂$-equivalent. The data set is from ([Eurostat](https://ec.europa.eu/eurostat/databrowser/view/env_air_gge__custom_18942108/default/table)) and covers from 1990 to 2023.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -114,9 +113,9 @@ GHG_Emissions <- vroom(here("data", "Eurostat_ghg.csv"))
 | Number of columns | `r ncol(GHG_Emissions)` |
 :::
 
-### 4. Inability to keep home adequately warm (Eurostat, 2003-2024)
+### 4. Inability to keep home adequately warm
 
-This data set measures the percentage of households unable to keep their home adequately warm. We chose 3 households type: total, single female and single male and 2 income situations: total and below 60% of the median (in situation of poverty). The data set is from Eurostat ([link](https://ec.europa.eu/eurostat/databrowser/view/ILC_MDES01__custom_18945942/default/table)) and covers 2003-2024. Note that it is a declarative observation of household who report that they are unable to keep their home adequately warm.
+This data set collects the percentage of households reporting they are unable to keep their home adequately warm. We chose 3 households type: total, single female and single male and 2 income situations: total and below 60% of the median (in situation of poverty). The data set is from  ([Eurostat](https://ec.europa.eu/eurostat/databrowser/view/ILC_MDES01__custom_18945942/default/table)) and covers 2003-2024.
 
 ```{r, echo=FALSE}
 #| message: false
@@ -132,9 +131,9 @@ Warm_Households <- vroom(here("data","Eurostat_warm.csv"))
 | Number of columns | `r ncol(Warm_Households)` |
 :::
 
-### 5. Human index (UNDP HDR, 1990-2023)
+### 5. Human indexes
 
-We focus on the Coefficient of Human Inequality and Gender Inequality Index (GII) for most countries worldwide, from this HDR data set ([link](https://hdr.undp.org/sites/default/files/2025_HDR/HDR25_Composite_indices_complete_time_series.csv)) providing annual values for lots of Indexes, from 1990 to 2023.
+We focus on the Coefficient of Human Inequality and Gender Inequality Index (GII), from this ([UNDP HDR](https://hdr.undp.org/sites/default/files/2025_HDR/HDR25_Composite_indices_complete_time_series.csv)) data set providing annual values for lots of Indexes, from 1990 to 2023.
 
 ```{r, echo=FALSE}
 #| message: false
