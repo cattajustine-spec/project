@@ -732,9 +732,10 @@ cat("Residual standard error:", summary(model_gdp_tax)$sigma, "on", summary(mode
 cat("R-squared:", summary(model_gdp_tax)$r.squared, ", Adjusted:", summary(model_gdp_tax)$adj.r.squared, "\n")
 ```
 
-The regression of GDP on environmental tax revenues and year fixed effects shows a strong positive and statistically significant association between the two variables.The coefficient on environmental tax revenues is 6.02 × 10$⁻⁵$ and is significant at the 1% level (p \< 0.001), holding the time trend constant.
 
-The model has substantial explanatory power (Adjusted $R^2 ≈$ 0.63). The year coefficient is also positive and significant, reflecting general GDP growth over the period. But this relationship is correlational and does not imply causation, it indicates that environmental tax revenues tend to increase alongside GDP, consistent with the idea that wealthier economies can collect more from climate-related taxes.
+The model shows that Environmental tax revenues are strongly and positively associated with GDP (+6.0e-0.5), with a very low p-value. The time trend is also positive and highly significant, reflecting general GDP growth over the period.
+
+It also has substantial explanatory power (Adjusted $R^2 ≈$ 0.63). However, the relationship of GDP with taxes is correlational and does not imply causation, it indicates that environmental tax revenues tend to increase alongside GDP, consistent with the idea that wealthier economies can collect more from climate-related taxes.
 
 {{< pagebreak >}}
 
