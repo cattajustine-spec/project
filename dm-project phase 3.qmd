@@ -1565,6 +1565,8 @@ ggplot() +
   )
 ```
 
+The comparison of tax-to-GDP ratios across the three scenarios shows that both the required and forecasted ratios generally remain within the Viable (0–3%) or Risk (3–5%) zones during the early years of the projection period. In contrast, the tax-to-GDP ratio computed using GDP under the tax policy itself gradually increases over time, eventually exceeding the High Risk (>5%) threshold around 2039. This pattern indicates that, as the policy progresses, the effective tax burden relative to economic output could reach levels that pose substantial challenges to economic stability, including potential constraints on growth, increased pressures from capital reallocation, sectoral lobbying, and broader social acceptance concerns.
+
 # Conclusion
 
 In conclusion, this research project has evaluated the effectiveness of environmental taxation as a tool for achieving the European Union’s goal of net-zero emissions by 2050. The study involved cleaning and merging large datasets covering the EU-27 from 1990 to 2024, focusing on four key sectors: Agriculture, Industry (including energy), Manufacturing, and Transport. By integrating indicators such as environmental tax revenues, the Gender Inequality Index (GII), the Coefficient of Human Inequality, and energy poverty, we assessed both environmental efficacy and socioeconomic sustainability.
