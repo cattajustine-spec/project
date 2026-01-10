@@ -47,13 +47,8 @@ library(here)
 library(countrycode)
 library(plotly)
 library(tidyr)
-library(knitr)
-library(plm)
 library(tidyverse)
-library(broom)
 library(forecast)
-library(purrr)
-library(gridExtra)
 ```
 
 ```{r, echo=FALSE}
