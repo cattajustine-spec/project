@@ -716,7 +716,7 @@ tidy_list <- lapply(1:5, function(k) {
 # Combine all leads into one data frame
 tidy_df <- bind_rows(tidy_list)
 
-# Optionally, rename variable names for readability
+# Rename variable names for readability
 tidy_df$term <- gsub("_value", "", tidy_df$term)
 
 # Print table
@@ -735,41 +735,47 @@ All other coefficients are close to the ones seen before (GDP around 0.25, and t
 
 ## 2. Between taxes and social inequalities
 
+We estimate three regressions to evaluate the association between environmental tax revenues and three social outcomes, in percentage: energy poverty, human inequality, and gender inequality. In all models, we also add GDP and time (years). We chose to not include the Gender Inequality index and the Income inequality coefficient in one each others regression because of collinearity problems. Also, the coefficient of energy poverty is rather a consequence of both than a cause, so we do not include it in the other two as well.
+
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
 # taxes on inability to warm house (economic inequalities)
 model_warm_tax <- lm(Warm_Households_value ~ Envt_Tax_Revenues_value +  GII_value + coef_ineq_value + hhtyp + incgrp + log(GDP_value) + TIME_PERIOD, data = all_merged)
 
-summary(model_warm_tax)$call  # shows model
-summary(model_warm_tax)$coefficients  # only coefficients
-cat("Residual standard error:", summary(model_warm_tax)$sigma, "on", summary(model_warm_tax)$df[2], "df\n")
-cat("R-squared:", summary(model_warm_tax)$r.squared, ", Adjusted:", summary(model_warm_tax)$adj.r.squared, "\n")
-cat("------------------------------------\n")
-
-# taxes on the coefficient of inequalities
-model_ineq_tax <- lm(coef_ineq_value ~ Envt_Tax_Revenues_value + log(GDP_value) + TIME_PERIOD, data = all_merged)
-
-summary(model_ineq_tax)$call  # shows model
-summary(model_ineq_tax)$coefficients  # only coefficients
-cat("Residual standard error:", summary(model_ineq_tax)$sigma, "on", summary(model_ineq_tax)$df[2], "df\n")
-cat("R-squared:", summary(model_ineq_tax)$r.squared, ", Adjusted:", summary(model_ineq_tax)$adj.r.squared, "\n")
-cat("------------------------------------\n")
-
-# taxes on the gender inequality index
-model_gii_tax <- lm(GII_value ~ Envt_Tax_Revenues_value + log(GDP_value) + TIME_PERIOD, data = all_merged)
-
-summary(model_gii_tax)$call  # shows model
-summary(model_gii_tax)$coefficients  # only coefficients
-cat("Residual standard error:", summary(model_gii_tax)$sigma, "on", summary(model_gii_tax)$df[2], "df\n")
-cat("R-squared:", summary(model_gii_tax)$r.squared, ", Adjusted:", summary(model_gii_tax)$adj.r.squared, "\n")
+stargazer(model_warm_tax, type = "text", 
+          title = "Regression Results",
+          digits = 3, 
+          single.row = TRUE)
 ```
-
-We estimate three regressions to evaluate the association between environmental tax revenues and three social outcomes, in percentage: energy poverty, human inequality, and gender inequality. In all models, we also add GDP and time (years). We chose to not include the Gender Inequality index and the Income inequality coefficient in one each others regression because of collinearity problems. Also, the coefficient of energy poverty is rather a consequence of both than a cause, so we do not include it in the other two as well.
 
 In the model explaining energy poverty, we include the income-inequality coefficient. The resulting model has strong explanatory power (Adjusted $R^2 ≈$ 0.60). The coefficient on environmental tax revenues remains small, positive, stable (+3.7e-05) and significant. Also, the income-inequality coefficient shows strong positive and significant associations with energy poverty.
 
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+# taxes on the coefficient of inequalities
+model_ineq_tax <- lm(coef_ineq_value ~ Envt_Tax_Revenues_value + log(GDP_value) + TIME_PERIOD, data = all_merged)
+
+stargazer(model_ineq_tax, type = "text", 
+          title = "Regression Results",
+          digits = 3, 
+          single.row = TRUE)
+```
+
 For human inequality, the model remains statistically valid but with limited explanatory power (Adjusted $R^2 ≈$ 0.05), and environmental taxes have a small impact on inequality (+3.0e-05) but is highly significant. GDP and time both show negative effects.
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+# taxes on the gender inequality index
+model_gii_tax <- lm(GII_value ~ Envt_Tax_Revenues_value + log(GDP_value) + TIME_PERIOD, data = all_merged)
+
+stargazer(model_gii_tax, type = "text", 
+          title = "Regression Results",
+          digits = 3, 
+          single.row = TRUE)
+```
 
 Similarly, in the gender-inequality model the environmental-tax coefficient remains positive (+6.9e-07) and highly significant. GDP and time effects are negative and the model is substantially strong (Adjusted $R^2 ≈$ 0.40).
 
@@ -780,13 +786,12 @@ Similarly, in the gender-inequality model the environmental-tax coefficient rema
 #| warning: false
 model_gdp_tax <- lm(log(GDP_value) ~ Envt_Tax_Revenues_value + TIME_PERIOD, data = all_merged)
 
-summary(model_gdp_tax)$call  # shows model
-summary(model_gdp_tax)$coefficients  # only coefficients
-cat("Residual standard error:", summary(model_gdp_tax)$sigma, "on", summary(model_gdp_tax)$df[2], "df\n")
-cat("R-squared:", summary(model_gdp_tax)$r.squared, ", Adjusted:", summary(model_gdp_tax)$adj.r.squared, "\n")
+stargazer(model_gdp_tax, type = "text", 
+          title = "Regression Results",
+          digits = 3, 
+          single.row = TRUE)
 ```
-
-The model shows that Environmental tax revenues are strongly and positively associated with GDP (+6.0e-0.5), with a very low p-value. The time trend is also positive and highly significant, reflecting general GDP growth over the period.
+The model shows that environmental tax revenues are positively associated with GDP, and the relationship is highly statistically significant, although the effect size is very small ($≈$ 0.0001 per unit of tax revenue). The time trend is positive and highly significant, reflecting steady GDP growth over the period. 
 
 It also has substantial explanatory power (Adjusted $R^2 ≈$ 0.63). However, the relationship of GDP with taxes is correlational and does not imply causation, it indicates that environmental tax revenues tend to increase alongside GDP, consistent with the idea that wealthier economies can collect more from climate-related taxes.
 
