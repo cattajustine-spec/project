@@ -61,6 +61,7 @@ library(plotly)
 library(tidyr)
 library(tidyverse)
 library(forecast)
+library(stargazer)
 ```
 
 ```{r, echo=FALSE}
@@ -646,16 +647,19 @@ First we evaluate the coefficient between an increase in environmental taxes in 
 #| warning: false
 model <- lm(GHG_Emissions_value ~ Envt_Tax_Revenues_value + GDP_value + TIME_PERIOD, data = all_merged)
 
-summary(model)$call  # shows model
-summary(model)$coefficients  # only coefficients
-cat("Residual standard error:", summary(model)$sigma, "on", summary(model)$df[2], "df\n")
-cat("R-squared:", summary(model)$r.squared, ", Adjusted:", summary(model)$adj.r.squared, "\n")
+stargazer(model, type = "text", 
+          title = "Regression Results",
+          digits = 3, 
+          single.row = TRUE)
 ```
+
 We estimated a linear regression to examine the relationship between environmental tax revenues and greenhouse gas emissions, while controlling for GDP and year. The model fits very well (Adjusted $R^2$ = 0.8456). Environmental tax revenues have a negative coefficient (≈ −1.03), indicating that higher environmental taxes are associated with lower emissions. The effect is statistically significant at the 1% level  (p \< 0.001). GDP enters positively,  consistently with scale effects: larger economies produce more, and thus emit more; time has a negative coefficient, both highly significant.
 We do not calculate a log - level regression, because our following analysis and tax proposition will be made accordingly to levels of GHG.
 
 
 Secondly, we try to evaluate the coefficient between an increase in taxes in the year n and the impact on ghg emissions in the following years n+1, to n+5.
+
+{{< pagebreak >}}
 
 ```{r, echo=FALSE}
 #| message: false
@@ -673,28 +677,56 @@ all_merged_plus_leads <- merge(all_merged, GHG_Emissions,
   all.x = TRUE)
 all_merged_plus_leads <- all_merged_plus_leads |>
     select(iso3, TIME_PERIOD, GDP_value, Envt_Tax_Revenues_value, GHG_Emissions_value, GHG_Emissions_value.lead1, GHG_Emissions_value.lead2, GHG_Emissions_value.lead3, GHG_Emissions_value.lead4, GHG_Emissions_value.lead5 )
-```
 
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-reg_results <- lapply(1:5, function(k) {formula_k <- as.formula(
-    paste0("GHG_Emissions_value.lead", k,
-           " ~ Envt_Tax_Revenues_value + GDP_value + TIME_PERIOD"))
-  lm(formula_k, data = all_merged_plus_leads)})
+# Create the list of formulas for leads 1 to 5
+formulas <- lapply(1:5, function(k) {
+  as.formula(
+    paste0("GHG_Emissions_value.lead", k, 
+           " ~ Envt_Tax_Revenues_value + GDP_value + TIME_PERIOD")
+  )
+})
 
-my_summary <- function(model) {
-  s <- summary(model)
-  cat("Model:", deparse(formula(model)), "\n\n")
-  cat("Coefficients:\n")
-  print(s$coefficients, signif.stars = FALSE)
-cat("Multiple R-squared:", round(s$r.squared, 4), 
-      ", Adjusted R-squared:", round(s$adj.r.squared, 4), "\n")
-  cat("------------------------------------\n")
+# Run all regressions
+reg_results <- lapply(formulas, function(f) lm(f, data = all_merged_plus_leads))
+
+# Display all 5 regressions in a single stargazer table
+add_stars <- function(p) {
+  case_when(
+    p < 0.01 ~ "***",
+    p < 0.05 ~ "**",
+    p < 0.1  ~ "*",
+    TRUE     ~ ""
+  )
 }
 
-invisible(lapply(reg_results, my_summary))
+# Create tidy tables for all 5 lead regressions
+tidy_list <- lapply(1:5, function(k) {
+  broom::tidy(reg_results[[k]]) |>
+    mutate(
+      Lead = paste0("Lead ", k),
+      Estimate = formatC(estimate, format = "e", digits = 3),
+      `Std. Error` = formatC(std.error, format = "e", digits = 3),
+      `t value` = formatC(statistic, format = "e", digits = 3),
+      `p value` = formatC(p.value, format = "e", digits = 3),
+      Signif = add_stars(p.value)
+    ) |>
+    select(Lead, term, Estimate, `Std. Error`, `t value`, `p value`, Signif)
+})
+
+# Combine all leads into one data frame
+tidy_df <- bind_rows(tidy_list)
+
+# Optionally, rename variable names for readability
+tidy_df$term <- gsub("_value", "", tidy_df$term)
+
+# Print table
+kable(
+  tidy_df,
+  caption = "Regression Results for GHG Emissions Leads 1-5\n*p<0.1; **p<0.05; ***p<0.01",
+  align = "lcccccc"
+)
 ```
+
 These lead regressions use GDP and a time trend as controls and all show a very strong fit, with adjusted R² remaining high (around 0.84) across all horizons.
 
 Across the five specifications, the coefficient on environmental tax revenues is negative, statistically significant, and stable. It goes from –1.516 at horizon n+1 to approximately -2.0 at n+2 to n+5. This pattern suggests that higher environmental tax revenues are systematically associated with lower future GHG emissions.
