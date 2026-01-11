@@ -737,7 +737,7 @@ All other coefficients are close to the ones seen before (GDP around 0.25, and t
 
 We estimate three regressions to evaluate the association between environmental tax revenues and three social outcomes, in percentage: energy poverty, human inequality, and gender inequality. In all models, we also add GDP and time (years). We chose to not include the Gender Inequality index and the Income inequality coefficient in one each others regression because of collinearity problems. Also, the coefficient of energy poverty is rather a consequence of both than a cause, so we do not include it in the other two as well.
 
-The regression output reports some coefficients as **0.000**, but this reflects rounding given the three-decimal precision of the results; the estimated value is in fact non-null and simply very small. The coefficients are provided in the following comments.
+The regression output reports some coefficients as **0.000**, but this reflects rounding given the precision of the results; the estimated value is in fact non-null and simply very small. The coefficients are provided in the following comments.
 
 {{< pagebreak >}}
 
