@@ -900,8 +900,8 @@ model <- auto.arima(ts_data)
 fc <- forecast(model, h=27)
 
 fc_df <- as.data.frame(fc)
-head(fc_df, 1)
-tail(fc_df, 1)
+fc_df |>
+  slice(c(1, n()))
 
 # Check if coefficients exist
 if(length(coef(model)) > 0){
@@ -973,8 +973,8 @@ gii_ts <- ts(EU27_GII$GII_value, start = min(EU27_GII$TIME_PERIOD))
 gii_model <- auto.arima(gii_ts)
 gii_fc <- forecast(gii_model, h = 27)
 gii_df <- as.data.frame(gii_fc)
-head(gii_df, 1)
-tail(gii_df, 1)
+gii_df |>
+  slice(c(1, n()))
 
 autoplot(gii_fc) +
   ggtitle("No-policy forecasted European GII") +
@@ -989,7 +989,7 @@ autoplot(gii_fc) +
   )
 ```
 
-The GII is forecast to decline from 0.079 in 2023 to zero by 2050 (with negative values cut, as the index ranges from 0 to 1). 
+The GII is forecast to decline from 0.079 in 2024 to zero by 2050 (with negative values cut, as the index ranges from 0 to 1). 
 
 {{< pagebreak >}}
 
@@ -1002,8 +1002,8 @@ coefineq_ts <- ts(EU27_Coefineq$coef_ineq_value, start = min(EU27_Coefineq$TIME_
 coefineq_model <- auto.arima(coefineq_ts)
 coefineq_fc <- forecast(coefineq_model, h = 27)
 coefineq_df <- as.data.frame(coefineq_fc)
-head(coefineq_df, 1)
-tail(coefineq_df, 1)
+coefineq_df |>
+  slice(c(1, n()))
 
 autoplot(coefineq_fc) +
   ggtitle("No-policy forecasted European Coefficient\nof human inequality") +
@@ -1018,7 +1018,7 @@ autoplot(coefineq_fc) +
   )
 ```
 
-Human inequality is expected to fall from 7.73 to about 5.04 over the same period, suggesting gradual improvement, though uncertainty increases over time. 
+Human inequality is expected to fall from 7.63 to about 5.04 over the same period, suggesting gradual improvement, though uncertainty increases over time. 
 
 {{< pagebreak >}}
 
@@ -1034,8 +1034,8 @@ warm_ts <- ts(EU27_Warming_agg$Warm_avg, start = min(EU27_Warming_agg$TIME_PERIO
 warm_model <- auto.arima(warm_ts)
 warm_fc <- forecast(warm_model, h = 26)
 warm_df <- as.data.frame(warm_fc)
-head(warm_df, 1)
-tail(warm_df, 1)
+warm_df |>
+  slice(c(1, n()))
 
 autoplot(warm_fc) +
   ggtitle("No-policy forecasted European Inability\nto keep the House Warm") +
@@ -1050,7 +1050,7 @@ autoplot(warm_fc) +
   )
 ```
 
-In contrast, the share of households unable to heat their homes is projected to remain broadly stable, edging up slightly from 14.65% in 2024 to 16.41% in 2050, with wide confidence intervals.
+In contrast, the share of households unable to heat their homes is projected to remain broadly stable, edging up slightly from 14.15% in 2024 to 16.41% in 2050, with wide confidence intervals.
 
 {{< pagebreak >}}
 
@@ -1063,8 +1063,8 @@ gdp_ts <- ts(EU27_GDP$GDP_value, start = min(EU27_GDP$TIME_PERIOD)-1)
 gdp_model <- auto.arima(gdp_ts)
 gdp_fc <- forecast(gdp_model, h = 28)
 gdp_df <- as.data.frame(gdp_fc)
-head(gdp_df, 1)
-tail(gdp_df, 1)
+gdp_df |>
+  slice(c(1, n()))
 
 autoplot(gdp_fc) +
   ggtitle("No-policy forecasted European GDP",
@@ -1105,11 +1105,15 @@ data_forecast_tax_0net <- EUGHG_agg_yearly |>
 # Estimate level-level model 
 mod_LL <- lm(GHG_total ~ Envt_Tax_Revenues_value, data = data_forecast_tax_0net)
 
-summary(mod_LL)$call  # shows model
-summary(mod_LL)$coefficients  # only coefficients
-cat("Residual standard error:", summary(mod_LL)$sigma, "on", summary(mod_LL)$df[2], "df\n")
-cat("R-squared:", summary(mod_LL)$r.squared, ", Adjusted:", summary(mod_LL)$adj.r.squared, "\n")
+stargazer(mod_LL, type = "text", 
+          title = "Regression Results",
+          digits = 3, 
+          single.row = TRUE)
+```
 
+The estimated regression reveals a statistically significant negative relationship between environmental tax revenues and total GHG emissions (−3.86, p-value < 0.001). This indicates that, historically, an increase of one million USD in environmental tax revenues is associated with a reduction of approximately 3.9 thousand tonnes of CO$₂$-equivalent in aggregate emissions. The model explains a meaningful share of the observed variation in emissions, with an Adjusted $R^2$ of 0.49.
+
+```{r}
 # If beta >= 0, stop (no reduction possible by raising tax)
 if(coef(mod_LL)[2] >= 0) stop("Model does not indicate that raising tax reduces GHG.")
 
@@ -1129,26 +1133,22 @@ tax_path <- tibble(
   pred_GHG = predict(mod_LL, newdata = tibble(Envt_Tax_Revenues_value = tax_required))
 )
 
-# check
+
 tax_path <- tax_path |>
   mutate(pred_GHG = predict(mod_LL, newdata = tibble(Envt_Tax_Revenues_value = tax_required)))
 
-# Plot
-ggplot(tax_path, aes(x = year)) +
-  geom_line(aes(y = tax_required), color = "darkblue") +
-  labs(title="Required tax path (level-level model)", y="Tax (millions USD)", x="Year") +
-  theme_minimal()+
-  scale_y_continuous(limits = c(0, 2e+06))
-
-# Check predicted
 ggplot(tax_path, aes(x = year)) +
   geom_line(aes(y = pred_GHG), color = "darkblue") +
   labs(title="Targeted GHG (level-level)", y="GHG", x="Year") +
   theme_minimal()+
   scale_y_continuous(limits = c(0, 4e+06))
-```
 
-The estimated regression reveals a statistically significant negative relationship between environmental tax revenues and total GHG emissions (−3.86, p-value < 0.001). This indicates that, historically, an increase of one million USD in environmental tax revenues is associated with a reduction of approximately 3.9 thousand tonnes of CO$₂$-equivalent in aggregate emissions. The model explains a meaningful share of the observed variation in emissions, with an Adjusted $R^2$ of 0.49.
+ggplot(tax_path, aes(x = year)) +
+  geom_line(aes(y = tax_required), color = "darkblue") +
+  labs(title="Required tax path (level-level model)", y="Tax (millions USD)", x="Year") +
+  theme_minimal()+
+  scale_y_continuous(limits = c(0, 2e+06))
+```
 
 Using this estimated relationship, we construct a counterfactual emissions trajectory from approximately 2.9 billion tonnes in 2023 to net-zero in 2050. After 2024, the tax path follows a linear trajectory toward 2050, reflecting the progressively stronger fiscal effort needed to reduce emissions to zero.
 
@@ -1183,29 +1183,29 @@ ggplot(tax_plot_df, aes(x = year)) +
     alpha = 0.5
   ) +
   geom_line(
-    aes(y = fit, color = "Forecasted tax revenues (trend continuation)"),
+    aes(y = fit, color = "No-policy forecasted tax revenues"),
     linewidth = 1
   ) +
   geom_line(
-    aes(y = tax_required, color = "Tax path required for net-zero by 2050"),
+    aes(y = tax_required, color = "Targeted tax path for net-zero by 2050"),
     linewidth = 1
   ) +
   scale_color_manual(
     name = "Lines",
     values = c(
-      "Forecasted tax revenues (trend continuation)" = "red",
-      "Tax path required for net-zero by 2050" = "darkblue"
+      "No-policy forecasted tax revenues" = "darkblue",
+      "Targeted tax path for net-zero by 2050" = "red"
     )
   ) +
   scale_fill_manual(
     name = "Confidence intervals",
     values = c(
-      "80% confidence interval" = "grey50",
-      "95% confidence interval" = "grey70"
+      "80% confidence interval" = "#6666FF",
+      "95% confidence interval" = "#9999FF"
     )
   ) +
   labs(
-    title = "Environmental Tax Revenues: Trend Forecast vs Climate-Required Path",
+    title = "Environmental Tax Revenues: Trend Forecast vs\nClimate-Required Path",
     x = "Year",
     y = "Tax revenues (millions USD)"
   ) +
@@ -1251,24 +1251,24 @@ ggplot(tax_path, aes(x = year)) +
     inherit.aes = FALSE,
     alpha = 0.5) +
   geom_line(data = fc_df, aes(
-    x = year, y = mean, color = "ARIMA forecast (no-policy)"),
+    x = year, y = mean, color = "No-policy forecasted European GHG emissions"),
     inherit.aes = FALSE,
     linewidth = 1) +
   geom_line(
-    aes(y = target_GHG, color = "Targeted GHG (if we plan to get zero net emissions)"),
+    aes(y = target_GHG, color = "Targeted GHG emissions for net-zero by 2050"),
     linewidth = 1) +
   scale_color_manual(
     name = "Lines",
     values = c(
-      "Targeted GHG (if we plan to get zero net emissions)" = "darkblue",
-      "ARIMA forecast (no-policy)" = "red")) +
+      "Targeted GHG emissions for net-zero by 2050" = "red",
+      "No-policy forecasted European GHG emissions" = "darkblue")) +
   scale_fill_manual(
     name = "Confidence intervals",
     values = c(
-      "80% confidence interval" = "grey50",
-      "95% confidence interval" = "grey70")) +
+      "80% confidence interval" = "#6666FF",
+      "95% confidence interval" = "#9999FF")) +
   labs(
-    title = "GHG Emissions: Target Path vs ARIMA Forecast (2023–2050)",
+    title = "Greenhouse gases emissions: \nTrend Forecast vs Climate-Required Path",
     x = "Year",
     y = "GHG Emissions") +
   theme_minimal() +
@@ -1280,7 +1280,7 @@ ggplot(tax_path, aes(x = year)) +
 
 As the graph shows, achieving the GHG emissions target would require significant, but not dramatic, changes to current tax practices. From around 2035 onwards, the required tax-path falls outside the 95% confidence interval, indicating that the probability of reaching the targeted emissions level is very low.
 
-## 2. Impact on social inequalities
+## 2. Is that policy fair? Its impact on social inequalities
 
 ### a. The forecast model
 
@@ -1332,11 +1332,12 @@ future_predictions <- tibble(
         cumsum(rep(b_gii_tax * avg_tax_increment + b_gii_time, future_years))
       )))
 
-tail(future_predictions, 1)
+future_predictions |>
+  slice(c(1, n())) |>
+  kable(digits = 3, col.names = c("Year", "Predicted Warming", "Predicted Inequality", "Predicted GII"))
 ```
 
-Projections show that the required trajectory significantly increases the three inequality indicators over the period 2024-2050 :
-The average warming inability rises from 15.8% of the population in 2024 to 44.8% in 2050, the human inequality coefficient increases from around 8.5 to 29.2, indicating a considerable widening of social disparities. Similarly, the gender inequality index will increase from around 0.10 to around 0.53.
+Projections show that the required trajectory significantly increases the three inequality indicators over the period 2024-2050. Indeed, the average warming inability rises from 15.8% of the population in 2024 to 44.8% in 2050, the human inequality coefficient increases from around 8.5 to 29.2, indicating a considerable widening of social disparities. Similarly, the gender inequality index will increase from around 0.10 to around 0.53.
 
 ### b. Comparing with the no-policy forecast
 
@@ -1369,30 +1370,30 @@ p_warming <- ggplot() +
   ) +
   geom_line(
     data = warm_fc_df,
-    aes(x = year, y = mean, color = "ARIMA forecast (no tax policy)"),
+    aes(x = year, y = mean, color = "No-policy forecasted Average Warming Inability"),
     linewidth = 1
   ) +
   geom_line(
     data = future_predictions,
-    aes(x = year, y = Predicted_Warming, color = "Forecasted impact on Average Warming Inability"),
+    aes(x = year, y = Predicted_Warming, color = "Net-zero policy impact on Average Warming Inability"),
     linewidth = 1
   ) +
   scale_color_manual(
     name = "Scenarios",
     values = c(
-      "ARIMA forecast (no tax policy)" = "red",
-      "Forecasted impact on Average Warming Inability" = "darkgreen"
+      "No-policy forecasted Average Warming Inability" = "darkblue",
+      "Net-zero policy impact on Average Warming Inability" = "darkgreen"
     )
   ) +
   scale_fill_manual(
     name = "Confidence intervals",
     values = c(
-      "80% confidence interval" = "grey50",
-      "95% confidence interval" = "grey70"
+      "80% confidence interval" = "#6666FF",
+      "95% confidence interval" = "#9999FF"
     )
   ) +
   labs(
-    title = "Average Warming Inability: Tax Policy vs No-Policy Scenario",
+    title = "Average Warming Inability: \nTax Policy vs No-Policy Scenario",
     x = "Year",
     y = "Average Warming Inability"
   ) +
@@ -1427,30 +1428,30 @@ p_inequality <- ggplot() +
   ) +
   geom_line(
     data = ineq_fc_df,
-    aes(x = year, y = mean, color = "ARIMA forecast (no tax policy)"),
+    aes(x = year, y = mean, color = "No-policy forecasted Coefficient of Human Inequality"),
     linewidth = 1
   ) +
   geom_line(
     data = future_predictions,
-    aes(x = year, y = Predicted_Inequality, color = "Forecasted impact on the Coefficient of Human Inequality"),
+    aes(x = year, y = Predicted_Inequality, color = "Net-zero policy impact on the Coefficient of Human Inequality"),
     linewidth = 1
   ) +
   scale_color_manual(
     name = "Scenarios",
     values = c(
-      "ARIMA forecast (no tax policy)" = "red",
-      "Forecasted impact on the Coefficient of Human Inequality" = "orange"
+      "No-policy forecasted Coefficient of Human Inequality" = "darkblue",
+      "Net-zero policy impact on the Coefficient of Human Inequality" = "orange"
     )
   ) +
   scale_fill_manual(
     name = "Confidence intervals",
     values = c(
-      "80% confidence interval" = "grey50",
-      "95% confidence interval" = "grey70"
+      "80% confidence interval" = "#6666FF",
+      "95% confidence interval" = "#9999FF"
     )
   ) +
   labs(
-    title = "Coefficient of Human Inequality: Tax Policy vs No-Policy Scenario",
+    title = "Coefficient of Human Inequality: \nTax Policy vs No-Policy Scenario",
     x = "Year",
     y = "Coefficient of Human Inequality"
   ) +
@@ -1484,30 +1485,30 @@ p_gii <- ggplot() +
   ) +
   geom_line(
     data = gii_fc_df,
-    aes(x = year, y = mean, color = "ARIMA forecast (no tax policy)"),
+    aes(x = year, y = mean, color = "No-policy forecasted GII"),
     linewidth = 1
   ) +
   geom_line(
     data = future_predictions,
-    aes(x = year, y = Predicted_GII, color = "Forecasted impact on the GII"),
+    aes(x = year, y = Predicted_GII, color = "Net-zero policy impact on the GII"),
     linewidth = 1
   ) +
   scale_color_manual(
     name = "Scenarios",
     values = c(
-      "ARIMA forecast (no tax policy)" = "red",
-      "Forecasted impact on the GII" = "purple"
+      "No-policy forecasted GII" = "darkblue",
+      "Net-zero policy impact on the GII" = "purple"
     )
   ) +
   scale_fill_manual(
     name = "Confidence intervals",
     values = c(
-      "80% confidence interval" = "grey50",
-      "95% confidence interval" = "grey70"
+      "80% confidence interval" = "#6666FF",
+      "95% confidence interval" = "#9999FF"
     )
   ) +
   labs(
-    title = "Gender Inequality Index: Tax Policy vs No-Policy Scenario",
+    title = "Gender Inequality Index: \nTax Policy vs No-Policy Scenario",
     x = "Year",
     y = "GII"
   ) +
@@ -1530,8 +1531,9 @@ The comparison between the net-zero target and no-policy scenarios highlights a 
 
 These projections suggest a potential trade-off between ambitious climate policy and social equity outcomes. Complementary redistributive or compensatory measures should be considered.
 
+{{< pagebreak >}}
 
-## 3. Is the model viable ? Its impact on the GDP (forecast & comparison)
+## 3. Is that policy viable ? Its impact on the GDP
 
 To evaluate the potential economic impact of the proposed environmental tax policy, we forecast EU27 GDP under the tax scenario using the estimated coefficients from our GDP regression model. We construct the future path by applying the average annual increase in environmental tax revenues, combined with the underlying time trend, cumulatively on the last observed GDP level.
 
@@ -1616,15 +1618,15 @@ ggplot() +
   scale_color_manual(
     name = "Scenarios",
     values = c(
-      "ARIMA forecast (no tax policy)" = "red",
-      "Forecasted impact on Aggregate GDP" = "darkblue"
+      "ARIMA forecast (no tax policy)" = "darkblue",
+      "Forecasted impact on Aggregate GDP" = "red"
     )
   ) +
   scale_fill_manual(
     name = "Confidence intervals",
     values = c(
-      "80% confidence interval" = "grey50",
-      "95% confidence interval" = "grey70"
+      "80% confidence interval" = "#6666FF",
+      "95% confidence interval" = "#9999FF"
     )
   ) +
   labs(
@@ -1641,7 +1643,7 @@ ggplot() +
 
 The comparison shows that the GDP forecast without the tax policy is consistently higher than the GDP projected under the tax scenario, with the no-policy path rising to 29.5 trillion USD in 2050, while the tax policy scenario remains nearly flat around 19.4 trillion USD. This indicates that, according to our model, implementing the environmental tax would largely slow the growth of aggregate GDP compared with the baseline. However, the tax-induced impact is relatively small in absolute terms early on, suggesting limited short-term economic disruption.
 
-[**Ratio Tax/GDP:**]{.underline}
+### c. Ratio Tax/GDP
 
 To further assess the economic viability of the environmental tax policy, we examine the evolution of the tax burden relative to aggregate economic output by computing the environmental tax as a share of GDP under three distinct scenarios. 
 
