@@ -1772,10 +1772,11 @@ If relying exclusively on environmental taxation proves to be socially regressiv
 
 # Limitations
 
-This study has some limitations that should be considered when interpreting the results; mainly, the analysis deliberately focuses on environmental taxation as if it were the only policy instrument available, knowing this does not reflect the full range of EU climate policies. 
+This study has several limitations that should be considered when interpreting the results. First, the analysis focuses on environmental taxation as if it were the sole policy instrument, abstracting from other climate policies implemented at the EU level. Future research could address this by jointly modelling environmental taxes alongside complementary instruments such as subsidies, regulations, and redistributive measures within an integrated policy or general equilibrium framework.
 
-Second, data availability limits the depth of the inequality analysis for The Coefficient of Human Inequality that is only available for the period 2010–2023.
+Second, data availability limits the inequality analysis, as the Coefficient of Human Inequality is only available for the period 2010–2023. As longer time series become available, future studies could extend the estimation horizon or combine aggregate indicators with micro-level data to strengthen the robustness of inequality projections.
 
-Also our worked could have been pushed further: the energy poverty dataset includes detailed information by household type and income group we did not use, and our analysis at the aggregate EU level may mask heterogeneity across member states. 
+Third, although detailed information by household type and income group exists for energy poverty, this heterogeneity is not exploited, and the EU-level aggregation may mask substantial cross-country differences. Future work could rely on household-level microsimulation or country-specific analyses to better capture distributional effects. 
 
-Finally, sector-level analysis was excluded due to inconsistencies in sector classifications between Eurostat and OECD datasets.
+
+Finally, sector-level impacts are not analysed due to inconsistencies in sector classifications, a limitation that could be overcome by using harmonized input–output data or computable general equilibrium models to study sectoral adjustment mechanisms.
