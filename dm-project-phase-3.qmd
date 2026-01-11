@@ -805,108 +805,7 @@ It also has substantial explanatory power (Adjusted $R^2 ≈$ 0.63). However, th
 
 We forecast the impact of environmental taxes on various variables, in a scenario where no policy is implemented.
 
-<<<<<<< HEAD
-### 1. Greenhouse Gas emissions
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-EUGHG_agg_yearly <- EU27_GHG |>
-  filter(!is.na(GHG_Emissions_value)) |>
-  group_by(TIME_PERIOD) |>
-  summarise(GHG_total = sum(GHG_Emissions_value, na.rm = TRUE))
-
-ts_data <- ts(EUGHG_agg_yearly$GHG_total, start=min(EUGHG_agg_yearly$TIME_PERIOD))
-model <- auto.arima(ts_data)
-fc <- forecast(model, h=27)
-
-fc_df <- as.data.frame(fc)
-head(fc_df, 1)
-tail(fc_df, 1)
-
-print(model)
-
-```
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-autoplot(fc)
-```
-
-This ARIMA-based forecast suggests a slow but steady decline in total EU27 greenhouse gas emissions from 2024 to 2050. The ARIMA(0,1,0) with drift implies an average annual reduction of about 52 million tonnes of CO$₂$-equivalent, with emissions falling from roughly 2.85 billion tonnes in 2024 to around 1.49 billion tonnes in 2050. 
-
-Despite this downward trend, projected emissions in 2050 remain far above zero—even in the most optimistic scenario—indicating that current trends are insufficient to reach EU net-zero targets (about 363 million tonnes of CO$₂$-equivalent).
-
-### 2. Social inequalities:
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-
-gii_ts <- ts(EU27_GII$GII_value, start = min(EU27_GII$TIME_PERIOD))
-gii_model <- auto.arima(gii_ts)
-gii_fc <- forecast(gii_model, h = 27)
-
-coefineq_ts <- ts(EU27_Coefineq$coef_ineq_value, start = min(EU27_Coefineq$TIME_PERIOD))
-coefineq_model <- auto.arima(coefineq_ts)
-coefineq_fc <- forecast(coefineq_model, h = 27)
-
-EU27_Warming_agg <- EU27_Warming |> 
-  filter(!is.na(Warm_Households_value)) |> 
-  group_by(TIME_PERIOD) |> 
-  summarise(Warm_avg = mean(Warm_Households_value, na.rm = TRUE))
-
-warm_ts <- ts(EU27_Warming_agg$Warm_avg, start = min(EU27_Warming_agg$TIME_PERIOD))
-warm_model <- auto.arima(warm_ts)
-warm_fc <- forecast(warm_model, h = 26)
-
-gii_fc1 <- as.data.frame(gii_fc)
-head(gii_fc1, 1)
-tail(gii_fc1, 1)
-
-coefineq_fc1 <- as.data.frame(gii_fc)
-head(coefineq_fc1, 1)
-tail(coefineq_fc1, 1)
-
-warm_fc1 <- as.data.frame(gii_fc)
-head(warm_fc1, 1)
-tail(warm_fc1, 1)
-```
-
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-plot(gii_fc, main = "Forecast of GII")
-plot(coefineq_fc, main = "Forecast of Coefficient of Inequality")
-plot(warm_fc, main = "Forecast of Warming Inability")
-```
-
-The GII is forecast to decline from 0.085 in 2023 to zero by 2050 (with negative values cut, as the index ranges from 0 to 1). 
-
-Human inequality is expected to fall from 7.73 to about 5.04 over the same period, suggesting gradual improvement, though uncertainty increases over time. 
-
-In contrast, the share of households unable to heat their homes is projected to remain broadly stable, edging up slightly from 14.65% in 2024 to 16.41% in 2050, with wide confidence intervals.
-
-### 3. The economy: forecast of the GDP
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-gdp_ts <- ts(EU27_GDP$GDP_value, start = min(EU27_GDP$TIME_PERIOD)-1)
-gdp_model <- auto.arima(gdp_ts)
-gdp_fc <- forecast(gdp_model, h = 28)
-
-plot(gdp_fc, main = "Forecast of GDP")
-```
-
-The EU27 aggregate GDP is projected to grow steadily from 19.4 trillion USD in 2024 to 29.5 trillion USD in 2050, representing approximately 50% growth over the period, though the widening confidence intervals indicate increasing uncertainty in long-term projections.
-
-### 4. The economy: forecast of the environmental taxes {#forecastofenvttax}
-=======
 ## 1. Forecasted environmental tax revenues 
->>>>>>> 7153cd54706bf27da4f51942cadb3c8f64d6ff4e
 
 ```{r, echo=FALSE}
 #| message: false
@@ -1878,6 +1777,5 @@ This study has several limitations that should be considered when interpreting t
 Second, data availability limits the inequality analysis, as the Coefficient of Human Inequality is only available for the period 2010–2023. As longer time series become available, future studies could extend the estimation horizon or combine aggregate indicators with micro-level data to strengthen the robustness of inequality projections.
 
 Third, although detailed information by household type and income group exists for energy poverty, this heterogeneity is not exploited, and the EU-level aggregation may mask substantial cross-country differences. Future work could rely on household-level microsimulation or country-specific analyses to better capture distributional effects. 
-
 
 Finally, sector-level impacts are not analysed due to inconsistencies in sector classifications, a limitation that could be overcome by using harmonized input–output data or computable general equilibrium models to study sectoral adjustment mechanisms.
