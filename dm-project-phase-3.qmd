@@ -737,6 +737,8 @@ All other coefficients are close to the ones seen before (GDP around 0.25, and t
 
 We estimate three regressions to evaluate the association between environmental tax revenues and three social outcomes, in percentage: energy poverty, human inequality, and gender inequality. In all models, we also add GDP and time (years). We chose to not include the Gender Inequality index and the Income inequality coefficient in one each others regression because of collinearity problems. Also, the coefficient of energy poverty is rather a consequence of both than a cause, so we do not include it in the other two as well.
 
+{{< pagebreak >}}
+
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
@@ -750,6 +752,8 @@ stargazer(model_warm_tax, type = "text",
 ```
 
 In the model explaining energy poverty, we include the income-inequality coefficient. The resulting model has strong explanatory power (Adjusted $R^2 ≈$ 0.60). The coefficient on environmental tax revenues remains small, positive, stable (+3.7e-05) and significant. Also, the income-inequality coefficient shows strong positive and significant associations with energy poverty.
+
+{{< pagebreak >}}
 
 ```{r, echo=FALSE}
 #| message: false
@@ -801,104 +805,17 @@ It also has substantial explanatory power (Adjusted $R^2 ≈$ 0.63). However, th
 
 We forecast the impact of environmental taxes on various variables, in a scenario where no policy is implemented.
 
-### 1. Greenhouse Gas emissions
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-EUGHG_agg_yearly <- EU27_GHG |>
-  filter(!is.na(GHG_Emissions_value)) |>
-  group_by(TIME_PERIOD) |>
-  summarise(GHG_total = sum(GHG_Emissions_value, na.rm = TRUE))
-
-ts_data <- ts(EUGHG_agg_yearly$GHG_total, start=min(EUGHG_agg_yearly$TIME_PERIOD))
-model <- auto.arima(ts_data)
-fc <- forecast(model, h=27)
-
-fc_df <- as.data.frame(fc)
-head(fc_df, 1)
-tail(fc_df, 1)
-
-print(model)
-
-```
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-autoplot(fc)
-```
-
-This ARIMA-based forecast suggests a slow but steady decline in total EU27 greenhouse gas emissions from 2024 to 2050. The ARIMA(0,1,0) with drift implies an average annual reduction of about 52 million tonnes of CO$₂$-equivalent, with emissions falling from roughly 2.85 billion tonnes in 2024 to around 1.49 billion tonnes in 2050. 
-
-Despite this downward trend, projected emissions in 2050 remain far above zero—even in the most optimistic scenario—indicating that current trends are insufficient to reach EU net-zero targets (about 363 million tonnes of CO$₂$-equivalent).
-
-### 2. Social inequalities:
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-
-gii_ts <- ts(EU27_GII$GII_value, start = min(EU27_GII$TIME_PERIOD))
-gii_model <- auto.arima(gii_ts)
-gii_fc <- forecast(gii_model, h = 27)
-
-coefineq_ts <- ts(EU27_Coefineq$coef_ineq_value, start = min(EU27_Coefineq$TIME_PERIOD))
-coefineq_model <- auto.arima(coefineq_ts)
-coefineq_fc <- forecast(coefineq_model, h = 27)
-
-EU27_Warming_agg <- EU27_Warming |> 
-  filter(!is.na(Warm_Households_value)) |> 
-  group_by(TIME_PERIOD) |> 
-  summarise(Warm_avg = mean(Warm_Households_value, na.rm = TRUE))
-
-warm_ts <- ts(EU27_Warming_agg$Warm_avg, start = min(EU27_Warming_agg$TIME_PERIOD))
-warm_model <- auto.arima(warm_ts)
-warm_fc <- forecast(warm_model, h = 26)
-
-
-gii_fc
-coefineq_fc
-warm_fc
-```
-
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-plot(gii_fc, main = "Forecast of GII")
-plot(coefineq_fc, main = "Forecast of Coefficient of Inequality")
-plot(warm_fc, main = "Forecast of Warming Inability")
-```
-
-The GII is forecast to decline from 0.085 in 2023 to zero by 2050 (with negative values cut, as the index ranges from 0 to 1). 
-
-Human inequality is expected to fall from 7.73 to about 5.04 over the same period, suggesting gradual improvement, though uncertainty increases over time. 
-
-In contrast, the share of households unable to heat their homes is projected to remain broadly stable, edging up slightly from 14.65% in 2024 to 16.41% in 2050, with wide confidence intervals.
-
-### 3. The economy: forecast of the GDP
-
-```{r, echo=FALSE}
-#| message: false
-#| warning: false
-gdp_ts <- ts(EU27_GDP$GDP_value, start = min(EU27_GDP$TIME_PERIOD)-1)
-gdp_model <- auto.arima(gdp_ts)
-gdp_fc <- forecast(gdp_model, h = 28)
-
-plot(gdp_fc, main = "Forecast of GDP")
-```
-
-The EU27 aggregate GDP is projected to grow steadily from 19.4 trillion USD in 2024 to 29.5 trillion USD in 2050, representing approximately 50% growth over the period, though the widening confidence intervals indicate increasing uncertainty in long-term projections.
-
-### 4. The economy: forecast of the environmental taxes {#forecastofenvttax}
+## 1. Forecasted environmental tax revenues 
 
 ```{r, echo=FALSE}
 #| message: false
 #| warning: false
 # Linear trend model
 tax_lm <- lm(Envt_Tax_Revenues_value ~ TIME_PERIOD, data = EU27_Tax)
-summary(tax_lm)
+stargazer(tax_lm, type = "text", 
+          title = "Regression Results",
+          digits = 3, 
+          single.row = TRUE)
 
 # Forecast
 future_years <- tibble(
@@ -932,25 +849,238 @@ tax_fc_lm <- bind_cols(
 #| message: false
 #| warning: false
 tax_all_2050 <- ggplot() +
-  geom_line(data=EU27_Tax, aes(x = TIME_PERIOD, y = Envt_Tax_Revenues_value, color = "Observations")) +
-  geom_ribbon(data=tax_fc_lm, aes(x = TIME_PERIOD, ymin = lwr, ymax = upr), fill = "#C8C8C8", alpha = 0.5) +
-  geom_ribbon(data=tax_fc_lm, aes(x = TIME_PERIOD, ymin = lwr_80, ymax = upr_80), fill = "#9999CC", alpha = 0.5) +
-  geom_line(data=tax_fc_lm, aes(x = TIME_PERIOD, y = fit, color = "Forecast")) +
-  scale_color_manual(name = "Legend",
+  geom_line(data = EU27_Tax, 
+            aes(x = TIME_PERIOD, y = Envt_Tax_Revenues_value, color = "Observations"), linewidth = 0.5) +
+  geom_ribbon(data = tax_fc_lm, 
+              aes(x = TIME_PERIOD, ymin = lwr, ymax = upr, fill = "95% confidence interval"), alpha = 0.4) +
+  geom_ribbon(data = tax_fc_lm, 
+              aes(x = TIME_PERIOD, ymin = lwr_80, ymax = upr_80, fill = "80% confidence interval"), alpha = 0.6) +
+  geom_line(data = tax_fc_lm, 
+            aes(x = TIME_PERIOD, y = fit, color = "Forecast"), linewidth = 0.5) +
+  scale_color_manual(name = "Lines",
                      values = c("Observations" = "black", 
-                               "Forecast" = "steelblue")) +
-  theme_minimal() +
+                                "Forecast" = "darkblue")) +
+  scale_fill_manual(name = "Confidence intervals",
+                    values = c("80% confidence interval" = "#6666FF", 
+                               "95% confidence interval" = "#6666FF")) +
+  guides(fill = guide_legend(order = 2), color = guide_legend(order = 1)) +
   labs(
-    title = "Forecast of Environmental Tax Revenues (95% CI)",
+    title = "No-policy forecasted European Environmental\ntax revenues",
     x = "Year",
-    y = "Tax revenues"
+    y = "Tax revenues (millions of USD)"
   ) +
-  scale_y_continuous(limits = c(0, 0.75e+06)) 
+  scale_y_continuous(limits = c(0, 0.75e+06)) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 14, hjust = 0),
+    axis.title = element_text(face = "bold", size = 12),
+    plot.margin = margin(t = 40, r = 10, b = 10, l = 10),
+    legend.position = "right",       
+    legend.title = element_text(face = "bold"),
+    legend.text = element_text(size = 10)
+  )
 
 if (knitr::is_html_output()) {plotly::ggplotly(tax_all_2050)} else {tax_all_2050}
 ```
 
-Environmental tax revenues in the EU27 are projected to increase from €362.4 billion in 2023 to €617.4 billion in 2050, representing a 70% growth based on an extrapolation of current trends. This steady upward trajectory suggests continued expansion of green taxation policies, however, it's important to note that this forecast assumes the continuation of existing trends under a no-change-in-policy scenario.
+If no new tax policy is implemented, environmental tax revenues in the EU27 are projected to increase from 362.4 billion USD in 2023 to 617.4 billion USD in 2050, representing a 70% growth based on an extrapolation of current trends. This steady upward trajectory suggests continued expansion of green taxation policies, however, it's important to note that this forecast assumes the continuation of existing trends under a no-change-in-policy scenario.
+
+## 2. Greenhouse Gas emissions
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+EUGHG_agg_yearly <- EU27_GHG |>
+  filter(!is.na(GHG_Emissions_value)) |>
+  group_by(TIME_PERIOD) |>
+  summarise(GHG_total = sum(GHG_Emissions_value, na.rm = TRUE))
+
+ts_data <- ts(EUGHG_agg_yearly$GHG_total, start=min(EUGHG_agg_yearly$TIME_PERIOD))
+model <- auto.arima(ts_data)
+fc <- forecast(model, h=27)
+
+fc_df <- as.data.frame(fc)
+head(fc_df, 1)
+tail(fc_df, 1)
+
+# Check if coefficients exist
+if(length(coef(model)) > 0){
+  coefs <- coef(model)
+  se <- sqrt(diag(model$var.coef))
+  
+  coef_df <- data.frame(
+    Term = names(coefs),
+    Estimate = formatC(coefs, format="e", digits=3),
+    `Std. Error` = formatC(se, format="e", digits=3)
+  )
+} else {
+  coef_df <- data.frame(
+    Term = character(0),
+    Estimate = character(0),
+    `Std. Error` = character(0)
+  )
+}
+
+# Model-level statistics
+stats_df <- data.frame(
+  Term = c("sigma^2", "log likelihood", "AIC", "AICc", "BIC"),
+  Estimate = c(
+    formatC(model$sigma2, format="e", digits=3),
+    round(model$loglik,2),
+    round(model$aic,2),
+    round(model$aicc,2),
+    round(model$bic,2)
+  ),
+  `Std. Error` = ""
+)
+
+# Combine
+final_arima_table <- bind_rows(coef_df, stats_df)
+rownames(final_arima_table) <- NULL
+
+# Print nicely
+kable(final_arima_table, caption = "ARIMA(0,1,0) with drift: Summary")
+```
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+autoplot(fc)+
+  ggtitle("No-policy forecasted European GHG emissions",
+          subtitle = "EU−27, in thousand tonnes of CO2") +
+  xlab("Year") +
+  ylab("Emissions") +
+  theme_minimal()+
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    plot.subtitle = element_text(size = 12),
+    axis.title = element_text(face = "bold", size = 12), 
+    plot.margin = margin(t = 20, r = 10, b = 10, l = 10)  
+  )
+```
+
+This ARIMA-based forecast suggests a slow but steady decline in total EU27 greenhouse gas emissions from 2024 to 2050. The ARIMA(0,1,0) with drift implies an average annual reduction of about 52 million tonnes of CO$₂$-equivalent, with emissions falling from roughly 2.85 billion tonnes in 2024 to around 1.49 billion tonnes in 2050. 
+
+Despite this downward trend, projected emissions in 2050 remain far above zero—even in the most optimistic scenario—indicating that current trends are insufficient to reach EU net-zero targets (about 363 million tonnes of CO$₂$-equivalent).
+
+## 3. Social inequalities:
+
+#### a. Gender Inequality Index
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+gii_ts <- ts(EU27_GII$GII_value, start = min(EU27_GII$TIME_PERIOD))
+gii_model <- auto.arima(gii_ts)
+gii_fc <- forecast(gii_model, h = 27)
+gii_df <- as.data.frame(gii_fc)
+head(gii_df, 1)
+tail(gii_df, 1)
+
+autoplot(gii_fc) +
+  ggtitle("No-policy forecasted European GII") +
+  xlab("Year") +
+  ylab("Gender Inequality Index") +
+  theme_minimal()+
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    plot.subtitle = element_text(size = 12),
+    axis.title = element_text(face = "bold", size = 12), 
+    plot.margin = margin(t = 20, r = 10, b = 10, l = 10)  
+  )
+```
+
+The GII is forecast to decline from 0.079 in 2023 to zero by 2050 (with negative values cut, as the index ranges from 0 to 1). 
+
+{{< pagebreak >}}
+
+#### b. Coefficient of Human Inequality
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+coefineq_ts <- ts(EU27_Coefineq$coef_ineq_value, start = min(EU27_Coefineq$TIME_PERIOD))
+coefineq_model <- auto.arima(coefineq_ts)
+coefineq_fc <- forecast(coefineq_model, h = 27)
+coefineq_df <- as.data.frame(coefineq_fc)
+head(coefineq_df, 1)
+tail(coefineq_df, 1)
+
+autoplot(coefineq_fc) +
+  ggtitle("No-policy forecasted European Coefficient\nof human inequality") +
+  xlab("Year") +
+  ylab("Coefficient of human inequality") +
+  theme_minimal()+
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    plot.subtitle = element_text(size = 12),
+    axis.title = element_text(face = "bold", size = 12), 
+    plot.margin = margin(t = 20, r = 10, b = 10, l = 10)  
+  )
+```
+
+Human inequality is expected to fall from 7.73 to about 5.04 over the same period, suggesting gradual improvement, though uncertainty increases over time. 
+
+{{< pagebreak >}}
+
+#### c. Energy poverty
+
+```{r}
+EU27_Warming_agg <- EU27_Warming |> 
+  filter(!is.na(Warm_Households_value)) |> 
+  group_by(TIME_PERIOD) |> 
+  summarise(Warm_avg = mean(Warm_Households_value, na.rm = TRUE))
+
+warm_ts <- ts(EU27_Warming_agg$Warm_avg, start = min(EU27_Warming_agg$TIME_PERIOD))
+warm_model <- auto.arima(warm_ts)
+warm_fc <- forecast(warm_model, h = 26)
+warm_df <- as.data.frame(warm_fc)
+head(warm_df, 1)
+tail(warm_df, 1)
+
+autoplot(warm_fc) +
+  ggtitle("No-policy forecasted European Inability\nto keep the House Warm") +
+  xlab("Year") +
+  ylab("Percentage of population") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 14, hjust = 0),
+    plot.subtitle = element_text(size = 12, hjust = 0),
+    axis.title = element_text(face = "bold", size = 12),
+    plot.margin = margin(t = 40, r = 10, b = 10, l = 10)
+  )
+```
+
+In contrast, the share of households unable to heat their homes is projected to remain broadly stable, edging up slightly from 14.65% in 2024 to 16.41% in 2050, with wide confidence intervals.
+
+{{< pagebreak >}}
+
+## 3. Gross Domestic Product
+
+```{r, echo=FALSE}
+#| message: false
+#| warning: false
+gdp_ts <- ts(EU27_GDP$GDP_value, start = min(EU27_GDP$TIME_PERIOD)-1)
+gdp_model <- auto.arima(gdp_ts)
+gdp_fc <- forecast(gdp_model, h = 28)
+gdp_df <- as.data.frame(gdp_fc)
+head(gdp_df, 1)
+tail(gdp_df, 1)
+
+autoplot(gdp_fc) +
+  ggtitle("No-policy forecasted European GDP",
+          subtitle = "in millions of USD") +
+  xlab("Year") +
+  ylab("GDP") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 14, hjust = 0),
+    plot.subtitle = element_text(size = 12, hjust = 0),
+    axis.title = element_text(face = "bold", size = 12),
+    plot.margin = margin(t = 40, r = 10, b = 10, l = 10)
+  )
+```
+
+The EU27 aggregate GDP is projected to grow steadily from 19.4 trillion USD in 2024 to 29.5 trillion USD in 2050, representing approximately 50% growth over the period, though the widening confidence intervals indicate increasing uncertainty in long-term projections.
 
 {{< pagebreak >}}
 
@@ -958,9 +1088,9 @@ Environmental tax revenues in the EU27 are projected to increase from €362.4 b
 
 We are trying to evaluate the needed level of tax to reach the Zero net emissions by 2050 desired by the European Union, as if there only was a tax policy available; then we check the impact of this level of tax on the social inequalities and on the economy.
 
-### 1. Deriving a realistic tax path to reach net-zero by 2050
+## 1. Deriving a realistic tax path to reach net-zero by 2050
 
-#### a. The forecast model
+### a. The forecast model
 
 We use a linear regression relating aggregate GHG emissions to Environmental tax revenues at the EU-27 level. The 2023 tax level is anchored to the last observed value. 
 
@@ -1024,11 +1154,11 @@ Using this estimated relationship, we construct a counterfactual emissions traje
 
 According to the tax path, environmental tax revenues would need to rise from 550 billion USD in 2024 to about 1.3 trillion USD in 2050, highlighting both the scale of the fiscal effort required and the limitations of relying solely on environmental taxation, given the modest explanatory power of the reduced-form regression.
 
-#### b. Comparing with the no-policy forecast
+### b. Comparing with the no-policy forecast
 
 We evaluate the gap between historical trends and climate targets before assessing the implications of the required tax paths.
 
-##### i. Tax policy: targeted vs predicted
+#### i. Tax policy: targeted vs predicted
 
 To assess the adequacy of the policy, we compare the forecasted path of total environmental tax revenues based on historical trends, with the one required to reach net-zero emissions by 2050.
 
@@ -1089,7 +1219,7 @@ ggplot(tax_plot_df, aes(x = year)) +
 
 Comparing the two paths shows a significant and growing shortfall. The historical trend regression predicts that total environmental tax revenues would increase by approximately 7.3 billion USD per year and in contrast, the required one to achieve net-zero calls for an annual increase of roughly 28.9 billion USD per year. From the first year (2024), forecasted revenues fall well below the required level, and by 2050 the gap widens to roughly 684 billion USD. These results highlight that in order to achieve the net-zero emissions target, environmental taxation would need to be increased rapidly.
 
-##### ii. GHG emissions: targeted vs predicted
+#### ii. GHG emissions: targeted vs predicted
 
 We can compare the emissions trajectory implied by a continuation of historical tax trends (ARIMA seen before) with the counter-factual path required to achieve net-zero emissions by 2050.
 
@@ -1150,9 +1280,9 @@ ggplot(tax_path, aes(x = year)) +
 
 As the graph shows, achieving the GHG emissions target would require significant, but not dramatic, changes to current tax practices. From around 2035 onwards, the required tax-path falls outside the 95% confidence interval, indicating that the probability of reaching the targeted emissions level is very low.
 
-### 2. Impact on social inequalities
+## 2. Impact on social inequalities
 
-#### a. The forecast model
+### a. The forecast model
 
 We project the future evolution of our three inequality indicators: average warming inability, the coefficient of human inequality, and the Gender Inequality Index (GII). 
 
@@ -1208,7 +1338,7 @@ tail(future_predictions, 1)
 Projections show that the required trajectory significantly increases the three inequality indicators over the period 2024-2050 :
 The average warming inability rises from 15.8% of the population in 2024 to 44.8% in 2050, the human inequality coefficient increases from around 8.5 to 29.2, indicating a considerable widening of social disparities. Similarly, the gender inequality index will increase from around 0.10 to around 0.53.
 
-#### b. Comparing with the no-policy forecast
+### b. Comparing with the no-policy forecast
 
 To assess how the proposed environmental tax policy affects social inequalities relative to a baseline scenario without policy intervention, we compare the projected evolution of each indicator under the tax trajectory with their ARIMA-based forecasts in the absence of environmental taxation.
 
@@ -1401,11 +1531,11 @@ The comparison between the net-zero target and no-policy scenarios highlights a 
 These projections suggest a potential trade-off between ambitious climate policy and social equity outcomes. Complementary redistributive or compensatory measures should be considered.
 
 
-### 3. Is the model viable ? Its impact on the GDP (forecast & comparison)
+## 3. Is the model viable ? Its impact on the GDP (forecast & comparison)
 
 To evaluate the potential economic impact of the proposed environmental tax policy, we forecast EU27 GDP under the tax scenario using the estimated coefficients from our GDP regression model. We construct the future path by applying the average annual increase in environmental tax revenues, combined with the underlying time trend, cumulatively on the last observed GDP level.
 
-#### a. The forecast model
+### a. The forecast model
 
 ```{r, echo=FALSE}
 #| message: false
@@ -1446,7 +1576,7 @@ ggplot(future_gdp_predictions,
 
 Under the tax policy scenario, projected GDP exhibits an almost flat trajectory over the period 2024–2050, increasing from approximately 19,434,512 million USD to 19,434,558 million USD. This corresponds to an average annual growth rate close to zero, indicating a near-complete stagnation of economic activity over the projection horizon. This result suggests that the required tax trajectory would substantially constrain aggregate economic growth. While these projections should not be interpreted as causal estimates, they point to a potentially significant macroeconomic cost associated to the the tax policy.
 
-#### b. Comparing with the no-policy forecast
+### b. Comparing with the no-policy forecast
 
 We then project this GDP path alongside the ARIMA-based GDP forecast in the absence of any tax policy, allowing us to visually and quantitatively compare how the tax might influence aggregate econ
 
