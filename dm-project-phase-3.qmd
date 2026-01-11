@@ -1,5 +1,5 @@
 ---
-title: "Environmental taxes and the path to net-zero in the EU"
+title: "Environmental taxes and the path to net-zero in the European Union"
 author: "Daphné Perry and Justine Catta"
 format:
   html: 
@@ -8,6 +8,13 @@ format:
     toc: true
   pdf:
     toc: true
+    sansfont: "Times New Roman"
+    mainfont: "Times New Roman"
+    geometry:
+      - bottom=2.2cm
+      - top=2.5cm
+      - left=2.5cm
+      - right=2.5cm
 execute:
   echo: false
   warning: false
@@ -153,9 +160,7 @@ Soc_Indexes <- vroom(here("data", "HDR_indexes.csv"))
 
 # I. Modifying the data sets
 
-The data sets being quite large, we first remove variables we will not use and add aggregates that we think are important, before characterizing the variables we kept.
-
-Finally, to simplify our analysis, we merge all our sets in one data base.
+The data sets being quite large, we first remove variables we will not use and add aggregates that we think are important, before characterizing the variables we kept. Finally, to simplify our analysis, we merge all our sets in one data base. ^[For extensive description, please refer to the *"dm-project phase 2"* document.]
 
 ## 1. Country keys {#countrykeys}
 
@@ -379,9 +384,7 @@ all_merged <- Envt_Tax_Revenues |>
 
 {{< pagebreak >}}
 
-# II. Descriptive analyses
-
-For extensive analyses, please refer to the *"dm-project phase 2"* document.
+# II. Descriptive analyses ^[For extensive analyses, please refer to the *"dm-project phase 2"* document.]
 
 ## 1. European environmental tax revenues
 
