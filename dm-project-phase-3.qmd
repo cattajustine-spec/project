@@ -797,10 +797,17 @@ warm_ts <- ts(EU27_Warming_agg$Warm_avg, start = min(EU27_Warming_agg$TIME_PERIO
 warm_model <- auto.arima(warm_ts)
 warm_fc <- forecast(warm_model, h = 26)
 
+gii_fc1 <- as.data.frame(gii_fc)
+head(gii_fc1, 1)
+tail(gii_fc1, 1)
 
-gii_fc
-coefineq_fc
-warm_fc
+coefineq_fc1 <- as.data.frame(gii_fc)
+head(coefineq_fc1, 1)
+tail(coefineq_fc1, 1)
+
+warm_fc1 <- as.data.frame(gii_fc)
+head(warm_fc1, 1)
+tail(warm_fc1, 1)
 ```
 
 
