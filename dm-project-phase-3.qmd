@@ -526,7 +526,11 @@ summary_stats_Warm <- EU27_Warming |>
     .groups = "drop"
   )
 
-kable(summary_stats_Warm, caption = "Descriptive statistics of the inability to keep house adequately warm, by household type (all years combined)")
+summary_stats_Warm |>
+  mutate(across(where(is.numeric), ~ formatC(.x, format = "f", digits = 2))) |>
+  kable(
+    caption = "Descriptive statistics of the inability to keep house adequately warm, by household type (all years combined)"
+  )
 ```
 
 The six curves, defined by sex and income, follow a similar pattern: a sharp rise around 2003, a gradual decline, and notable increases around 2009 and 2021.
@@ -553,12 +557,6 @@ if (knitr::is_html_output()) {plotly::ggplotly(p_GII)} else {p_GII}
 ```
 
 ```{r, echo=FALSE}
-#| message: false
-#| warning: false
-```
-
-
-```{r, echo=FALSE}
 summary_stats_GII <- EU27_GII |>
   summarise(
     Min = min(GII_value, na.rm = TRUE),
@@ -568,8 +566,11 @@ summary_stats_GII <- EU27_GII |>
     SD = sd(GII_value, na.rm = TRUE)
     )
 
-kable(summary_stats_GII, 
-      caption = "Descriptive statistics of the GII average")
+summary_stats_GII |>
+  mutate(across(where(is.numeric), ~ formatC(.x, format = "f", digits = 2))) |>
+  kable(
+    caption = "Descriptive statistics of the GII average"
+  )
 ```
 
 The Gender Inequality Index (GII) shows a clear downward trend across all European countries between 1990 and 2024. The EU27 average decreased from 25,7% to 0,08%, with a mean of 16,6% overall. 
@@ -595,12 +596,6 @@ if (knitr::is_html_output()) {plotly::ggplotly(p_coef)} else {p_coef}
 ```
 
 ```{r, echo=FALSE}
-#| message: false
-#| warning: false
-```
-
-
-```{r, echo=FALSE}
 summary_stats_coefineq <- EU27_Coefineq |>
   summarise(
     Min = min(coef_ineq_value, na.rm = TRUE),
@@ -610,8 +605,10 @@ summary_stats_coefineq <- EU27_Coefineq |>
     SD = sd(coef_ineq_value, na.rm = TRUE)
     )
 
-kable(summary_stats_coefineq, 
-      caption = "Descriptive statistics of the coefficient of human inequality average")
+summary_stats_coefineq |>
+  mutate(across(where(is.numeric), ~ formatC(.x, format = "f", digits = 2))) |>
+  kable(
+    caption = "Descriptive statistics of the coefficient of human inequality average")
 ```
 
 The coefficient of human inequality varies widely across Europe. The EU27 average sits at $≈$ 8.64%.
