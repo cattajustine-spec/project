@@ -972,21 +972,60 @@ Despite this downward trend, projected emissions in 2050 remain far above zeroâ€
 gii_ts <- ts(EU27_GII$GII_value, start = min(EU27_GII$TIME_PERIOD))
 gii_model <- auto.arima(gii_ts)
 gii_fc <- forecast(gii_model, h = 27)
-gii_df <- as.data.frame(gii_fc)
-gii_df |>
+
+gii_fc_df <- data.frame(
+  year = as.numeric(time(gii_fc$mean)),
+  mean = pmax(0, pmin(1, as.numeric(gii_fc$mean))),
+  lower80 = pmax(0, pmin(1, as.numeric(gii_fc$lower[, 1]))),
+  upper80 = pmax(0, pmin(1, as.numeric(gii_fc$upper[, 1]))),
+  lower95 = pmax(0, pmin(1, as.numeric(gii_fc$lower[, 2]))),
+  upper95 = pmax(0, pmin(1, as.numeric(gii_fc$upper[, 2])))
+)
+
+gii_fc_df |>
   slice(c(1, n()))
 
-autoplot(gii_fc) +
-  ggtitle("No-policy forecasted European GII") +
-  xlab("Year") +
-  ylab("Gender Inequality Index") +
-  theme_minimal()+
+p_gii <- ggplot() +
+  geom_ribbon(
+    data = gii_fc_df,
+    aes(x = year, ymin = lower95, ymax = upper95, fill = "95% confidence interval"),
+    alpha = 0.35
+  ) +
+  geom_ribbon(
+    data = gii_fc_df,
+    aes(x = year, ymin = lower80, ymax = upper80, fill = "80% confidence interval"),
+    alpha = 0.5
+  ) +
+  geom_line(
+    data = gii_fc_df,
+    aes(x = year, y = mean, color = "No-policy forecasted GII"),
+    linewidth = 1
+  ) +
+  scale_color_manual(
+    name = "Scenarios",
+    values = c(
+      "No-policy forecasted GII" = "darkblue"
+    )
+  ) +
+  scale_fill_manual(
+    name = "Confidence intervals",
+    values = c(
+      "80% confidence interval" = "#6666FF",
+      "95% confidence interval" = "#9999FF"
+    )
+  ) +
+  labs(
+    title = "Gender Inequality Index: No-Policy Scenario forecast",
+    x = "Year",
+    y = "GII"
+  ) +
+  theme_minimal() +
   theme(
-    plot.title = element_text(face = "bold", size = 14),
-    plot.subtitle = element_text(size = 12),
-    axis.title = element_text(face = "bold", size = 12), 
-    plot.margin = margin(t = 20, r = 10, b = 10, l = 10)  
+    legend.position = "right",
+    legend.title = element_text(face = "bold")
   )
+
+p_gii
 ```
 
 The GII is forecast to decline from 0.079 in 2024 to zero by 2050 (with negative values cut, as the index ranges from 0 to 1). 
@@ -1463,15 +1502,6 @@ p_inequality <- ggplot() +
 
 
 ## GII PLOT
-gii_fc_df <- data.frame(
-  year = as.numeric(time(gii_fc$mean)),
-  mean = as.numeric(gii_fc$mean),
-  lower80 = as.numeric(gii_fc$lower[, 1]),
-  upper80 = as.numeric(gii_fc$upper[, 1]),
-  lower95 = as.numeric(gii_fc$lower[, 2]),
-  upper95 = as.numeric(gii_fc$upper[, 2])
-)
-
 p_gii <- ggplot() +
   geom_ribbon(
     data = gii_fc_df,
