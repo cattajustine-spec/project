@@ -715,7 +715,7 @@ We estimate three regressions to evaluate the association between environmental 
 
 In the model explaining energy poverty, we include the income-inequality coefficient. The resulting model has strong explanatory power (Adjusted $R^2 ≈$ 0.60). The coefficient on environmental tax revenues remains small, positive, stable (+3.7e-05) and significant. Also, the income-inequality coefficient shows strong positive and significant associations with energy poverty.
 
-For human inequality, the model remains statistically valid but with limited explanatory power (Adjusted $R^2 ≈$ 0.05), and environmental taxes have a small impact on inequality (+3.0e-05 )but is highly significant. GDP and time both show negative effects.
+For human inequality, the model remains statistically valid but with limited explanatory power (Adjusted $R^2 ≈$ 0.05), and environmental taxes have a small impact on inequality (+3.0e-05) but is highly significant. GDP and time both show negative effects.
 
 Similarly, in the gender-inequality model the environmental-tax coefficient remains positive (+6.9e-07) and highly significant. GDP and time effects are negative and the model is substantially strong (Adjusted $R^2 ≈$ 0.40).
 
@@ -1568,11 +1568,12 @@ This framework allows us to assess how the interaction between taxation and econ
 
 In conclusion, this research project has evaluated the effectiveness of environmental taxation as a tool for achieving the European Union’s goal of net-zero emissions by 2050. The study involved cleaning and merging large datasets covering the EU-27 from 1990 to 2024. By integrating indicators such as environmental tax revenues, the Gender Inequality Index (GII), the Coefficient of Human Inequality, and energy poverty, we assessed both environmental efficacy and socioeconomic sustainability.
 
-Our findings indicate that while environmental taxes have a statistically significant negative association with GHG emissions, the impact has been small and we revealed that the current forecasted tax trajectory is insufficient to reach the European Green Deal’s objectives. 
+Our findings indicate that while environmental taxes have a statistically significant negative association with GHG emissions, the impact has been small and we revealed that the current forecasted tax trajectory is insufficient to reach the European Green Deal’s objectives without important negative socioeconomic consequences. 
 
-To determine the tax level required for the 2050 target, we inverted a level-level linear regression of total GHG emissions against tax revenues. This model allowed us to find a "required tax path" that would theoretically drive emissions to zero by itself. We found that environmental tax revenues would need to scale up to roughly 2.9 trillion USD by 2050, (1.7 trillion USD more than predicted historical trends).
+To determine the tax level required for the 2050 target, we inverted a level-level linear regression of total GHG emissions against tax revenues. This model allowed us to find a "required tax path" that would theoretically drive emissions to zero by itself. We found that environmental tax revenues would need to scale up to roughly 1.3 trillion USD by 2050 ($≈$684 billion USD more than predicted historical trends).
 
 The impacts of such a massive tax increase on society and the economy would be severe:
+
 • Social Inequality: The regressions show that environmental taxes are positively correlated with energy poverty, income inequality, and gender inequality. Implementing the required tax path would likely exacerbate these social costs, and increase these indicators largely above the levels expected in a no-policy scenario.
 • Economic Viability: Although tax revenues tend to increase alongside GDP, the required fiscal burden would likely reach above 3% of the total GDP. This exceeds empirical thresholds for economic stability and could be highly disruptive.
 
