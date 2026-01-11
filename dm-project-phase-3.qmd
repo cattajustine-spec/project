@@ -162,9 +162,9 @@ Soc_Indexes <- vroom(here("data", "HDR_indexes.csv"))
 
 {{< pagebreak >}}
 
-# I. Modifying the data sets
+# I. Modifying the data sets ^[For extensive description, please refer to the *"dm-project phase 2.qmd"* document.]
 
-The data sets being quite large, we first remove variables we will not use and add aggregates that we think are important, before characterizing the variables we kept. Finally, to simplify our analysis, we merge all our sets in one data base. ^[For extensive description, please refer to the *"dm-project phase 2"* document.]
+The data sets being quite large, we first remove variables we will not use and add aggregates that we think are important, before characterizing the variables we kept. Finally, to simplify our analysis, we merge all our sets in one data base. 
 
 ## 1. Country keys {#countrykeys}
 
@@ -388,7 +388,7 @@ all_merged <- Envt_Tax_Revenues |>
 
 {{< pagebreak >}}
 
-# II. Descriptive analyses ^[For extensive analyses, please refer to the *"dm-project phase 2"* document.]
+# II. Descriptive analyses ^[For extensive analyses, please refer to the *"dm-project phase 2.qmd"* document.]
 
 ## 1. European environmental tax revenues
 
@@ -466,10 +466,10 @@ European GDP has increased significantly from 6.3 trillion USD in 1990 to 19.4 t
 ggplot(EU27_GHG, aes(x = TIME_PERIOD, y = GHG_Emissions_value)) +
   geom_line(linewidth = 1, color = "darkgreen") +
   labs(
-    title = "Total European Greenhouse gas emissions (in millions of USD)",
-    x = "Year",
-    y = "Greenhouse gas emissions (thousands of ton of CO2)"
-  ) +
+    title = "Total European greenhouse gas emissions",
+    subtitle = "EU-27, in thousand tonnes of CO2",
+    y = "Emissions"
+    ) +
   theme_minimal() +
   scale_y_continuous(limits = c(0, 4600000))
 ```
@@ -503,7 +503,8 @@ ggplot(EU27_Warming,
            group = interaction(hhtyp, incgrp))) +
   geom_line(linewidth = 1) +
   labs(
-    title = "EU27 – inability to Keep the House Warm (by Sex × Income Group)",
+    title = "EU27 – Inability to Keep the House Warm",
+    subtitle = "By sex and income group",
     x = "Year",
     y = "Percentage of population",
     color = "Sex × Income"
@@ -537,7 +538,7 @@ The six curves, defined by sex and income, follow a similar pattern: a sharp ris
 
 Overall, the total population shows the lowest percentages, while households below 60% of the national median income show the highest. Among low-income single households, women report slightly higher rates than men (about 23.1% versus 21.1%).
 
-## 5. GII per country
+## 5. GII per country ^[For a more interactive and readable view of the graph in this section, please refer to the *"dm-project phase 3.html"* document.]
 
 ```{r, echo=FALSE}
 #| message: false
@@ -551,7 +552,16 @@ p_GII <- ggplot(GII, aes(x = TIME_PERIOD, y = GII_value, color = iso3, group = i
     color = "Country"
   ) +
   scale_y_continuous(limits = c(0, 1)) +   
-  theme_minimal()
+  theme_minimal()+
+  theme(
+    legend.position = "right",
+    legend.text = element_text(size = 6), 
+    legend.title = element_text(face = "bold"),
+    legend.key.height = unit(0.3, "cm"),
+    legend.key.width = unit(0.4, "cm"),
+    legend.spacing.y = unit(0.05, "cm"), 
+    plot.margin = margin(10, 10, 10, 10) 
+  )
 
 if (knitr::is_html_output()) {plotly::ggplotly(p_GII)} else {p_GII}
 ```
@@ -575,7 +585,7 @@ summary_stats_GII |>
 
 The Gender Inequality Index (GII) shows a clear downward trend across all European countries between 1990 and 2024. The EU27 average decreased from 25,7% to 0,08%, with a mean of 16,6% overall. 
 
-## 6. Coefficient of human inequality per country
+## 6. Coefficient of human inequality per country ^[For a more interactive and readable view of the graph in this section, please refer to the *"dm-project phase 3.html"* document.]
 
 ```{r, echo=FALSE}
 #| message: false
@@ -589,8 +599,16 @@ p_coef <- ggplot(coef_ineq, aes(x = TIME_PERIOD, y = coef_ineq_value, color = is
     color = "Country"
   ) +
   theme_minimal() +
-  
-  scale_y_continuous(limits = c(0, 15))
+  scale_y_continuous(limits = c(0, 15))+
+  theme(
+    legend.position = "right",
+    legend.text = element_text(size = 6), 
+    legend.title = element_text(face = "bold"),
+    legend.key.height = unit(0.3, "cm"),
+    legend.key.width = unit(0.4, "cm"),
+    legend.spacing.y = unit(0.05, "cm"), 
+    plot.margin = margin(10, 10, 10, 10) 
+  )
 
 if (knitr::is_html_output()) {plotly::ggplotly(p_coef)} else {p_coef}
 ```
